@@ -1,6 +1,5 @@
 <div align="center">
-  <img src="https://img.icons8.com/color/96/000000/internet-of-things.png" alt="IoT Logo" width="80" height="80">
-  <h1 align="center">IoT Environmental Dashboard</h1>
+    <h1 align="center">IoT Environmental Dashboard</h1>
   <p align="center">
     A modern, high-performance telemetry dashboard for real-time ESP32 sensor monitoring.
   </p>
