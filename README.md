@@ -1,59 +1,110 @@
-# IoT Environmental Dashboard
+<div align="center">
+  <img src="https://img.icons8.com/color/96/000000/internet-of-things.png" alt="IoT Logo" width="80" height="80">
+  <h1 align="center">IoT Environmental Dashboard</h1>
+  <p align="center">
+    A modern, high-performance telemetry dashboard for real-time ESP32 sensor monitoring.
+  </p>
+  <p align="center">
+    <a href="#features"><strong>Explore Features</strong></a> ·
+    <a href="#getting-started"><strong>Getting Started</strong></a> ·
+    <a href="#deployment"><strong>Deploying</strong></a>
+  </p>
+  <br/>
+</div>
 
-A modern, highly responsive Next.js web application for monitoring real-time telemetry from an ESP32 microcontroller and an array of environmental sensors.
+## 🌐 Overview
 
-## Features
+The **IoT Environmental Dashboard** is a highly responsive web application built with Next.js and Tailwind CSS. It is designed to visualize real-time data from an ESP32 microcontroller equipped with an array of environmental sensors. With its sleek glassmorphism UI, interactive charts, and intelligent alerting system, monitoring physical spaces has never been easier.
 
-- **Real-Time Dashboard**: View live readings for Temperature, Humidity, Atmospheric Pressure, Altitude, and Distance.
-- **Dynamic Charts**: Interactive time-series line charts for all sensor metrics.
-- **Smart Alerts**: Configurable thresholds that generate real-time visual alerts (e.g., High Temperature, Object Too Close, Sensor Offline).
-- **Comfort Score**: Proprietary scoring algorithm blending temperature and humidity into a 0-100 comfort rating.
-- **Device Status**: Monitor ESP32 WiFi connectivity, ThingSpeak sync status, and RSSI signal strength.
-- **Live Simulation Mode**: Built-in mock data generator for testing the UI without hardware connected.
-- **Hardware Integrations**: Support for ThingSpeak Cloud Sync to retrieve stored sensor logs.
+---
 
-## Tech Stack
+## ✨ Key Features
 
-- **Framework**: Next.js 16 (App Router)
-- **Library**: React 19
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS v4, custom glassmorphism design system
-- **UI Components**: shadcn/ui, Lucide React (Icons)
-- **Data Visualization**: Recharts
-- **Animations**: Framer Motion
+- 📊 **Real-Time Telemetry**: Instant visualization of Temperature, Humidity, Atmospheric Pressure, Altitude, and Proximity.
+- 📈 **Dynamic Analytics**: Interactive, time-series line charts built with Recharts to track historical trends.
+- 🚨 **Smart Alerts Engine**: Configurable thresholds that trigger visual warnings (e.g., High Temperature, Sensor Disconnects, Object Proximity Alerts).
+- 🌡️ **Comfort Index Algorithm**: A proprietary scoring system (0-100) that calculates human comfort based on blended temperature and humidity metrics.
+- 📡 **Hardware Integration**: Native support for **ThingSpeak Cloud Sync** to retrieve stored sensor logs and ESP32 status metrics (WiFi state, RSSI).
+- 🧪 **Developer Simulation Mode**: Built-in mock data generator allows UI testing and demonstration without physical hardware.
 
-## Getting Started
+---
+
+## 🛠️ Tech Stack
+
+This project leverages modern web technologies for maximum performance and developer experience:
+
+- **Core**: [Next.js 16](https://nextjs.org/) (App Router), [React 19](https://react.dev/), [TypeScript](https://www.typescriptlang.org/)
+- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/), Custom Glassmorphism UI
+- **Components**: [shadcn/ui](https://ui.shadcn.com/), [Lucide Icons](https://lucide.dev/)
+- **Data Visualization**: [Recharts](https://recharts.org/)
+- **Animations**: [Framer Motion](https://www.framer.com/motion/)
+
+---
+
+## 🚀 Getting Started
+
+Follow these steps to run the dashboard locally.
 
 ### Prerequisites
-Make sure you have Node.js (v20 or higher) and npm installed on your machine.
+
+- [Node.js](https://nodejs.org/) (v20.x or higher)
+- [npm](https://www.npmjs.com/) (v10.x or higher)
 
 ### Installation
 
-1. **Clone the repository:**
+1. **Clone the repository**
    ```bash
    git clone <your-repo-url>
-   cd "IoT Based Water Leveled indicator"
+   cd "IOT-TIH"
    ```
 
-2. **Install dependencies:**
+2. **Install dependencies**
    ```bash
    npm install
    ```
 
-3. **Run the development server:**
+3. **Configure Environment Variables**
+   Create a `.env.local` file in the root directory and add your ThingSpeak credentials:
+   ```env
+   THINGSPEAK_CHANNEL_ID=your_channel_id
+   THINGSPEAK_READ_API_KEY=your_read_api_key
+   ```
+
+4. **Start the development server**
    ```bash
    npm run dev
    ```
 
-4. Open [http://localhost:3000](http://localhost:3000) with your browser to see the dashboard.
+5. **View the Dashboard**
+   Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## Configuration
+---
 
-Navigate to the **Settings** page within the application to configure:
-- ESP32 local IP address
-- Sensor alert thresholds (Max Temp, Max Humidity, Min Distance, etc.)
-- Data refresh intervals
-- ThingSpeak Channel ID and API Key
+## ⚙️ Configuration
 
-## Simulation Mode
-If you don't have the hardware set up yet, click the **Lightning Bolt** icon in the top right of the navigation bar to toggle Simulation Mode. This will inject realistic mock data into the telemetry provider, allowing you to preview charts, alerts, and gauges.
+The dashboard includes a dedicated **Settings** panel to configure system behavior:
+
+- **Network**: ESP32 Local IP Address configuration
+- **Thresholds**: Define limits for alerts (Max Temp, Max Humidity, Min Distance, etc.)
+- **Performance**: Adjust data polling refresh intervals
+- **Cloud**: Update ThingSpeak API credentials on the fly
+
+> **Pro Tip (Simulation Mode)**: Click the ⚡ **Lightning Bolt** icon in the top navigation bar to toggle Simulation Mode. This injects realistic mock data, letting you test charts and alerts instantly without an ESP32!
+
+---
+
+## ☁️ Deployment
+
+This project is optimized for deployment on [Vercel](https://vercel.com).
+
+1. Push your code to a GitHub repository.
+2. Import the project into Vercel.
+3. Add your `THINGSPEAK_CHANNEL_ID` and `THINGSPEAK_READ_API_KEY` as Environment Variables in the Vercel dashboard.
+4. Click **Deploy**.
+
+For a detailed deployment guide, refer to the [Vercel Next.js Deployment Documentation](https://vercel.com/docs/frameworks/nextjs).
+
+---
+<div align="center">
+  <i>Engineered with ❤️ for IoT Enthusiasts.</i>
+</div>
