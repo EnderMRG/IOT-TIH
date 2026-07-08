@@ -1,6 +1,10 @@
 <div align="center">
+<<<<<<< HEAD
   <img src="public/logotih.png" alt="IoT Logo" width="120" height="120">
   <h1 align="center">Flood Alert & Water Level Monitoring System</h1>
+=======
+    <h1 align="center">IoT Environmental Dashboard</h1>
+>>>>>>> 255e2b83d6129fcb19b0d1147d57c527e285d8a7
   <p align="center">
     A modern, high-performance telemetry dashboard for real-time ESP32 flood monitoring and water level alerts.
   </p>
