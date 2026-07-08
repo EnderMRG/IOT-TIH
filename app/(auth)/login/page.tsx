@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Droplets, ArrowLeft, AlertCircle } from "lucide-react";
+import { ArrowLeft, AlertCircle } from "lucide-react";
 import { useTelemetry } from "@/components/providers/TelemetryProvider";
 import bgImage from "@/assests/landpage/PTI06_18_2022_000030B.jpg";
 
@@ -67,8 +67,8 @@ export default function LoginPage() {
 
       <div className="w-full max-w-md bg-white/90 backdrop-blur-xl py-8 px-6 sm:px-10 shadow-2xl shadow-black/20 border border-white/40 rounded-3xl z-10 relative">
         <div className="flex flex-col items-center mb-6">
-          <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-600/20 mb-4">
-            <Droplets className="w-6 h-6" />
+          <div className="w-12 h-12 rounded-2xl overflow-hidden shadow-lg shadow-blue-600/20 mb-4">
+            <Image src="/FloodEye.jpeg" alt="FloodEye" width={48} height={48} className="w-full h-full object-cover" />
           </div>
           <h2 className="text-center text-3xl font-bold tracking-tight text-slate-900">
             Welcome back

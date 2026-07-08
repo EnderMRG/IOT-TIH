@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Droplets, Menu, X } from "lucide-react";
+import Image from "next/image";
+import { Menu, X } from "lucide-react";
 
 export function LandingNav() {
   const [open, setOpen] = useState(false);
@@ -14,8 +15,8 @@ export function LandingNav() {
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-xl bg-blue-500 flex items-center justify-center text-white shadow-lg shadow-blue-500/30 group-hover:scale-105 transition-transform">
-              <Droplets className="w-5 h-5" />
+            <div className="w-8 h-8 rounded-xl overflow-hidden shadow-lg shadow-blue-500/30 group-hover:scale-105 transition-transform">
+              <Image src="/FloodEye.jpeg" alt="FloodEye" width={32} height={32} className="w-full h-full object-cover" />
             </div>
             <span className="font-bold text-xl tracking-tight text-white">
               Flood<span className="text-blue-400">Eye</span>
