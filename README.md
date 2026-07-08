@@ -111,7 +111,7 @@ For a detailed deployment guide, refer to the [Vercel Next.js Deployment Documen
 - **Moharnab Gogoi** - IOT Backend
 - **Aryyaman Bora** - Frontend
 - **Mayuree Khanikar** - Documentation/Research
-- **Indrani Gogoi** - Documentation/Research
+- **Indrani Gogoi** - Documentation
 
 ---
 <div align="center">
