@@ -1,8 +1,8 @@
 <div align="center">
-  <img src="https://img.icons8.com/color/96/000000/internet-of-things.png" alt="IoT Logo" width="80" height="80">
-  <h1 align="center">IoT Environmental Dashboard</h1>
+  <img src="public/logotih.png" alt="IoT Logo" width="120" height="120">
+  <h1 align="center">Flood Alert & Water Level Monitoring System</h1>
   <p align="center">
-    A modern, high-performance telemetry dashboard for real-time ESP32 sensor monitoring.
+    A modern, high-performance telemetry dashboard for real-time ESP32 flood monitoring and water level alerts.
   </p>
   <p align="center">
     <a href="#features"><strong>Explore Features</strong></a> ·
@@ -14,16 +14,16 @@
 
 ## 🌐 Overview
 
-The **IoT Environmental Dashboard** is a highly responsive web application built with Next.js and Tailwind CSS. It is designed to visualize real-time data from an ESP32 microcontroller equipped with an array of environmental sensors. With its sleek glassmorphism UI, interactive charts, and intelligent alerting system, monitoring physical spaces has never been easier.
+The **Flood Alert & Water Level Monitoring System** is a highly responsive web application built with Next.js and Tailwind CSS. It is designed to visualize real-time water level data and environmental conditions from an ESP32 microcontroller equipped with an array of sensors. With its sleek glassmorphism UI, interactive charts, and intelligent alerting system, monitoring flood risks and water levels has never been easier.
 
 ---
 
 ## ✨ Key Features
 
-- 📊 **Real-Time Telemetry**: Instant visualization of Temperature, Humidity, Atmospheric Pressure, Altitude, and Proximity.
-- 📈 **Dynamic Analytics**: Interactive, time-series line charts built with Recharts to track historical trends.
-- 🚨 **Smart Alerts Engine**: Configurable thresholds that trigger visual warnings (e.g., High Temperature, Sensor Disconnects, Object Proximity Alerts).
-- 🌡️ **Comfort Index Algorithm**: A proprietary scoring system (0-100) that calculates human comfort based on blended temperature and humidity metrics.
+- 📊 **Real-Time Telemetry**: Instant visualization of Water Level (Proximity), Temperature, Humidity, Atmospheric Pressure, and Altitude.
+- 📈 **Dynamic Analytics**: Interactive, time-series line charts built with Recharts to track historical water level trends and environmental changes.
+- 🚨 **Smart Alerts Engine**: Configurable thresholds that trigger visual and critical warnings (e.g., High Water Level, Rapid Rise in Water, Sensor Disconnects).
+- 🌊 **Flood Risk Algorithm**: A scoring system that calculates flood risk based on blended water level, temperature, and humidity metrics.
 - 📡 **Hardware Integration**: Native support for **ThingSpeak Cloud Sync** to retrieve stored sensor logs and ESP32 status metrics (WiFi state, RSSI).
 - 🧪 **Developer Simulation Mode**: Built-in mock data generator allows UI testing and demonstration without physical hardware.
 
@@ -85,7 +85,7 @@ Follow these steps to run the dashboard locally.
 The dashboard includes a dedicated **Settings** panel to configure system behavior:
 
 - **Network**: ESP32 Local IP Address configuration
-- **Thresholds**: Define limits for alerts (Max Temp, Max Humidity, Min Distance, etc.)
+- **Thresholds**: Define limits for alerts (Max Water Level, Max Temp, Max Humidity, etc.)
 - **Performance**: Adjust data polling refresh intervals
 - **Cloud**: Update ThingSpeak API credentials on the fly
 
@@ -103,6 +103,15 @@ This project is optimized for deployment on [Vercel](https://vercel.com).
 4. Click **Deploy**.
 
 For a detailed deployment guide, refer to the [Vercel Next.js Deployment Documentation](https://vercel.com/docs/frameworks/nextjs).
+
+---
+
+## 👥 Team
+
+- **Moharnab Gogoi** - IOT Backend
+- **Aryyaman Bora** - Frontend
+- **Mayuree Khanikar** - Documentation/Research
+- **Indrani Gogoi** - Documentation/Research
 
 ---
 <div align="center">
