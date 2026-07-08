@@ -94,8 +94,8 @@ function StatCard({
 }) {
   return (
     <FadeIn delay={delay} direction="up">
-      <GlassCard className="p-6 text-center">
-        <p className="font-sans text-4xl font-bold text-white mb-1">{value}</p>
+      <GlassCard className="p-4 sm:p-6 text-center">
+        <p className="font-sans text-3xl sm:text-4xl font-bold text-white mb-1">{value}</p>
         <p className="text-sm font-semibold text-blue-300">{label}</p>
         <p className="text-xs text-white/60 mt-0.5">{sub}</p>
       </GlassCard>
@@ -144,7 +144,7 @@ function HeroSection() {
     <section
       ref={ref}
       id="hero"
-      className="relative min-h-screen flex flex-col items-center justify-center px-6 pt-20"
+      className="relative min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 pt-20"
     >
       {/* Vignette */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/20 to-transparent pointer-events-none" />
@@ -156,13 +156,13 @@ function HeroSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] as any }}
-          className="flex justify-center mb-10"
+          className="flex justify-center mb-8"
         >
-          <div className="flex items-center gap-5 bg-white/10 backdrop-blur-md border border-white/20 px-7 py-3.5 rounded-full shadow-2xl">
-            <span className="text-base font-semibold text-white/90 tracking-wide">Developed under</span>
-            <div className="w-px h-10 bg-white/20 mx-1 rounded-full"></div>
-            <Image src="/logotih.png" alt="TIH" width={130} height={50} className="object-contain drop-shadow-md" />
-            <Image src="/iitlogo.png" alt="IIT Guwahati" width={60} height={60} className="object-contain drop-shadow-md" />
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-5 bg-white/10 backdrop-blur-md border border-white/20 px-4 sm:px-7 py-2.5 sm:py-3.5 rounded-full shadow-2xl">
+            <span className="text-sm sm:text-base font-semibold text-white/90 tracking-wide">Developed under</span>
+            <div className="hidden sm:block w-px h-10 bg-white/20 rounded-full"></div>
+            <Image src="/logotih.png" alt="TIH" width={110} height={44} className="object-contain drop-shadow-md" />
+            <Image src="/iitlogo.png" alt="IIT Guwahati" width={48} height={48} className="object-contain drop-shadow-md" />
           </div>
         </motion.div>
 
@@ -171,7 +171,7 @@ function HeroSection() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.4, ease: [0.16, 1, 0.3, 1] as any }}
-          className="font-sans text-6xl sm:text-7xl md:text-8xl lg:text-[7rem] font-bold text-white leading-[0.9] tracking-tight mb-6"
+          className="font-sans text-4xl sm:text-6xl md:text-8xl lg:text-[7rem] font-bold text-white leading-[0.9] tracking-tight mb-6"
         >
           Flood
           <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">
@@ -236,7 +236,7 @@ function CapabilitiesSection() {
   return (
     <section
       id="capabilities"
-      className="relative min-h-screen flex items-center justify-center px-6 py-32"
+      className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 py-24 sm:py-32"
     >
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/60 to-black/60 pointer-events-none" />
       <div className="relative z-10 w-full max-w-5xl mx-auto">
@@ -244,7 +244,7 @@ function CapabilitiesSection() {
           <p className="text-blue-400 text-xs font-semibold tracking-widest uppercase mb-4">
             Platform Capabilities
           </p>
-          <h2 className="font-sans text-5xl md:text-6xl font-bold text-white leading-tight">
+          <h2 className="font-sans text-4xl sm:text-5xl md:text-6xl font-bold text-white leading-tight">
             Real-time data.
             <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">
@@ -257,7 +257,7 @@ function CapabilitiesSection() {
           </p>
         </FadeIn>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-12">
           <StatCard value="5+" label="Sensor Types" sub="per node" delay={0} />
           <StatCard value="15s" label="Refresh Rate" sub="live readings" delay={0.1} />
           <StatCard value="24/7" label="Uptime" sub="continuous monitoring" delay={0.2} />
@@ -286,7 +286,7 @@ function FeatureGridSection() {
   return (
     <section
       id="features"
-      className="relative min-h-screen flex items-center justify-center px-6 py-32"
+      className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 py-24 sm:py-32"
     >
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/70 to-black/60 pointer-events-none" />
       <div className="relative z-10 w-full max-w-5xl mx-auto flex flex-col gap-12">
@@ -294,7 +294,7 @@ function FeatureGridSection() {
           <p className="text-blue-400 text-xs font-semibold tracking-widest uppercase mb-4">
             Platform Features
           </p>
-          <h2 className="font-sans text-5xl md:text-6xl font-bold text-white leading-tight">
+          <h2 className="font-sans text-4xl sm:text-5xl md:text-6xl font-bold text-white leading-tight">
             Built for
             <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">
@@ -356,7 +356,7 @@ function DataAlertingSection() {
   return (
     <section
       id="data-alerting"
-      className="relative min-h-screen flex items-center justify-center px-6 py-32"
+      className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 py-24 sm:py-32"
     >
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/75 to-black/70 pointer-events-none" />
       <div className="relative z-10 w-full max-w-5xl mx-auto">
@@ -366,7 +366,7 @@ function DataAlertingSection() {
             <p className="text-blue-400 text-xs font-semibold tracking-widest uppercase mb-4">
               Data Integration
             </p>
-            <h2 className="font-sans text-4xl md:text-5xl font-bold text-white leading-tight mb-6">
+            <h2 className="font-sans text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight mb-6">
               Sensor to screen
               <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">
@@ -454,7 +454,7 @@ function CTASection() {
   return (
     <section
       id="cta"
-      className="relative min-h-screen flex items-center justify-center px-6 py-32"
+      className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 py-24 sm:py-32"
     >
       <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/80 to-black/90 pointer-events-none" />
       <div className="relative z-10 text-center max-w-3xl mx-auto flex flex-col items-center gap-8">
@@ -465,7 +465,7 @@ function CTASection() {
         </FadeIn>
 
         <FadeIn delay={0.1}>
-          <h2 className="font-sans text-5xl md:text-7xl font-bold text-white leading-[0.95] tracking-tight">
+          <h2 className="font-sans text-4xl sm:text-5xl md:text-7xl font-bold text-white leading-[0.95] tracking-tight">
             Start monitoring
             <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">
