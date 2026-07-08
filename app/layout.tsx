@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Outfit } from "next/font/google";
+import { Outfit, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { TelemetryProvider } from "@/components/providers/TelemetryProvider";
 
@@ -8,22 +8,23 @@ const outfit = Outfit({
   subsets: ["latin"],
 });
 
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
+  subsets: ["latin"],
+  weight: ["400", "700", "900"],
+});
+
 export const metadata: Metadata = {
-  title: "IoT Environmental Dashboard",
-  description: "Live sensor telemetry and historical analytics",
+  title: "FloodEye — Flood Relief Monitoring",
+  description: "Real-time flood monitoring and early warning system powered by ESP32 sensor networks.",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html
-      lang="en"
-      className={`${outfit.variable} font-sans h-full antialiased`}
-    >
-      <body className={`min-h-full flex flex-col bg-[#f4f3ed] text-[#1c1c1a]`}>
+    <html lang="en" className={`${outfit.variable} ${playfair.variable} font-sans h-full antialiased`}>
+      <body className="min-h-full flex flex-col bg-[#f4f3ed] text-[#1c1c1a]">
         <TelemetryProvider>
           {children}
         </TelemetryProvider>

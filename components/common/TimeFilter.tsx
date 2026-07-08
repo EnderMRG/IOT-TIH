@@ -24,7 +24,7 @@ export function TimeFilter({ value, onChange, className }: TimeFilterProps) {
           className={cn(
             "px-4 py-1.5 text-sm font-medium rounded-full transition-all duration-200 whitespace-nowrap",
             value === f.id
-              ? "bg-[#355441] text-white shadow-sm"
+              ? "bg-blue-600 text-white shadow-sm"
               : "text-zinc-500 hover:text-[#1c1c1a] hover:bg-zinc-50"
           )}
         >

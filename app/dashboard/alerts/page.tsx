@@ -9,6 +9,8 @@ const alertTypeConfig = {
   HIGH_TEMPERATURE:      { label: "High Temperature",      icon: Thermometer },
   HIGH_HUMIDITY:         { label: "High Humidity",         icon: Droplets },
   RAPID_PRESSURE_CHANGE: { label: "Rapid Pressure Change", icon: Wind },
+  HIGH_WATER_LEVEL:      { label: "High Water Level",      icon: Ruler },
+  RAPID_WATER_RISE:      { label: "Rapid Water Rise",      icon: AlertTriangle },
   OBJECT_TOO_CLOSE:      { label: "Object Too Close",      icon: Ruler },
   SENSOR_OFFLINE:        { label: "Sensor Offline",        icon: WifiOff },
 } as const;
@@ -59,15 +61,15 @@ export default function AlertsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-[#1c1c1a]">Active Alerts</h2>
-          <p className="text-[#78716c] text-sm mt-1">Real-time notifications from your IoT sensors.</p>
+          <h2 className="text-2xl font-bold text-slate-900">Active Alerts</h2>
+          <p className="text-slate-500 text-sm mt-1">Real-time notifications from your IoT sensors.</p>
         </div>
         {alerts.length > 0 && (
           <button
             onClick={clearAlerts}
-            className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-zinc-600 bg-white border border-zinc-200 rounded-full hover:bg-zinc-50 transition-colors shadow-sm self-start md:self-auto"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-zinc-600 bg-white border border-zinc-200 rounded-full hover:bg-zinc-50 transition-colors shadow-sm"
           >
             <Trash2 className="w-4 h-4" />
             Clear All

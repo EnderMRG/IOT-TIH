@@ -2,6 +2,8 @@
 
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 
+// ── Types ─────────────────────────────────────────────────────────────────────
+
 export interface TelemetryData {
   temperature: number;
   humidity: number;
@@ -15,22 +17,30 @@ export interface DeviceStatus {
   esp32Online: boolean;
   thingspeakConnected: boolean;
   lastUpload: string;
-  rssi: number; // Not available via ThingSpeak REST — always 0
+  rssi: number;
 }
 
 export interface Alert {
   id: string;
-  type: "HIGH_TEMPERATURE" | "HIGH_HUMIDITY" | "RAPID_PRESSURE_CHANGE" | "OBJECT_TOO_CLOSE" | "SENSOR_OFFLINE";
+  type:
+    | "HIGH_TEMPERATURE"
+    | "HIGH_HUMIDITY"
+    | "RAPID_PRESSURE_CHANGE"
+    | "HIGH_WATER_LEVEL"
+    | "RAPID_WATER_RISE"
+    | "OBJECT_TOO_CLOSE"
+    | "SENSOR_OFFLINE";
   severity: "critical" | "warning" | "info";
   message: string;
   timestamp: string;
 }
 
 export interface DashboardSettings {
-  refreshInterval: number; // seconds
-  tempThreshold: number;   // °C
+  refreshInterval: number;  // seconds
+  tempThreshold: number;    // °C
   humidityThreshold: number; // %
   distanceThreshold: number; // cm (alert when below this)
+  pressureThreshold: number; // hPa (alert when below this)
 }
 
 interface TelemetryContextType {
@@ -39,10 +49,15 @@ interface TelemetryContextType {
   alerts: Alert[];
   deviceStatus: DeviceStatus | null;
   settings: DashboardSettings;
-  isLoading: boolean;   // true only on very first load when cache is empty
-  isOffline: boolean;   // true when the device/ThingSpeak is unreachable
-  isStale: boolean;     // true when showing cached data because device is offline
-  lastSeenAt: string | null; // ISO timestamp of last successful live reading
+  isLoading: boolean;
+  isOffline: boolean;
+  isStale: boolean;
+  lastSeenAt: string | null;
+  // Simulation / role (Project B additions)
+  isSimulating: boolean;
+  userRole: "admin" | "user";
+  setIsSimulating: (val: boolean) => void;
+  setUserRole: (role: "admin" | "user") => void;
   setSettings: (s: DashboardSettings) => void;
   addAlert: (alert: Omit<Alert, "id" | "timestamp">) => void;
   clearAlerts: () => void;
@@ -75,6 +90,23 @@ const defaultSettings: DashboardSettings = {
   tempThreshold: 35,
   humidityThreshold: 80,
   distanceThreshold: 20,
+  pressureThreshold: 1005,
+};
+
+const defaultSimData: TelemetryData = {
+  temperature: 24.5,
+  humidity: 55,
+  pressure: 1013.25,
+  altitude: 120,
+  distance: 85,
+  timestamp: new Date().toISOString(),
+};
+
+const defaultSimDeviceStatus: DeviceStatus = {
+  esp32Online: true,
+  thingspeakConnected: true,
+  lastUpload: new Date().toISOString(),
+  rssi: -52,
 };
 
 // ── Alert engine ──────────────────────────────────────────────────────────────
@@ -94,26 +126,51 @@ function checkAlerts(
   if (data.humidity > settings.humidityThreshold) {
     return {
       type: "HIGH_HUMIDITY",
-      severity: "warning",
+      severity: data.humidity > 95 ? "critical" : "warning",
       message: `Humidity at ${data.humidity.toFixed(0)}%, above the ${settings.humidityThreshold}% threshold.`,
     };
   }
-  const pressureDelta = Math.abs(data.pressure - prevData.pressure);
-  if (pressureDelta > 10) {
+  if (data.pressure < settings.pressureThreshold) {
     return {
       type: "RAPID_PRESSURE_CHANGE",
-      severity: "info",
-      message: `Pressure changed by ${pressureDelta.toFixed(1)} hPa since last reading. Possible weather change.`,
+      severity: data.pressure < 995 ? "critical" : "warning",
+      message: data.pressure < 995
+        ? `Severe storm alert: Extreme pressure drop! (${data.pressure.toFixed(1)} hPa)`
+        : `Low pressure system: Storm approaching. (${data.pressure.toFixed(1)} hPa)`,
+    };
+  }
+  // Rapid water rise
+  const waterRise = prevData.distance - data.distance;
+  if (waterRise > 4) {
+    return {
+      type: "RAPID_WATER_RISE",
+      severity: "critical",
+      message: `Emergency: Water level rising rapidly! (Rose by ${waterRise.toFixed(1)} cm).`,
     };
   }
   if (data.distance < settings.distanceThreshold) {
     return {
-      type: "OBJECT_TOO_CLOSE",
-      severity: data.distance < 10 ? "critical" : "warning",
-      message: `Object detected at ${data.distance.toFixed(1)} cm, below safe threshold of ${settings.distanceThreshold} cm.`,
+      type: "HIGH_WATER_LEVEL",
+      severity: data.distance < 30 ? "critical" : "warning",
+      message: data.distance < 30
+        ? `CRITICAL FLOOD RISK: Water level is breaching! (${data.distance.toFixed(1)} cm from sensor)`
+        : `Flood Warning: Water level rising. (${data.distance.toFixed(1)} cm from sensor)`,
     };
   }
   return null;
+}
+
+// ── Simulation helpers ────────────────────────────────────────────────────────
+
+function buildInitialSimHistory(): TelemetryData[] {
+  return Array.from({ length: 24 }).map((_, i) => ({
+    temperature: 22 + Math.sin(i * 0.4) * 4 + Math.random() * 1.5,
+    humidity: 50 + Math.cos(i * 0.3) * 12 + Math.random() * 3,
+    pressure: 1013 + Math.sin(i * 0.2) * 3 + Math.random() * 1,
+    altitude: 118 + Math.cos(i * 0.5) * 4 + Math.random() * 2,
+    distance: 75 + Math.sin(i * 0.6) * 20 + Math.random() * 5,
+    timestamp: new Date(Date.now() - (24 - i) * 15000).toISOString(),
+  }));
 }
 
 // ── Context ───────────────────────────────────────────────────────────────────
@@ -121,19 +178,20 @@ function checkAlerts(
 const TelemetryContext = createContext<TelemetryContextType | undefined>(undefined);
 
 export function TelemetryProvider({ children }: { children: React.ReactNode }) {
-  // All state initialises to null/empty so SSR and first client render match.
-  // localStorage is hydrated in useEffect below (client-only).
+  // ── Core state ────────────────────────────────────────────────────────────
   const [data, setData] = useState<TelemetryData | null>(null);
   const [history, setHistory] = useState<TelemetryData[]>([]);
   const [deviceStatus, setDeviceStatus] = useState<DeviceStatus | null>(null);
   const [lastSeenAt, setLastSeenAt] = useState<string | null>(null);
-
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [settings, setSettings] = useState<DashboardSettings>(defaultSettings);
-  const [isLoading, setIsLoading] = useState(true); // stays true until cache/network resolves
+  const [isLoading, setIsLoading] = useState(true);
   const [isOffline, setIsOffline] = useState(false);
 
-  // isStale = we have data but it came from cache (offline)
+  // ── Simulation / role state (Project B) ──────────────────────────────────
+  const [isSimulating, setIsSimulatingState] = useState(false);
+  const [userRole, setUserRoleState] = useState<"admin" | "user">("admin");
+
   const isStale = isOffline && data !== null;
 
   const prevDataRef = useRef<TelemetryData | null>(null);
@@ -141,27 +199,24 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
   const offlineAlertFiredRef = useRef(false);
   useEffect(() => { settingsRef.current = settings; }, [settings]);
 
-  // ── Hydrate from localStorage (client-only) ─────────────────────────────────
-  // This runs once after mount — AFTER the first render — so SSR HTML and the
-  // initial client render are identical (both null/empty), preventing the
-  // hydration mismatch. The cache is applied in the next paint.
+  // ── Hydrate role from localStorage ───────────────────────────────────────
   useEffect(() => {
-    const cached = lsGet<TelemetryData>(LS_DATA);
-    if (cached) {
-      setData(cached);
-      prevDataRef.current = cached;
-      setIsLoading(false); // cache found — don't show spinner
+    const savedRole = localStorage.getItem("floodeye_session");
+    if (savedRole === "admin" || savedRole === "user") {
+      setUserRoleState(savedRole);
     }
-    const cachedHistory = lsGet<TelemetryData[]>(LS_HISTORY);
-    if (cachedHistory) setHistory(cachedHistory);
-    const cachedStatus = lsGet<DeviceStatus>(LS_STATUS);
-    if (cachedStatus) setDeviceStatus(cachedStatus);
-    const cachedSeenAt = lsGet<string>(LS_SEEN_AT);
-    if (cachedSeenAt) setLastSeenAt(cachedSeenAt);
-    // If nothing was cached, isLoading stays true until the network fetch resolves
-    if (!cached) setIsLoading(true);
   }, []);
 
+  const setUserRole = (role: "admin" | "user") => {
+    localStorage.setItem("floodeye_session", role);
+    setUserRoleState(role);
+  };
+
+  const setIsSimulating = (val: boolean) => {
+    setIsSimulatingState(val);
+  };
+
+  // ── Alert helpers ────────────────────────────────────────────────────────
   const pushAlert = useCallback((alert: Omit<Alert, "id" | "timestamp">) => {
     setAlerts((prev) => [
       { ...alert, id: Math.random().toString(36).substring(7), timestamp: new Date().toISOString() },
@@ -169,10 +224,80 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
     ].slice(0, 20));
   }, []);
 
-  // ── Initial history load ────────────────────────────────────────────────────
-  // Fetch the last 1h from ThingSpeak on first mount to get a richer history
-  // than what's in localStorage. If it fails, we fall back to the cached copy.
+  const addAlert = useCallback((alert: Omit<Alert, "id" | "timestamp">) => pushAlert(alert), [pushAlert]);
+  const clearAlerts = useCallback(() => setAlerts([]), []);
+
+  // ── Hydrate from localStorage (client-only) ───────────────────────────────
   useEffect(() => {
+    const cached = lsGet<TelemetryData>(LS_DATA);
+    if (cached) {
+      setData(cached);
+      prevDataRef.current = cached;
+      setIsLoading(false);
+    }
+    const cachedHistory = lsGet<TelemetryData[]>(LS_HISTORY);
+    if (cachedHistory) setHistory(cachedHistory);
+    const cachedStatus = lsGet<DeviceStatus>(LS_STATUS);
+    if (cachedStatus) setDeviceStatus(cachedStatus);
+    const cachedSeenAt = lsGet<string>(LS_SEEN_AT);
+    if (cachedSeenAt) setLastSeenAt(cachedSeenAt);
+    if (!cached) setIsLoading(true);
+  }, []);
+
+  // ── SIMULATION MODE LOOP ─────────────────────────────────────────────────
+  useEffect(() => {
+    if (!isSimulating) return;
+
+    // Seed initial history if empty
+    if (history.length === 0) {
+      const initialHistory = buildInitialSimHistory();
+      setHistory(initialHistory);
+    }
+
+    // Set default sim data if no data yet
+    if (!data) {
+      setData(defaultSimData);
+      setDeviceStatus(defaultSimDeviceStatus);
+      setIsLoading(false);
+      setIsOffline(false);
+    }
+
+    const interval = setInterval(() => {
+      setData((prev) => {
+        const base = prev ?? defaultSimData;
+        const newData: TelemetryData = {
+          temperature: Number((base.temperature + (Math.random() * 0.6 - 0.3)).toFixed(1)),
+          humidity: Math.max(0, Math.min(100, base.humidity + (Math.random() * 2 - 1))),
+          pressure: Number((base.pressure + (Math.random() * 4 - 2)).toFixed(2)),
+          altitude: Number((base.altitude + (Math.random() * 0.4 - 0.2)).toFixed(1)),
+          distance: Math.max(2, Math.min(400, base.distance + (Math.random() * 10 - 5))),
+          timestamp: new Date().toISOString(),
+        };
+
+        setHistory((prevHistory) => {
+          const updated = [...prevHistory, newData];
+          if (updated.length > 60) updated.shift();
+          return updated;
+        });
+
+        setDeviceStatus((d) => ({
+          ...(d ?? defaultSimDeviceStatus),
+          lastUpload: new Date().toISOString(),
+          rssi: (d?.rssi ?? -52) + Math.floor(Math.random() * 3 - 1),
+        }));
+
+        return newData;
+      });
+    }, settingsRef.current.refreshInterval * 1000);
+
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSimulating]);
+
+  // ── REAL MODE: Initial history load from ThingSpeak ───────────────────────
+  useEffect(() => {
+    if (isSimulating) return;
+
     let cancelled = false;
 
     fetch("/api/history?range=1h")
@@ -190,7 +315,6 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
           setIsOffline(false);
           offlineAlertFiredRef.current = false;
           prevDataRef.current = last;
-          // Persist fresh data
           lsSet(LS_DATA, last);
           lsSet(LS_HISTORY, feeds.slice(-240));
           lsSet(LS_SEEN_AT, last.timestamp);
@@ -199,9 +323,7 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
       .catch((err) => {
         if (cancelled) return;
         console.warn("[TelemetryProvider] initial history fetch failed — using cache:", err);
-        // Don't show error — cached data is already in state
         if (!data) {
-          // Truly no data at all (first ever load with no cache)
           setIsOffline(true);
         }
       })
@@ -209,10 +331,12 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
 
     return () => { cancelled = true; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isSimulating]);
 
-  // ── Polling loop ────────────────────────────────────────────────────────────
+  // ── REAL MODE: Polling loop ───────────────────────────────────────────────
   useEffect(() => {
+    if (isSimulating) return;
+
     const poll = async () => {
       try {
         const res = await fetch("/api/sensors");
@@ -223,7 +347,6 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
           deviceStatus: DeviceStatus;
         } = await res.json();
 
-        // ── Success path ──────────────────────────────────────────────────────
         setIsOffline(false);
         offlineAlertFiredRef.current = false;
 
@@ -236,12 +359,10 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
           return updated;
         });
 
-        // Persist to localStorage
         lsSet(LS_DATA, newData);
         lsSet(LS_STATUS, newStatus);
         lsSet(LS_SEEN_AT, newData.timestamp);
 
-        // Alert engine
         if (prevDataRef.current) {
           const alert = checkAlerts(newData, prevDataRef.current, settingsRef.current);
           if (alert) pushAlert(alert);
@@ -249,14 +370,12 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
         prevDataRef.current = newData;
 
       } catch (err) {
-        // ── Offline path ──────────────────────────────────────────────────────
         console.warn("[TelemetryProvider] poll failed — device may be offline:", err);
         setIsOffline(true);
         setDeviceStatus((d) => d
           ? { ...d, esp32Online: false, thingspeakConnected: false }
           : null
         );
-        // Fire the offline alert only once per outage, not every poll cycle
         if (!offlineAlertFiredRef.current) {
           pushAlert({
             type: "SENSOR_OFFLINE",
@@ -268,12 +387,8 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    // Use a ref to hold the interval so the cleanup function can always reach it,
-    // even when the interval is created inside the setTimeout callback.
     const intervalRef = { current: null as ReturnType<typeof setInterval> | null };
 
-    // Small 500ms delay so the initial history fetch (above) gets a head-start
-    // before the polling loop kicks off.
     const timeout = setTimeout(() => {
       poll();
       intervalRef.current = setInterval(poll, settings.refreshInterval * 1000);
@@ -284,10 +399,7 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings.refreshInterval, pushAlert]);
-
-  const addAlert = useCallback((alert: Omit<Alert, "id" | "timestamp">) => pushAlert(alert), [pushAlert]);
-  const clearAlerts = useCallback(() => setAlerts([]), []);
+  }, [isSimulating, settings.refreshInterval, pushAlert]);
 
   return (
     <TelemetryContext.Provider
@@ -301,6 +413,10 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
         isOffline,
         isStale,
         lastSeenAt,
+        isSimulating,
+        userRole,
+        setIsSimulating,
+        setUserRole,
         setSettings,
         addAlert,
         clearAlerts,

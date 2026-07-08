@@ -1,12 +1,8 @@
 <div align="center">
-<<<<<<< HEAD
-  <img src="public/logotih.png" alt="IoT Logo" width="120" height="120">
-  <h1 align="center">Flood Alert & Water Level Monitoring System</h1>
-=======
-    <h1 align="center">IoT Environmental Dashboard</h1>
->>>>>>> 255e2b83d6129fcb19b0d1147d57c527e285d8a7
+  <img src="public/logotih.png" alt="TIH Logo" width="120" height="120">
+  <h1 align="center">FloodEye: Real-time Flood Alert & Water Level Monitoring System</h1>
   <p align="center">
-    A modern, high-performance telemetry dashboard for real-time ESP32 flood monitoring and water level alerts.
+    A modern, high-performance telemetry dashboard for real-time ESP32 flood monitoring and water level alerts, developed under TIH IIT Guwahati.
   </p>
   <p align="center">
     <a href="#features"><strong>Explore Features</strong></a> ·
@@ -24,11 +20,13 @@ The **Flood Alert & Water Level Monitoring System** is a highly responsive web a
 
 ## ✨ Key Features
 
-- 📊 **Real-Time Telemetry**: Instant visualization of Water Level (Proximity), Temperature, Humidity, Atmospheric Pressure, and Altitude.
-- 📈 **Dynamic Analytics**: Interactive, time-series line charts built with Recharts to track historical water level trends and environmental changes.
-- 🚨 **Smart Alerts Engine**: Configurable thresholds that trigger visual and critical warnings (e.g., High Water Level, Rapid Rise in Water, Sensor Disconnects).
-- 🌊 **Flood Risk Algorithm**: A scoring system that calculates flood risk based on blended water level, temperature, and humidity metrics.
-- 📡 **Hardware Integration**: Native support for **ThingSpeak Cloud Sync** to retrieve stored sensor logs and ESP32 status metrics (WiFi state, RSSI).
+- 🌊 **Scrollytelling Landing Page**: An immersive introduction built with GSAP and Lenis for smooth scrolling animations.
+- 🗺️ **Live Interactive Map**: Pinpoint sensor node locations using MapLibre GL and MapTiler.
+- 📊 **Real-Time Telemetry**: Instant visualization of Water Level, Temperature, Humidity, and Atmospheric Pressure.
+- 📈 **Dynamic Analytics**: Interactive, time-series line charts built with Recharts to track historical water level trends.
+- 🚨 **Smart Alerts Engine**: Configurable thresholds that trigger visual warnings (e.g., High Water Level, Rapid Rise, Object Too Close, Sensor Disconnects).
+- 🔐 **Role-based Auth Shell**: Separated views for standard users (dashboard) and admins (simulation toggles, raw device logs, settings).
+- 📡 **Hardware Integration**: Native support for **ThingSpeak Cloud Sync** to retrieve stored sensor logs and ESP32 status metrics.
 - 🧪 **Developer Simulation Mode**: Built-in mock data generator allows UI testing and demonstration without physical hardware.
 
 ---
@@ -40,8 +38,8 @@ This project leverages modern web technologies for maximum performance and devel
 - **Core**: [Next.js 16](https://nextjs.org/) (App Router), [React 19](https://react.dev/), [TypeScript](https://www.typescriptlang.org/)
 - **Styling**: [Tailwind CSS v4](https://tailwindcss.com/), Custom Glassmorphism UI
 - **Components**: [shadcn/ui](https://ui.shadcn.com/), [Lucide Icons](https://lucide.dev/)
-- **Data Visualization**: [Recharts](https://recharts.org/)
-- **Animations**: [Framer Motion](https://www.framer.com/motion/)
+- **Data Visualization & Maps**: [Recharts](https://recharts.org/), [MapLibre GL JS](https://maplibre.org/)
+- **Animations & Scrolling**: [Framer Motion](https://www.framer.com/motion/), [GSAP](https://gsap.com/), [Lenis](https://lenis.darkroom.engineering/)
 
 ---
 
@@ -68,10 +66,11 @@ Follow these steps to run the dashboard locally.
    ```
 
 3. **Configure Environment Variables**
-   Create a `.env.local` file in the root directory and add your ThingSpeak credentials:
+   Create a `.env.local` file in the root directory and add your credentials:
    ```env
    THINGSPEAK_CHANNEL_ID=your_channel_id
    THINGSPEAK_READ_API_KEY=your_read_api_key
+   NEXT_PUBLIC_MAPTILER_KEY=your_maptiler_key
    ```
 
 4. **Start the development server**

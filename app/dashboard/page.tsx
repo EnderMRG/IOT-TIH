@@ -5,17 +5,17 @@ import { useTelemetry } from "@/components/providers/TelemetryProvider";
 import { SensorCard } from "@/components/cards/SensorCard";
 import { DeviceStatusCard } from "@/components/cards/DeviceStatusCard";
 import { ComfortScoreCard } from "@/components/cards/ComfortScoreCard";
-import { CircularGauge } from "@/components/gauges/CircularGauge";
 import { CustomLineChart } from "@/components/charts/CustomLineChart";
 import { AlertPanel } from "@/components/alerts/AlertPanel";
+import EcoMap from "@/components/Map";
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
 function LoadingOverlay() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-      <Loader2 className="w-10 h-10 text-[#355441] animate-spin" />
-      <p className="text-[#78716c] text-sm font-medium">Connecting to ThingSpeak…</p>
+      <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
+      <p className="text-slate-500 text-sm font-medium">Connecting to ThingSpeak…</p>
     </div>
   );
 }
@@ -24,13 +24,13 @@ function NoDataState() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
       <WifiOff className="w-12 h-12 text-zinc-300" />
-      <p className="text-lg font-bold text-[#1c1c1a]">Device Offline — No Cached Data</p>
-      <p className="text-sm text-[#78716c] text-center max-w-sm">
+      <p className="text-lg font-bold text-slate-900">Device Offline — No Cached Data</p>
+      <p className="text-sm text-slate-500 text-center max-w-sm">
         The ESP32 is not reachable and no previous data exists.
         Once the device comes online, data will be saved automatically.
       </p>
       <p className="text-xs text-zinc-400 text-center max-w-xs mt-1">
-        Also check that <code className="bg-zinc-100 px-1 py-0.5 rounded">THINGSPEAK_CHANNEL_ID</code> and{" "}
+        Check that <code className="bg-zinc-100 px-1 py-0.5 rounded">THINGSPEAK_CHANNEL_ID</code> and{" "}
         <code className="bg-zinc-100 px-1 py-0.5 rounded">THINGSPEAK_READ_API_KEY</code> are set in{" "}
         <code className="bg-zinc-100 px-1 py-0.5 rounded">.env.local</code>.
       </p>
@@ -104,7 +104,6 @@ export default function DashboardHome() {
           delta={getDelta(data.temperature, prev?.temperature)}
           status={data.temperature > 35 ? "warning" : "normal"}
           historyData={history.map((h) => h.temperature)}
-          variant="default"
         />
         <SensorCard
           title={isOffline ? "Humidity (Cached)" : "Humidity"}
@@ -115,7 +114,6 @@ export default function DashboardHome() {
           delta={getDelta(data.humidity, prev?.humidity)}
           status={data.humidity > 80 ? "warning" : "normal"}
           historyData={history.map((h) => h.humidity)}
-          variant="default"
         />
         <SensorCard
           title="Atmospheric Pressure"
@@ -126,7 +124,7 @@ export default function DashboardHome() {
           delta={getDelta(data.pressure, prev?.pressure)}
           status="normal"
           historyData={history.map((h) => h.pressure)}
-          variant="sand"
+          variant="light"
         />
         <SensorCard
           title="Altitude"
@@ -137,7 +135,6 @@ export default function DashboardHome() {
           delta={getDelta(data.altitude, prev?.altitude)}
           status="normal"
           historyData={history.map((h) => h.altitude)}
-          variant="default"
         />
         <SensorCard
           title={isOffline ? "Water Level (Cached)" : "Water Level"}
@@ -148,16 +145,17 @@ export default function DashboardHome() {
           delta={getDelta(data.distance, prev?.distance)}
           status={data.distance < 20 ? "critical" : data.distance < 40 ? "warning" : "normal"}
           historyData={history.map((h) => h.distance)}
-          variant="dark"
+          variant="primary"
           invertTrend={true}
         />
       </div>
 
-      {/* Row 2: Temperature Chart + Comfort Score + Device Status */}
+      {/* Row 2: Water Level Chart + Comfort Score + Device Status */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Main Chart — 2 cols */}
         <div className="lg:col-span-2 bg-white rounded-[2rem] p-6 shadow-sm flex flex-col min-h-[360px]">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-[#1c1c1a] font-bold text-base">Temperature Trend</h3>
+            <h3 className="text-slate-900 font-bold text-base">Water Level Trend</h3>
             {isOffline ? (
               <span className="px-3 py-1 bg-orange-50 text-orange-600 text-xs font-semibold rounded-full flex items-center gap-1.5">
                 <WifiOff className="w-3 h-3" /> Cached
@@ -169,35 +167,26 @@ export default function DashboardHome() {
             )}
           </div>
           <div className="flex-1">
-            <CustomLineChart data={chartData} dataKey="temperature" color="#e07a5f" label="Temp (°C)" />
+            <CustomLineChart data={chartData} dataKey="distance" color="#3b82f6" label="Water Level (cm)" />
           </div>
         </div>
 
+        {/* Right column: Comfort Score + Device Status */}
         <div className="flex flex-col gap-6">
           <ComfortScoreCard temperature={data.temperature} humidity={data.humidity} />
           {deviceStatus && <DeviceStatusCard deviceStatus={deviceStatus} />}
         </div>
       </div>
 
-      {/* Row 3: Humidity Gauge + Distance Gauge + Alert Panel */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <CircularGauge
-          label="Humidity"
-          value={data.humidity}
-          min={0}
-          max={100}
-          unit="%"
-          color={data.humidity > 80 ? "#f59e0b" : "#355441"}
-        />
-        <CircularGauge
-          label="Water Level"
-          value={data.distance}
-          min={0}
-          max={400}
-          unit="cm"
-          color={data.distance < 20 ? "#ef4444" : data.distance < 40 ? "#f59e0b" : "#3b82f6"}
-        />
+      {/* Row 3: Alert Panel */}
+      <div className="mt-2">
         <AlertPanel />
+      </div>
+
+      {/* Row 4: Map */}
+      <div className="mt-6">
+        <h3 className="text-slate-900 font-bold text-base mb-4">Device Location</h3>
+        <EcoMap />
       </div>
 
     </div>
