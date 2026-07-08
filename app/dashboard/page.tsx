@@ -96,7 +96,7 @@ export default function DashboardHome() {
       {/* Row 1: 5 Sensor Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
         <SensorCard
-          title={isOffline ? "Temperature (Cached)" : "Live Temperature"}
+          title={isOffline ? "Temperature (Cached)" : "Temperature"}
           value={data.temperature.toFixed(1)}
           unit="°C"
           icon={Thermometer}
@@ -107,7 +107,7 @@ export default function DashboardHome() {
           variant="default"
         />
         <SensorCard
-          title={isOffline ? "Humidity (Cached)" : "Live Humidity"}
+          title={isOffline ? "Humidity (Cached)" : "Humidity"}
           value={data.humidity.toFixed(0)}
           unit="%"
           icon={Droplets}
@@ -140,7 +140,7 @@ export default function DashboardHome() {
           variant="default"
         />
         <SensorCard
-          title={isOffline ? "Distance (Cached)" : "Distance"}
+          title={isOffline ? "Water Level (Cached)" : "Water Level"}
           value={data.distance.toFixed(0)}
           unit="cm"
           icon={Ruler}
@@ -190,7 +190,7 @@ export default function DashboardHome() {
           color={data.humidity > 80 ? "#f59e0b" : "#355441"}
         />
         <CircularGauge
-          label="Distance"
+          label="Water Level"
           value={data.distance}
           min={0}
           max={400}

@@ -105,7 +105,7 @@ export default function SettingsPage() {
                 className={inputCls}
               />
             </FieldRow>
-            <FieldRow label="Distance Alert Threshold (cm)">
+            <FieldRow label="Water Level Alert Threshold (cm)">
               <input
                 type="number"
                 value={local.distanceThreshold}

@@ -75,8 +75,8 @@ export default function HistoryPage() {
     { label: "Avg Humidity",    value: hu.avg, unit: "%",   icon: Droplets,    bg: "bg-white",     text: "text-[#1c1c1a]", subText: "text-[#78716c]", highlight: "bg-blue-100 text-blue-600" },
     { label: "Avg Pressure",    value: p.avg,  unit: "hPa", icon: Wind,        bg: "bg-[#fcf7f1]", text: "text-[#1c1c1a]", subText: "text-[#78716c]", highlight: "bg-green-100 text-green-600" },
     { label: "Avg Altitude",    value: al.avg, unit: "m",   icon: Mountain,    bg: "bg-white",     text: "text-[#1c1c1a]", subText: "text-[#78716c]", highlight: "bg-purple-100 text-purple-600" },
-    { label: "Avg Distance",    value: d.avg,  unit: "cm",  icon: Ruler,       bg: "bg-[#5f7564]", text: "text-white",      subText: "text-white/70",  highlight: "bg-white/20 text-white" },
-    { label: "Min Distance",    value: d.min,  unit: "cm",  icon: Ruler,       bg: "bg-[#fcf7f1]", text: "text-[#1c1c1a]", subText: "text-[#78716c]", highlight: "bg-amber-100 text-amber-600" },
+    { label: "Avg Water Level", value: d.avg,  unit: "cm",  icon: Ruler,       bg: "bg-[#5f7564]", text: "text-white",      subText: "text-white/70",  highlight: "bg-white/20 text-white" },
+    { label: "Min Water Level", value: d.min,  unit: "cm",  icon: Ruler,       bg: "bg-[#fcf7f1]", text: "text-[#1c1c1a]", subText: "text-[#78716c]", highlight: "bg-amber-100 text-amber-600" },
   ];
 
   return (
@@ -105,7 +105,7 @@ export default function HistoryPage() {
                 <th className="px-5 py-3">Humidity (%)</th>
                 <th className="px-5 py-3">Pressure (hPa)</th>
                 <th className="px-5 py-3">Altitude (m)</th>
-                <th className="px-5 py-3 rounded-tr-xl">Distance (cm)</th>
+                <th className="px-5 py-3 rounded-tr-xl">Water Level (cm)</th>
               </tr>
             </thead>
             <tbody>

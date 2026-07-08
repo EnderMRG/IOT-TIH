@@ -11,7 +11,7 @@ const charts = [
   { key: "humidity",    label: "Humidity",             unit: "%",   color: "#3b82f6", icon: Droplets,    variant: "bg-white" },
   { key: "pressure",    label: "Atmospheric Pressure", unit: "hPa", color: "#355441", icon: Wind,        variant: "bg-[#fcf7f1]" },
   { key: "altitude",    label: "Altitude",             unit: "m",   color: "#8b5cf6", icon: Mountain,    variant: "bg-white" },
-  { key: "distance",    label: "Distance",             unit: "cm",  color: "#f59e0b", icon: Ruler,       variant: "bg-[#5f7564]" },
+  { key: "distance",    label: "Water Level",          unit: "cm",  color: "#f59e0b", icon: Ruler,       variant: "bg-[#5f7564]" },
 ] as const;
 
 export default function AnalyticsPage() {
