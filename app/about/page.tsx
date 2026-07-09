@@ -53,17 +53,20 @@ export default function AboutPage() {
             {/* Content taking full width below */}
             <div className="space-y-8">
               <div>
-                <h3 className="text-xl font-bold text-slate-900 mb-3">Introduction</h3>
-                <p className="text-slate-700 leading-relaxed text-base md:text-lg">
-                  <strong className="text-slate-900">Technology for Underwater Exploration</strong><br />
-                  Developing Technology for Underwater system development, Underwater vision, Underwater Monitoring and Surveillance and Intelligent tracking.
-                </p>
-              </div>
-    
-              <div>
                 <h3 className="text-xl font-bold text-slate-900 mb-3">Our Vision</h3>
                 <p className="text-slate-700 leading-relaxed text-base md:text-lg">
-                  Indigenous design and development of Mechanical Structures, Prime Movers, Sensors, Controllers, Software, and Communication systems, for underwater application will be the prime focus of this Technology Innovation Hub (TIH). IIT Guwahati will provide a platform for bringing the experts together for generation of the knowledge through basic and applied research which can lead to generate several entrepreneurs, start-up companies, skill developments, jobs, and research opportunities in this area.
+                  To leverage advanced IoT technologies, sensor networks and real-time data analytics for accurate flood and water level monitoring, enabling timely early warnings to protect lives, property and the environment.<br /><br />
+                  <strong className="text-slate-900">"Building a safer society and a flood-resilient future through smart technology."</strong><br />
+                </p>
+              </div>
+
+              <div>
+                <h3 className="text-xl font-bold text-slate-900 mb-3">Missions</h3>
+                <p className="text-slate-700 leading-relaxed text-base md:text-lg">
+                  <strong className="text-slate-900">•</strong>	 Monitor water levels in real time using IoT-enabled sensors. <br />
+                  <strong className="text-slate-900">•</strong>	 Provide timely and reliable flood early warning alerts.  <br />
+                  <strong className="text-slate-900">•</strong>  Deliver accurate and trustworthy data to government agencies and citizens.  <br />
+                  <strong className="text-slate-900">•</strong>  Reduce disaster risks and improve community preparedness.  <br />
                 </p>
               </div>
             </div>
@@ -140,6 +143,6 @@ export default function AboutPage() {
           </div>
         </section>
       </main>
-    </div>
+    </div >
   );
 }

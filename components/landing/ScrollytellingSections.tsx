@@ -9,12 +9,14 @@ import {
   AlertTriangle,
   Shield,
   Clock,
-  Droplets,
   ExternalLink,
   ChevronDown,
   Radio,
   Zap,
   Map,
+  Mail,
+  Phone,
+  MapPin,
 } from "lucide-react";
 
 /* ── Reusable Fade-in wrapper ──────────────────────────────────── */
@@ -412,17 +414,15 @@ function DataAlertingSection() {
                 ].map((item) => (
                   <div
                     key={item.label}
-                    className={`p-4 rounded-2xl border ${
-                      item.alert
+                    className={`p-4 rounded-2xl border ${item.alert
                         ? "border-red-500/30 bg-red-500/10"
                         : "border-white/10 bg-white/5"
-                    }`}
+                      }`}
                   >
                     <p className="text-xs text-white/50 mb-1">{item.label}</p>
                     <p
-                      className={`text-xl font-bold font-mono ${
-                        item.alert ? "text-red-400" : "text-white"
-                      }`}
+                      className={`text-xl font-bold font-mono ${item.alert ? "text-red-400" : "text-white"
+                        }`}
                     >
                       {item.value}
                     </p>
@@ -448,54 +448,200 @@ function DataAlertingSection() {
 }
 
 /* ─────────────────────────────────────────────────────────────── */
-/*  SECTION 5 — CTA                                                */
+/*  SVG brand icons                                                */
 /* ─────────────────────────────────────────────────────────────── */
-function CTASection() {
+function IconGitHub({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
+      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" />
+    </svg>
+  );
+}
+
+function IconInstagram({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
+      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z" />
+    </svg>
+  );
+}
+
+function IconX({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.747l7.73-8.835L1.254 2.25H8.08l4.261 5.632 5.903-5.632zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z" />
+    </svg>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────── */
+/*  SECTION 5 — Contact Us                                         */
+/* ─────────────────────────────────────────────────────────────── */
+function ContactSection() {
+  const contactDetails = [
+    {
+      icon: Mail,
+      label: "Email",
+      value: "moharnab.gogoi@gmail.com",
+      href: "mailto:moharnab.gogoi@gmail.com",
+    },
+    {
+      icon: Phone,
+      label: "Phone",
+      value: "+91 98765 43210",
+      href: "tel:+919876543210",
+    },
+    {
+      icon: MapPin,
+      label: "Address",
+      value:
+        "4th Floor, Research & Development Building, IIT Guwahati Campus, North Guwahati, Assam – 781039",
+      href: "https://maps.google.com/?q=IIT+Guwahati",
+    },
+  ];
+
+  const socials = [
+    {
+      label: "GitHub",
+      href: "https://github.com/EnderMRG/IOT-TIH",
+      Icon: IconGitHub,
+    },
+    {
+      label: "Instagram",
+      href: "https://instagram.com",
+      Icon: IconInstagram,
+    },
+    {
+      label: "X",
+      href: "https://x.com",
+      Icon: IconX,
+    },
+  ];
+
   return (
     <section
-      id="cta"
-      className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 py-24 sm:py-32"
+      id="contact"
+      className="relative min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 py-24 sm:py-32"
     >
-      <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/80 to-black/90 pointer-events-none" />
-      <div className="relative z-10 text-center max-w-3xl mx-auto flex flex-col items-center gap-8">
-        <FadeIn>
-          <div className="w-20 h-20 rounded-3xl border border-blue-400/30 bg-blue-500/15 backdrop-blur-sm flex items-center justify-center shadow-xl shadow-blue-500/20 mb-4">
-            <Droplets className="w-10 h-10 text-blue-400" />
-          </div>
-        </FadeIn>
+      {/* background overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/85 to-black pointer-events-none" />
 
-        <FadeIn delay={0.1}>
-          <h2 className="font-sans text-4xl sm:text-5xl md:text-7xl font-bold text-white leading-[0.95] tracking-tight">
-            Start monitoring
-            <br />
+      <div className="relative z-10 w-full max-w-5xl mx-auto">
+
+        {/* ── Header ── */}
+        <FadeIn className="text-center mb-16">
+          <p className="text-blue-400 text-xs font-semibold tracking-widest uppercase mb-4">
+            Get in Touch
+          </p>
+          <h2 className="font-sans text-4xl sm:text-5xl md:text-6xl font-bold text-white leading-tight">
+            Contact
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">
-              your community.
+              {" "}Us.
             </span>
           </h2>
-        </FadeIn>
-
-        <FadeIn delay={0.2}>
-          <p className="text-white/65 text-base max-w-md leading-relaxed">
-            Connect your ESP32, open the dashboard, and get real-time flood
-            sensor data. No cloud account required.
+          <p className="text-white/60 text-base max-w-lg mx-auto mt-4 leading-relaxed">
+            Have questions about FloodEye or want to collaborate? Reach out —
+            we&apos;re happy to help.
           </p>
         </FadeIn>
 
-        <FadeIn delay={0.3} className="flex flex-col sm:flex-row gap-4">
-          <Link
-            href="/login"
-            className="px-9 py-4 bg-blue-500 text-white font-bold rounded-full hover:bg-blue-400 transition-all shadow-lg shadow-blue-500/30 hover:shadow-blue-400/50 text-sm"
-          >
-            Open Dashboard →
-          </Link>
-          <a
-            href="https://github.com/EnderMRG/IOT"
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center justify-center gap-2 px-9 py-4 border border-white/20 bg-white/10 backdrop-blur-sm text-white font-semibold rounded-full hover:bg-white/20 transition-all text-sm"
-          >
-            <ExternalLink className="w-4 h-4" /> View on GitHub
-          </a>
+        {/* ── Main grid ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
+
+          {/* Left — contact details */}
+          <FadeIn direction="left" className="flex flex-col gap-4">
+            {contactDetails.map(({ icon: Icon, label, value, href }, i) => (
+              <a
+                key={label}
+                href={href}
+                target={label === "Address" ? "_blank" : undefined}
+                rel="noreferrer"
+                className="group flex items-start gap-4 p-5 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10 hover:border-blue-400/30 transition-all duration-300"
+              >
+                <div className="w-11 h-11 rounded-xl border border-blue-400/30 bg-blue-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-500/30 transition-colors">
+                  <Icon className="w-5 h-5 text-blue-300" />
+                </div>
+                <div>
+                  <p className="text-xs text-white/40 font-semibold tracking-widest uppercase mb-1">
+                    {label}
+                  </p>
+                  <p className="text-white/85 text-sm leading-relaxed group-hover:text-white transition-colors">
+                    {value}
+                  </p>
+                </div>
+              </a>
+            ))}
+          </FadeIn>
+
+          {/* Right — CTA card */}
+          <FadeIn direction="right" delay={0.15}>
+            <GlassCard className="p-8 flex flex-col items-center text-center gap-6 h-full justify-center">
+              <div className="w-16 h-16 rounded-2xl border border-blue-400/30 bg-blue-500/15 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                <Mail className="w-8 h-8 text-blue-400" />
+              </div>
+              <div>
+                <h3 className="font-sans text-2xl font-bold text-white mb-2">
+                  Drop us a mail
+                </h3>
+                <p className="text-white/55 text-sm leading-relaxed max-w-xs">
+                  Whether it&apos;s a partnership inquiry, technical question,
+                  or feedback — we read every message.
+                </p>
+              </div>
+              <a
+                href="mailto:moharnab.gogoi@gmail.com"
+                className="inline-flex items-center gap-2 px-8 py-4 bg-blue-500 text-white font-bold rounded-full hover:bg-blue-400 transition-all shadow-lg shadow-blue-500/30 hover:shadow-blue-400/50 text-sm"
+              >
+                <Mail className="w-4 h-4" />
+                Mail Us
+              </a>
+              <p className="text-white/30 text-xs">We typically respond within 24 hours.</p>
+            </GlassCard>
+          </FadeIn>
+        </div>
+
+        {/* ── Divider ── */}
+        <FadeIn delay={0.2}>
+          <div className="w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mb-10" />
+        </FadeIn>
+
+        {/* ── Footer bar ── */}
+        <FadeIn delay={0.25} className="flex flex-col sm:flex-row items-center justify-between gap-6">
+          {/* Branding */}
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl overflow-hidden shadow-md shadow-blue-500/30">
+              <Image src="/FloodEye.jpeg" alt="FloodEye" width={32} height={32} className="w-full h-full object-cover" />
+            </div>
+            <div>
+              <span className="font-bold text-white text-sm">
+                Flood<span className="text-blue-400">Eye</span>
+              </span>
+              <p className="text-white/35 text-xs">
+                Developed under TIH · IIT Guwahati
+              </p>
+            </div>
+          </div>
+
+          {/* Social links */}
+          <div className="flex items-center gap-3">
+            {socials.map(({ label, href, Icon }) => (
+              <a
+                key={label}
+                href={href}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={label}
+                className="w-10 h-10 rounded-full border border-white/15 bg-white/8 flex items-center justify-center text-white/60 hover:text-white hover:border-white/40 hover:bg-white/15 transition-all duration-200"
+              >
+                <Icon className="w-4 h-4" />
+              </a>
+            ))}
+          </div>
+
+          {/* Copyright */}
+          <p className="text-white/30 text-xs text-center">
+            © {new Date().getFullYear()} FloodEye · IIT Guwahati. All rights reserved.
+          </p>
         </FadeIn>
       </div>
     </section>
@@ -512,7 +658,7 @@ export function ScrollytellingSections() {
       <CapabilitiesSection />
       <FeatureGridSection />
       <DataAlertingSection />
-      <CTASection />
+      <ContactSection />
     </div>
   );
 }
