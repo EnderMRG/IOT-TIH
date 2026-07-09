@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
@@ -18,6 +19,16 @@ import {
   Phone,
   MapPin,
 } from "lucide-react";
+
+/* Dynamically imported so MapLibre CSS doesn't SSR */
+const AssamNodeMap = dynamic(
+  () => import("@/components/landing/AssamNodeMap"),
+  {
+    ssr: false, loading: () => (
+      <div className="w-full h-[340px] rounded-2xl bg-white/5 animate-pulse" />
+    )
+  }
+);
 
 /* ── Reusable Fade-in wrapper ──────────────────────────────────── */
 function FadeIn({
@@ -181,16 +192,29 @@ function HeroSection() {
           </span>
         </motion.h1>
 
+        {/* Tagline */}
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.85 }}
+          className="text-base sm:text-lg italic font-medium text-cyan-300 mb-10 text-center"
+        >
+          &ldquo;Every Drop Monitored, Every Life Protected.&rdquo;
+        </motion.p>
+
+
         {/* Subtitle */}
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.9, delay: 0.7 }}
-          className="text-base md:text-xl text-white drop-shadow-md max-w-lg mx-auto leading-relaxed mb-10"
+          className="text-base md:text-xl text-white drop-shadow-md max-w-lg mx-auto leading-relaxed mb-6"
         >
           Real-time flood monitoring and early warning powered by ESP32 sensor
           networks — keeping communities safe when it matters most.
         </motion.p>
+
+
 
         {/* CTAs */}
         <motion.div
@@ -352,7 +376,7 @@ function FeatureGridSection() {
 }
 
 /* ─────────────────────────────────────────────────────────────── */
-/*  SECTION 4 — Data & Alerting                                    */
+/*  SECTION 4 — Sensor Network Map                                 */
 /* ─────────────────────────────────────────────────────────────── */
 function DataAlertingSection() {
   return (
@@ -363,28 +387,51 @@ function DataAlertingSection() {
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/75 to-black/70 pointer-events-none" />
       <div className="relative z-10 w-full max-w-5xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-          {/* Left: text */}
+
+          {/* Left: description */}
           <FadeIn direction="left">
             <p className="text-blue-400 text-xs font-semibold tracking-widest uppercase mb-4">
-              Data Integration
+              Sensor Network
             </p>
             <h2 className="font-sans text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight mb-6">
-              Sensor to screen
+              Deployed across
               <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">
-                in milliseconds.
+                Assam's floodplains.
               </span>
             </h2>
             <p className="text-white/65 leading-relaxed text-base mb-8">
-              Our ESP32 nodes read multi-sensor telemetry and push it over
-              Wi-Fi directly to the dashboard. When water levels spike, automated
-              alerts fire before downstream communities are at risk.
+              FloodEye's ESP32 nodes are strategically deployed at high-risk
+              flood zones across Assam — from the Brahmaputra riverbanks to the
+              Barak Valley wetlands. Each node transmits water level, temperature,
+              humidity and pressure readings in real-time, enabling early warning
+              for downstream communities before disaster strikes.
             </p>
-            <div className="flex flex-col gap-4">
+
+            {/* Node status legend */}
+            <div className="flex flex-col gap-3 mb-8">
               {[
-                { icon: Radio, label: "ESP32 → Wi-Fi → Dashboard" },
+                { color: "bg-emerald-400", border: "border-emerald-400/30", label: "Normal", desc: "Water within safe range" },
+                { color: "bg-amber-400", border: "border-amber-400/30", label: "Warning", desc: "Approaching threshold" },
+                { color: "bg-red-400", border: "border-red-400/30", label: "Critical", desc: "Immediate alert dispatched" },
+              ].map(({ color, border, label, desc }) => (
+                <div key={label} className="flex items-center gap-3">
+                  <div className={`w-8 h-8 rounded-xl border ${border} bg-white/5 flex items-center justify-center flex-shrink-0`}>
+                    <span className={`w-3 h-3 rounded-full ${color}`} />
+                  </div>
+                  <div>
+                    <span className="text-white text-sm font-semibold">{label}</span>
+                    <span className="text-white/45 text-xs ml-2">{desc}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex flex-col gap-3">
+              {[
+                { icon: Radio, label: "4 active nodes deployed" },
                 { icon: Zap, label: "Sub-second alert propagation" },
-                { icon: Map, label: "Geo-tagged sensor network map" },
+                { icon: Map, label: "Geo-tagged sensor network" },
               ].map(({ icon: Icon, label }) => (
                 <div key={label} className="flex items-center gap-3 text-white/80">
                   <div className="w-8 h-8 rounded-xl border border-blue-400/30 bg-blue-500/20 flex items-center justify-center flex-shrink-0">
@@ -396,47 +443,19 @@ function DataAlertingSection() {
             </div>
           </FadeIn>
 
-          {/* Right: live data card */}
+          {/* Right: Assam Map */}
           <FadeIn direction="right" delay={0.2}>
-            <GlassCard className="p-6">
-              <div className="flex items-center gap-3 mb-6">
+            <GlassCard className="p-5">
+              <div className="flex items-center gap-3 mb-4">
                 <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
                 <span className="text-xs text-white/60 font-mono tracking-wide">
-                  LIVE · NODE-04 · RIVER CROSSING
+                  LIVE · SENSOR NETWORK · ASSAM, INDIA
                 </span>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                {[
-                  { label: "Water Level", value: "1.42 m", alert: true },
-                  { label: "Temperature", value: "24.1°C", alert: false },
-                  { label: "Humidity", value: "87%", alert: false },
-                  { label: "Comfort", value: "62 / 100", alert: false },
-                ].map((item) => (
-                  <div
-                    key={item.label}
-                    className={`p-4 rounded-2xl border ${item.alert
-                        ? "border-red-500/30 bg-red-500/10"
-                        : "border-white/10 bg-white/5"
-                      }`}
-                  >
-                    <p className="text-xs text-white/50 mb-1">{item.label}</p>
-                    <p
-                      className={`text-xl font-bold font-mono ${item.alert ? "text-red-400" : "text-white"
-                        }`}
-                    >
-                      {item.value}
-                    </p>
-                    {item.alert && (
-                      <p className="text-[10px] text-red-400 mt-1 font-semibold tracking-wide">
-                        ⚠ WARNING THRESHOLD
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-              <div className="mt-4 p-3 rounded-xl border border-orange-500/20 bg-orange-500/10">
-                <p className="text-xs text-orange-300 font-medium">
-                  🔔 Alert sent to 3 downstream stations — 12s ago
+              <AssamNodeMap />
+              <div className="mt-4 p-3 rounded-xl border border-blue-500/20 bg-blue-500/10">
+                <p className="text-xs text-blue-300 font-medium">
+                  📡 4 nodes online · Last sync: just now · Coverage: 4 districts
                 </p>
               </div>
             </GlassCard>
