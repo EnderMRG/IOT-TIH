@@ -103,8 +103,8 @@ export default function TechnologiesPage() {
           {/* Featured Video Showcase */}
           <Cell className="md:col-span-3 flex flex-col md:flex-row items-center gap-2 p-2">
             <div className="w-full md:w-[55%] shrink-0 overflow-hidden rounded-[20px] bg-black border border-white/5 shadow-inner">
-              <video 
-                src="/flood_monitoring_system.mp4" 
+              <video
+                src="/flood_monitoring_system.mp4"
                 controls
                 className="w-full h-auto aspect-video object-contain"
                 preload="metadata"
@@ -118,11 +118,6 @@ export default function TechnologiesPage() {
               <p className="text-white/80 text-sm leading-relaxed">
                 Watch the complete end-to-end process of bringing FloodEye to life. This footage captures our hardware technology, rigorous calibration tests, and the challenging field installation processes required to securely deploy our sensor nodes in real-world flood zones.
               </p>
-              <div className="flex flex-wrap gap-2 pt-2">
-                 <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-indigo-500/15 text-indigo-300 border border-indigo-500/20">Hardware Tech</span>
-                 <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-indigo-500/15 text-indigo-300 border border-indigo-500/20">Field Testing</span>
-                 <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-indigo-500/15 text-indigo-300 border border-indigo-500/20">Live Deployment</span>
-              </div>
             </div>
           </Cell>
 
