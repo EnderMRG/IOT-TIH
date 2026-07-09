@@ -15,11 +15,11 @@ function GlassCard({ children, className = "" }: { children: React.ReactNode; cl
 
 export default function AboutPage() {
   const team = [
-    { name: "Ashish Kumar Mahato", role: "Mentor" },
-    { name: "Aryyaman Bora", role: "Frontend and UI Design" },
-    { name: "Moharnab Gogoi", role: "Backend and IoT" },
-    { name: "Mayuree Khanikar", role: "Research and Documentation" },
-    { name: "Indrani Gogoi", role: "Research and Documentation" },
+    { name: "Ashish Kumar Mahato", role: "Mentor", image: "/ashihs.jpg" },
+    { name: "Aryyaman Bora", role: "Frontend and UI Design", image: "/aryyaman.jpeg" },
+    { name: "Moharnab Gogoi", role: "Backend and IoT", image: "/moharnab.jpeg" },
+    { name: "Mayuree Khanikar", role: "Research and Documentation", image: "/mayuree.jpeg" },
+    { name: "Indrani Gogoi", role: "Research and Documentation", image: "/indrani.jpeg" },
   ];
 
   const mentors = [
@@ -128,13 +128,17 @@ export default function AboutPage() {
             <h2 className="font-sans text-4xl font-bold text-slate-900">Team Details</h2>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="flex flex-wrap justify-center gap-6">
             {team.map((member) => (
-              <GlassCard key={member.name} className="p-6 flex flex-col items-center text-center hover:bg-slate-100/50 transition-colors duration-300">
+              <GlassCard key={member.name} className="w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] p-6 flex flex-col items-center text-center hover:bg-slate-100/50 transition-colors duration-300">
                 <div className="w-24 h-24 rounded-full mb-5 bg-gradient-to-br from-slate-100 to-slate-200 border-2 border-slate-300/50 flex items-center justify-center overflow-hidden relative shadow-inner">
-                  <svg className="w-12 h-12 text-slate-300" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
-                  </svg>
+                  {member.image ? (
+                    <Image src={member.image} alt={member.name} fill className="object-cover" />
+                  ) : (
+                    <svg className="w-12 h-12 text-slate-300" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                  )}
                 </div>
                 <h3 className="font-bold text-lg text-slate-900 mb-1">{member.name}</h3>
                 <p className="text-sm font-medium text-blue-600">{member.role}</p>

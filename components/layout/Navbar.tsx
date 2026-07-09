@@ -64,7 +64,7 @@ export function Navbar() {
       
         {/* Log Out */}
         <Link
-          href="/login"
+          href="/"
           onClick={() => localStorage.removeItem("floodeye_session")}
           className="flex items-center gap-2 px-3 sm:px-4 py-2 text-xs font-semibold rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition-colors"
         >
