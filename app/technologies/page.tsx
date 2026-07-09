@@ -100,6 +100,32 @@ export default function TechnologiesPage() {
         {/* ── Bento grid ──────────────────────────────────────────────────────── */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
+          {/* Featured Video Showcase */}
+          <Cell className="md:col-span-3 flex flex-col md:flex-row items-center gap-2 p-2">
+            <div className="w-full md:w-[55%] shrink-0 overflow-hidden rounded-[20px] bg-black border border-white/5 shadow-inner">
+              <video 
+                src="/flood_monitoring_system.mp4" 
+                controls
+                className="w-full h-auto aspect-video object-contain"
+                preload="metadata"
+              />
+            </div>
+            <div className="flex flex-col gap-3 p-6 md:p-8 w-full">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-400">Field Operations</span>
+                <h2 className="text-2xl md:text-3xl font-bold text-white mt-1 drop-shadow-sm">System Installation &amp; Testing</h2>
+              </div>
+              <p className="text-white/80 text-sm leading-relaxed">
+                Watch the complete end-to-end process of bringing FloodEye to life. This footage captures our hardware technology, rigorous calibration tests, and the challenging field installation processes required to securely deploy our sensor nodes in real-world flood zones.
+              </p>
+              <div className="flex flex-wrap gap-2 pt-2">
+                 <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-indigo-500/15 text-indigo-300 border border-indigo-500/20">Hardware Tech</span>
+                 <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-indigo-500/15 text-indigo-300 border border-indigo-500/20">Field Testing</span>
+                 <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-indigo-500/15 text-indigo-300 border border-indigo-500/20">Live Deployment</span>
+              </div>
+            </div>
+          </Cell>
+
           {/* ── Row 1 ── */}
 
           {/* ESP32 — tall hero, 2 cols */}

@@ -7,125 +7,123 @@ import bgImage from "@/assests/gallery/INDIA-WEATHER-FLOOD-1_1720160942946_17201
 import { LayoutGrid } from "@/components/ui/layout-grid";
 
 // ── Static image imports (webpack-resolved) ───────────────────────────────────
-import imgGuwahati   from "@/assests/landpage/guwahati-flood.jpg";
-import imgPTI        from "@/assests/landpage/PTI06_18_2022_000030B.jpg";
-import imgWeather    from "@/assests/landpage/india-weather-floods.webp";
-import imgFloodMain  from "@/assests/about page/flood-main-1782292399476_d.webp";
+import img1 from "@/assests/gallery/new folder/WhatsApp Image 2022-03-24 at 11.45.06 AM (1).jpeg";
+import img2 from "@/assests/gallery/new folder/WhatsApp Image 2022-08-30 at 3.35.29 PM.jpeg";
+import img3 from "@/assests/gallery/new folder/WhatsApp Image 2022-09-25 at 11.29.04 AM.jpeg";
+import img4 from "@/assests/gallery/new folder/WhatsApp Image 2023-04-18 at 10.15.54 AM.jpeg";
+import img5 from "@/assests/gallery/new folder/WhatsApp Image 2023-04-18 at 10.16.45 AM (1).jpeg";
+import img6 from "@/assests/gallery/new folder/WhatsApp Image 2024-09-23 at 11.19.40 AM(1).jpeg";
+import img7 from "@/assests/gallery/new folder/WhatsApp Image 2024-09-23 at 11.19.41 AM.jpeg";
 
 // ── Card content (shown on expand) ───────────────────────────────────────────
-// ✏️ Replace titles and descriptions with your real captions
 
 const CardOne = () => (
   <div>
-    <p className="font-bold text-2xl md:text-4xl text-white">Flooding in Guwahati</p>
-    <p className="font-normal text-sm md:text-base mt-3 max-w-lg text-white/75 leading-relaxed">
-      {/* ✏️ Replace with real caption */}
-      Aerial view of the 2022 Assam floods, showing the extent of inundation
-      across low-lying neighbourhoods in Guwahati. Captured to document
-      baseline flood conditions for the FloodEye project.
+    <p className="font-bold text-2xl md:text-4xl text-white drop-shadow-sm">Hydrological Lab Calibration</p>
+    <p className="font-normal text-sm md:text-base mt-3 max-w-lg text-white/90 leading-relaxed drop-shadow-sm">
+      Researchers preparing the physical flume model for hydrodynamic testing and sensor calibration in a controlled laboratory environment before field deployment.
     </p>
   </div>
 );
 
 const CardTwo = () => (
   <div>
-    <p className="font-bold text-2xl md:text-4xl text-white">River Overflowing</p>
-    <p className="font-normal text-sm md:text-base mt-3 max-w-lg text-white/75 leading-relaxed">
-      {/* ✏️ Replace with real caption */}
-      The Brahmaputra river breaching its banks during peak monsoon season.
-      FloodEye sensor nodes were deployed at sites like this to track
-      rising water in real time.
+    <p className="font-bold text-2xl md:text-4xl text-white drop-shadow-sm">Initial Prototype Assembly</p>
+    <p className="font-normal text-sm md:text-base mt-3 max-w-lg text-white/90 leading-relaxed drop-shadow-sm">
+      The team assembling the initial solar-powered sensor node prototype on a wooden pole near an experimental water body to test structural balance and wiring.
     </p>
   </div>
 );
 
 const CardThree = () => (
   <div>
-    <p className="font-bold text-2xl md:text-4xl text-white">Relief Operations</p>
-    <p className="font-normal text-sm md:text-base mt-3 max-w-lg text-white/75 leading-relaxed">
-      {/* ✏️ Replace with real caption */}
-      NDRF teams conducting relief operations in a flooded village. Early
-      warning data from systems like FloodEye helps pre-position rescue
-      teams before water levels become critical.
+    <p className="font-bold text-2xl md:text-4xl text-white drop-shadow-sm">The FloodEye Node</p>
+    <p className="font-normal text-sm md:text-base mt-3 max-w-lg text-white/90 leading-relaxed drop-shadow-sm">
+      A close-up view of the fully assembled IoT node, featuring a solar panel, power management module, and the main weatherproof enclosure that houses the ESP32 and telemetry logic.
     </p>
   </div>
 );
 
 const CardFour = () => (
   <div>
-    <p className="font-bold text-2xl md:text-4xl text-white">India Weather Floods</p>
-    <p className="font-normal text-sm md:text-base mt-3 max-w-lg text-white/75 leading-relaxed">
-      {/* ✏️ Replace with real caption */}
-      Monsoon-driven flooding across central India. The pattern of
-      recurring annual floods highlights the urgent need for affordable,
-      scalable IoT early-warning infrastructure.
+    <p className="font-bold text-2xl md:text-4xl text-white drop-shadow-sm">Field Testing Phase</p>
+    <p className="font-normal text-sm md:text-base mt-3 max-w-lg text-white/90 leading-relaxed drop-shadow-sm">
+      The FloodEye sensor node successfully deployed in a shallow test pond, demonstrating its ability to operate autonomously on solar power while transmitting real-time water levels.
     </p>
   </div>
 );
 
 const CardFive = () => (
   <div>
-    <p className="font-bold text-2xl md:text-4xl text-white">Sensor Deployment Site</p>
-    <p className="font-normal text-sm md:text-base mt-3 max-w-lg text-white/75 leading-relaxed">
-      {/* ✏️ Replace with real caption */}
-      A FloodEye measurement station mounted above a canal. The ESP32
-      and HC-SR04 ultrasonic sensor are enclosed in a weatherproof casing
-      attached to a PVC standpipe.
+    <p className="font-bold text-2xl md:text-4xl text-white drop-shadow-sm">Successful Integration</p>
+    <p className="font-normal text-sm md:text-base mt-3 max-w-lg text-white/90 leading-relaxed drop-shadow-sm">
+      A team member proudly inspecting the deployed sensor node. This phase verified the wireless data transmission capabilities and the stability of the mounting pole.
     </p>
   </div>
 );
 
 const CardSix = () => (
   <div>
-    <p className="font-bold text-2xl md:text-4xl text-white">Dashboard in Action</p>
-    <p className="font-normal text-sm md:text-base mt-3 max-w-lg text-white/75 leading-relaxed">
-      {/* ✏️ Replace with real caption */}
-      The FloodEye real-time dashboard displaying live water-level telemetry,
-      environmental metrics and automated flood-risk alerts, as seen
-      during a field test.
+    <p className="font-bold text-2xl md:text-4xl text-white drop-shadow-sm">Bridge Deployment Security</p>
+    <p className="font-normal text-sm md:text-base mt-3 max-w-lg text-white/90 leading-relaxed drop-shadow-sm">
+      Overhead view of a sensor node installed on a bridge over a river. A custom barbed wire enclosure was added to protect the solar panel from theft and vandalism in remote locations.
+    </p>
+  </div>
+);
+
+const CardSeven = () => (
+  <div>
+    <p className="font-bold text-2xl md:text-4xl text-white drop-shadow-sm">Rugged River Installation</p>
+    <p className="font-normal text-sm md:text-base mt-3 max-w-lg text-white/90 leading-relaxed drop-shadow-sm">
+      Field engineers executing a challenging installation, lowering a heavy-duty protective cage containing the sensor equipment down the side of a concrete river embankment into fast-flowing water.
     </p>
   </div>
 );
 
 // ── Card definitions ──────────────────────────────────────────────────────────
-// ✏️ Replace `thumbnail` paths with your actual gallery photos
 
 const cards = [
   {
     id: 1,
     content: <CardOne />,
     className: "md:col-span-2",
-    thumbnail: imgGuwahati,          // ✏️ swap with your photo import
+    thumbnail: img1,
   },
   {
     id: 2,
     content: <CardTwo />,
     className: "col-span-1",
-    thumbnail: imgPTI,               // ✏️ swap with your photo import
+    thumbnail: img2,
   },
   {
     id: 3,
     content: <CardThree />,
     className: "col-span-1",
-    thumbnail: imgWeather,           // ✏️ swap with your photo import
+    thumbnail: img3,
   },
   {
     id: 4,
     content: <CardFour />,
     className: "md:col-span-2",
-    thumbnail: imgFloodMain,         // ✏️ swap with your photo import
+    thumbnail: img4,
   },
   {
     id: 5,
     content: <CardFive />,
-    className: "col-span-1",
-    thumbnail: imgPTI,               // ✏️ swap with your photo import
+    className: "md:col-span-2",
+    thumbnail: img5,
   },
   {
     id: 6,
     content: <CardSix />,
-    className: "md:col-span-2",
-    thumbnail: imgGuwahati,          // ✏️ swap with your photo import
+    className: "col-span-1",
+    thumbnail: img6,
+  },
+  {
+    id: 7,
+    content: <CardSeven />,
+    className: "md:col-span-3",
+    thumbnail: img7,
   },
 ];
 
