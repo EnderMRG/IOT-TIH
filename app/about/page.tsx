@@ -4,6 +4,7 @@ import { LandingNav } from "@/components/landing/LandingNav";
 import { Users } from "lucide-react";
 import Image from "next/image";
 import bgImage from "@/assests/about page/flood-main-1782292399476_d.webp";
+import { ExpandableTeamCards } from "@/components/about/ExpandableTeamCards";
 
 /* ── Glass card ────────────────────────────────────────────────── */
 function GlassCard({ children, className = "" }: { children: React.ReactNode; className?: string }) {
@@ -16,11 +17,46 @@ function GlassCard({ children, className = "" }: { children: React.ReactNode; cl
 
 export default function AboutPage() {
   const team = [
-    { name: "Ashish Kumar Mahato", role: "Mentor", image: "/ashihs.jpg" },
-    { name: "Aryyaman Bora", role: "Frontend and UI Design", image: "/aryyaman.jpeg" },
-    { name: "Moharnab Gogoi", role: "Backend and IoT", image: "/moharnab.jpeg" },
-    { name: "Mayuree Khanikar", role: "Research and Documentation", image: "/mayuree.jpeg" },
-    { name: "Indrani Gogoi", role: "Research and Documentation", image: "/indrani.jpeg" },
+    {
+      name: "Ashish Kumar Mahato",
+      role: "Mentor",
+      image: "/ashihs.jpg",
+      // ✏️ EDIT: Update this bio and skills for Ashish
+      bio: "Ashish Kumar Mahato serves as the project mentor, guiding the team through the development of FloodEye. His expertise in IoT systems and embedded programming has been instrumental in shaping the architecture of the platform.",
+      skills: ["IoT Systems", "Embedded Programming", "Project Mentorship"],
+    },
+    {
+      name: "Aryyaman Bora",
+      role: "Frontend and UI Design",
+      image: "/aryyaman.jpeg",
+      // ✏️ EDIT: Update this bio and skills for Aryyaman
+      bio: "Aryyaman Bora is responsible for the frontend development and UI design of FloodEye. He crafted the landing page, the dashboard layout, and the visual identity of the platform using Next.js and Tailwind CSS.",
+      skills: ["Next.js", "Tailwind CSS", "UI/UX Design", "Framer Motion"],
+    },
+    {
+      name: "Moharnab Gogoi",
+      role: "Backend and IoT",
+      image: "/moharnab.jpeg",
+      // ✏️ EDIT: Update this bio and skills for Moharnab
+      bio: "Moharnab Gogoi handles the backend infrastructure and IoT integration for FloodEye. He built the data pipelines, ThingSpeak API integration, and the real-time telemetry system that powers the dashboard.",
+      skills: ["ESP32", "ThingSpeak API", "Next.js API Routes", "IoT Sensors"],
+    },
+    {
+      name: "Mayuree Khanikar",
+      role: "Research and Documentation",
+      image: "/mayuree.jpeg",
+      // ✏️ EDIT: Update this bio and skills for Mayuree
+      bio: "Mayuree Khanikar leads the research and documentation efforts for FloodEye. She is responsible for gathering domain knowledge on flood monitoring systems and compiling comprehensive project reports.",
+      skills: ["Technical Writing", "Research", "Data Analysis", "Documentation"],
+    },
+    {
+      name: "Indrani Gogoi",
+      role: "Research and Documentation",
+      image: "/indrani.jpeg",
+      // ✏️ EDIT: Update this bio and skills for Indrani
+      bio: "Indrani Gogoi contributes to the research and documentation of FloodEye, focusing on the societal impact of flood early warning systems and the technical review of sensor data accuracy.",
+      skills: ["Research", "Documentation", "Data Review", "Impact Analysis"],
+    },
   ];
 
   // const mentors = [
@@ -139,23 +175,7 @@ export default function AboutPage() {
             <h2 className="font-sans text-4xl font-bold text-white">Team Details</h2>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-6">
-            {team.map((member) => (
-              <GlassCard key={member.name} className="w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] p-6 flex flex-col items-center text-center hover:bg-white/15 transition-colors duration-300">
-                <div className="w-24 h-24 rounded-full mb-5 bg-gradient-to-br from-slate-800 to-slate-900 border-2 border-white/10 flex items-center justify-center overflow-hidden relative shadow-inner">
-                  {member.image ? (
-                    <Image src={member.image} alt={member.name} fill className="object-cover" />
-                  ) : (
-                    <svg className="w-12 h-12 text-white/20" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
-                    </svg>
-                  )}
-                </div>
-                <h3 className="font-bold text-lg text-white mb-1">{member.name}</h3>
-                <p className="text-sm font-medium text-blue-300">{member.role}</p>
-              </GlassCard>
-            ))}
-          </div>
+          <ExpandableTeamCards members={team} />
         </section>
       </main>
     </div >
