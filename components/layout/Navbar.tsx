@@ -5,6 +5,7 @@ import { useTelemetry } from "@/components/providers/TelemetryProvider";
 import { useEffect, useState, useRef } from "react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { EncryptedText } from "@/components/ui/encrypted-text";
 
 export function Navbar() {
   const { isSimulating, setIsSimulating, alerts, deviceStatus, userRole, setUserRole } = useTelemetry();
@@ -41,7 +42,14 @@ export function Navbar() {
     <header className="flex flex-col md:flex-row items-start md:items-center justify-between w-full h-auto py-4 md:h-24 md:pt-6 md:pb-2 px-4 md:px-8 gap-4 md:gap-0">
       {/* Left: Greeting + Date */}
       <div className="flex flex-col">
-        <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900">Hello, Operator!</h1>
+        <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900">
+          <EncryptedText
+            text={`Hello, ${userRole || 'Operator'}!`}
+            encryptedClassName="text-slate-400"
+            revealedClassName="text-slate-900"
+            revealDelayMs={120}
+          />
+        </h1>
         <div className="flex items-center gap-3 mt-1">
           <p className="text-slate-500 text-xs md:text-sm">{date} · {time}</p>
           <span className={cn(
