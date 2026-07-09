@@ -7,13 +7,13 @@ import bgImage from "@/assests/gallery/INDIA-WEATHER-FLOOD-1_1720160942946_17201
 import { LayoutGrid } from "@/components/ui/layout-grid";
 
 // ── Static image imports (webpack-resolved) ───────────────────────────────────
-import img1 from "@/assests/gallery/new folder/WhatsApp Image 2022-03-24 at 11.45.06 AM (1).jpeg";
-import img2 from "@/assests/gallery/new folder/WhatsApp Image 2022-08-30 at 3.35.29 PM.jpeg";
-import img3 from "@/assests/gallery/new folder/WhatsApp Image 2022-09-25 at 11.29.04 AM.jpeg";
-import img4 from "@/assests/gallery/new folder/WhatsApp Image 2023-04-18 at 10.15.54 AM.jpeg";
-import img5 from "@/assests/gallery/new folder/WhatsApp Image 2023-04-18 at 10.16.45 AM (1).jpeg";
-import img6 from "@/assests/gallery/new folder/WhatsApp Image 2024-09-23 at 11.19.40 AM(1).jpeg";
-import img7 from "@/assests/gallery/new folder/WhatsApp Image 2024-09-23 at 11.19.41 AM.jpeg";
+import img1 from "@/assests/gallery/New folder/WhatsApp Image 2022-03-24 at 11.45.06 AM (1).jpeg";
+import img2 from "@/assests/gallery/New folder/WhatsApp Image 2022-08-30 at 3.35.29 PM.jpeg";
+import img3 from "@/assests/gallery/New folder/WhatsApp Image 2022-09-25 at 11.29.04 AM.jpeg";
+import img4 from "@/assests/gallery/New folder/WhatsApp Image 2023-04-18 at 10.15.54 AM.jpeg";
+import img5 from "@/assests/gallery/New folder/WhatsApp Image 2023-04-18 at 10.16.45 AM (1).jpeg";
+import img6 from "@/assests/gallery/New folder/WhatsApp Image 2024-09-23 at 11.19.40 AM(1).jpeg";
+import img7 from "@/assests/gallery/New folder/WhatsApp Image 2024-09-23 at 11.19.41 AM.jpeg";
 
 // ── Card content (shown on expand) ───────────────────────────────────────────
 
