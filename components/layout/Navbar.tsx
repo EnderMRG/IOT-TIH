@@ -6,6 +6,7 @@ import { useEffect, useState, useRef } from "react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { EncryptedText } from "@/components/ui/encrypted-text";
+import { logout } from "@/lib/actions/auth";
 
 export function Navbar() {
   const { isSimulating, setIsSimulating, alerts, deviceStatus, userRole, setUserRole } = useTelemetry();
@@ -71,14 +72,16 @@ export function Navbar() {
       <div className="flex items-center gap-4">
       
         {/* Log Out */}
-        <Link
-          href="/"
-          onClick={() => localStorage.removeItem("floodeye_session")}
+        <button
+          onClick={async () => {
+            localStorage.removeItem("floodeye_session");
+            await logout();
+          }}
           className="flex items-center gap-2 px-3 sm:px-4 py-2 text-xs font-semibold rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition-colors"
         >
           <LogOut className="w-4 h-4" />
           Log out
-        </Link>
+        </button>
 
         {/* Simulation Toggle - Admin Only */}
         {userRole === "admin" && (

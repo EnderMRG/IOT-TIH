@@ -7,7 +7,7 @@ import { useTelemetry } from "@/components/providers/TelemetryProvider";
 
 export default function EcoMap() {
   const { data } = useTelemetry();
-  const [showPopup, setShowPopup] = useState(true);
+  const [showPopup, setShowPopup] = useState(false);
 
   // The coordinates where the ESP32 device is deployed (IIT Guwahati)
   const deviceLongitude = 91.6951;
@@ -44,8 +44,8 @@ export default function EcoMap() {
           <Popup
             longitude={deviceLongitude}
             latitude={deviceLatitude}
-            closeButton={true}
-            closeOnClick={false}
+            closeButton={false}
+            closeOnClick={true}
             onClose={() => setShowPopup(false)}
             anchor="bottom"
             offset={25}

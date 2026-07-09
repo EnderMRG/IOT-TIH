@@ -3,7 +3,7 @@
 import { LandingNav } from "@/components/landing/LandingNav";
 import Image from "next/image";
 import { StaticImageData } from "next/image";
-import bgImage from "@/assests/gallery/INDIA-WEATHER-FLOOD-1_1720160942946_1720160977489.avif";
+
 import { LayoutGrid } from "@/components/ui/layout-grid";
 
 // ── Static image imports (webpack-resolved) ───────────────────────────────────
@@ -137,9 +137,10 @@ export default function GalleryPage() {
       {/* Fixed background */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <Image
-          src={bgImage}
+          src="/INDIA-WEATHER-FLOOD.avif"
           alt="Flood background"
           fill
+          unoptimized
           sizes="100vw"
           className="object-cover object-center scale-105"
           priority

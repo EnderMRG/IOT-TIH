@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, AlertCircle } from "lucide-react";
 import { useTelemetry } from "@/components/providers/TelemetryProvider";
 import bgImage from "@/assests/landpage/PTI06_18_2022_000030B.jpg";
+import { login } from "@/lib/actions/auth";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -16,30 +17,27 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    // Check custom localStorage users first
-    const usersJson = localStorage.getItem("floodeye_users");
-    if (usersJson) {
-      const users = JSON.parse(usersJson);
-      const match = users.find((u: any) => u.email === email && u.password === password);
-      if (match) {
-        setUserRole(match.role || "user");
-        router.push("/dashboard");
-        return;
-      }
-    }
+    // Setup form data
+    const formData = new FormData();
+    formData.append("email", email);
+    formData.append("password", password);
 
-    if (email === "admin@floodeye.com" && password === "admin") {
-      setUserRole("admin");
-      router.push("/dashboard");
-    } else if (email === "user@floodeye.com" && password === "user") {
-      setUserRole("user");
-      router.push("/dashboard");
+    // Call server action
+    const res = await login(formData);
+    
+    if (res?.error) {
+      setError(res.error);
     } else {
-      setError("Invalid email or password. Please try again.");
+      // If we used hardcoded admin, set role in local context before redirect happens
+      if (email === "admin@floodeye.com") {
+        setUserRole("admin");
+      } else {
+        setUserRole("user");
+      }
     }
   };
   return (

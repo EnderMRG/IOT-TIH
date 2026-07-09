@@ -23,8 +23,8 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${outfit.variable} ${playfair.variable} font-sans h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-[#f4f3ed] text-[#1c1c1a]">
+    <html lang="en" className={`${outfit.variable} ${playfair.variable} font-sans h-full antialiased overflow-x-hidden`}>
+      <body className="min-h-full flex flex-col bg-[#f4f3ed] text-[#1c1c1a] overflow-x-hidden w-full">
         <TelemetryProvider>
           {children}
         </TelemetryProvider>
