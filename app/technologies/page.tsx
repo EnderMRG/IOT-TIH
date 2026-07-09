@@ -2,7 +2,7 @@
 
 import { LandingNav } from "@/components/landing/LandingNav";
 import Image from "next/image";
-import bgImage from "@/assests/landpage/guwahati-flood.jpg";
+import bgImage from "@/assests/tech/2150_21_6_2022_15_6_40_1_ASSAMFLOOD_21062022_02.jpg";
 
 // ── Dummy images (swap these with real component photos) ──────────────────────
 // ✏️ Replace each `src` with your actual photo path
@@ -12,7 +12,7 @@ import img3 from "@/assests/landpage/india-weather-floods.webp"; // BME280 photo
 import img4 from "@/assests/landpage/guwahati-flood.jpg";        // ThingSpeak dashboard screenshot
 import img5 from "@/assests/landpage/PTI06_18_2022_000030B.jpg"; // Circuit / wiring photo
 import img6 from "@/assests/landpage/india-weather-floods.webp"; // Deployment / field photo
-import img7 from "@/assests/landpage/guwahati-flood.jpg";        // PCB / enclosure photo
+import img7 from "@/assests/tech/2150_21_6_2022_15_6_40_1_ASSAMFLOOD_21062022_02.jpg";        // PCB / enclosure photo
 
 // ── Bento cell ────────────────────────────────────────────────────────────────
 
@@ -91,7 +91,7 @@ export default function TechnologiesPage() {
               precision.
             </span>
           </h1>
-          <p className="mt-5 text-white/55 text-lg max-w-xl leading-relaxed">
+          <p className="mt-5 text-white/90 drop-shadow-sm text-lg max-w-xl leading-relaxed">
             Every component of FloodEye was selected for reliability — from the
             sensor submerged in floodwater to the browser dashboard.
           </p>

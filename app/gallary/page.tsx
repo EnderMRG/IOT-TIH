@@ -3,7 +3,7 @@
 import { LandingNav } from "@/components/landing/LandingNav";
 import Image from "next/image";
 import { StaticImageData } from "next/image";
-import bgImage from "@/assests/about page/flood-main-1782292399476_d.webp";
+import bgImage from "@/assests/gallery/INDIA-WEATHER-FLOOD-1_1720160942946_1720160977489.avif";
 import { LayoutGrid } from "@/components/ui/layout-grid";
 
 // ── Static image imports (webpack-resolved) ───────────────────────────────────
@@ -158,10 +158,10 @@ export default function GalleryPage() {
           <h1 className="font-sans text-5xl md:text-6xl font-bold text-white leading-[1.1] tracking-tight">
             Gallery
           </h1>
-          <p className="mt-5 text-white/55 text-lg max-w-xl leading-relaxed">
+          <p className="mt-5 text-white/90 drop-shadow-sm text-lg max-w-xl leading-relaxed">
             A visual record of the floods that motivated FloodEye, the hardware
             we built, and the team that built it.
-            <span className="block mt-1 text-sm text-white/35">Click any photo to expand.</span>
+            <span className="block mt-1 text-sm text-white/75">Click any photo to expand.</span>
           </p>
         </div>
 
