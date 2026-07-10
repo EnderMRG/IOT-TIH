@@ -84,7 +84,7 @@ export default function TechnologiesPage() {
 
         {/* Page header */}
         <div className="mb-14">
-          <p className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-3">Stack &amp; Hardware</p>
+
           <h1 className="font-sans text-5xl md:text-6xl font-bold text-white leading-[1.1] tracking-tight">
             Built with{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">

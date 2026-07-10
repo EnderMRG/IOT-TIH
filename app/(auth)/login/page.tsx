@@ -35,16 +35,22 @@ export default function LoginPage() {
       name = "User";
       valid = true;
     } else {
-      // Check localStorage users
-      const usersJson = localStorage.getItem("floodeye_users");
-      if (usersJson) {
-        const users = JSON.parse(usersJson);
-        const user = users.find((u: any) => u.email === email && u.password === password);
-        if (user) {
-          role = user.role || "user";
-          name = user.name || "User";
-          valid = true;
+      // Check localStorage users — wrapped in try/catch for Safari private mode
+      try {
+        const usersJson = localStorage.getItem("floodeye_users");
+        if (usersJson) {
+          const users = JSON.parse(usersJson);
+          const user = users.find((u: { email: string; password: string; role?: string; name?: string }) => u.email === email && u.password === password);
+          if (user) {
+            role = user.role || "user";
+            name = user.name || "User";
+            valid = true;
+          }
         }
+      } catch {
+        // localStorage unavailable (private mode on iOS Safari)
+        setError("Storage unavailable. Try disabling private browsing.");
+        return;
       }
     }
 
@@ -57,6 +63,12 @@ export default function LoginPage() {
     setUserRole(role as "admin" | "user");
     setUserName(name);
 
+    // Persist to localStorage so mobile reloads retain session
+    try {
+      localStorage.setItem("floodeye_session", role);
+      localStorage.setItem("floodeye_user_name", name);
+    } catch { /* ignore — already handled above */ }
+
     // Call server action to set cookie
     await login(role);
 
@@ -64,7 +76,7 @@ export default function LoginPage() {
     router.push("/dashboard");
   };
   return (
-    <div className="h-screen max-h-screen overflow-hidden flex items-center justify-center p-4 sm:p-6 lg:p-8 relative">
+    <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8 relative">
       {/* Blurred Background Image */}
       <div className="absolute inset-0 z-0">
         <Image

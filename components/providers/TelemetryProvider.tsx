@@ -204,13 +204,17 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
 
   // ── Hydrate role from localStorage ───────────────────────────────────────
   useEffect(() => {
-    const savedRole = localStorage.getItem("floodeye_session");
-    if (savedRole === "admin" || savedRole === "user") {
-      setUserRoleState(savedRole);
-    }
-    const savedName = localStorage.getItem("floodeye_user_name");
-    if (savedName) {
-      setUserNameState(savedName);
+    try {
+      const savedRole = localStorage.getItem("floodeye_session");
+      if (savedRole === "admin" || savedRole === "user") {
+        setUserRoleState(savedRole);
+      }
+      const savedName = localStorage.getItem("floodeye_user_name");
+      if (savedName) {
+        setUserNameState(savedName);
+      }
+    } catch {
+      // localStorage unavailable (iOS Safari private mode)
     }
   }, []);
 

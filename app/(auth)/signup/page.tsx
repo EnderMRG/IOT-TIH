@@ -31,10 +31,10 @@ export default function SignupPage() {
     try {
       // Get existing users
       const usersJson = localStorage.getItem("floodeye_users");
-      const users = usersJson ? JSON.parse(usersJson) : [];
+      const users: { name: string; email: string; password: string; role: string }[] = usersJson ? JSON.parse(usersJson) : [];
 
       // Check if email already exists
-      if (users.some((u: any) => u.email === email)) {
+      if (users.some((u) => u.email === email)) {
         setError("An account with this email already exists.");
         return;
       }
@@ -44,8 +44,12 @@ export default function SignupPage() {
       users.push(newUser);
       localStorage.setItem("floodeye_users", JSON.stringify(users));
 
+      // Persist session immediately so mobile reloads retain it
+      localStorage.setItem("floodeye_session", "user");
+      localStorage.setItem("floodeye_user_name", name);
+
       setSuccess(true);
-      
+
       // Auto login and redirect after a short delay
       setTimeout(async () => {
         setUserRole("user");
@@ -53,14 +57,15 @@ export default function SignupPage() {
         await login("user");
         router.push("/dashboard");
       }, 1500);
-      
+
     } catch (err) {
-      setError("An error occurred during sign up.");
+      console.error(err);
+      setError("Storage unavailable. Try disabling private browsing mode.");
     }
   };
 
   return (
-    <div className="h-screen max-h-screen overflow-hidden flex items-center justify-center p-4 sm:p-6 lg:p-8 relative">
+    <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8 relative">
       {/* Blurred Background Image */}
       <div className="absolute inset-0 z-0">
         <Image
