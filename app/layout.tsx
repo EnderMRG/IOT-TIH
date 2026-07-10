@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Outfit, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { TelemetryProvider } from "@/components/providers/TelemetryProvider";
@@ -14,9 +14,18 @@ const playfair = Playfair_Display({
   weight: ["400", "700", "900"],
 });
 
+export const viewport: Viewport = {
+  themeColor: "#3b82f6",
+};
+
 export const metadata: Metadata = {
   title: "FloodEye — Flood Relief Monitoring",
   description: "Real-time flood monitoring and early warning system powered by ESP32 sensor networks.",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "FloodEye",
+  },
 };
 
 export default function RootLayout({

@@ -19,6 +19,7 @@ import {
   Phone,
   MapPin,
 } from "lucide-react";
+import { PWAInstallButton } from "@/components/PWAInstallButton";
 
 /* Dynamically imported so MapLibre CSS doesn't SSR */
 const AssamNodeMap = dynamic(
@@ -620,20 +621,24 @@ function ContactSection() {
             </div>
           </div>
 
-          {/* Social links */}
-          <div className="flex items-center gap-3">
-            {socials.map(({ label, href, Icon }) => (
-              <a
-                key={label}
-                href={href}
-                target="_blank"
-                rel="noreferrer"
-                aria-label={label}
-                className="w-10 h-10 rounded-full border border-white/15 bg-white/8 flex items-center justify-center text-white/60 hover:text-white hover:border-white/40 hover:bg-white/15 transition-all duration-200"
-              >
-                <Icon className="w-4 h-4" />
-              </a>
-            ))}
+          {/* Social links & Install */}
+          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-4 sm:gap-6">
+            <div className="flex items-center gap-3">
+              {socials.map(({ label, href, Icon }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={label}
+                  className="w-10 h-10 rounded-full border border-white/15 bg-white/8 flex items-center justify-center text-white/60 hover:text-white hover:border-white/40 hover:bg-white/15 transition-all duration-200"
+                >
+                  <Icon className="w-4 h-4" />
+                </a>
+              ))}
+            </div>
+            
+            <PWAInstallButton />
           </div>
 
           {/* Copyright */}

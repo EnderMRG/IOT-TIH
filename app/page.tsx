@@ -1,4 +1,5 @@
 import { CanvasSequencePage } from "@/components/landing/CanvasSequencePage";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 
 export const metadata = {
   title: "FloodEye — Flood Relief Monitoring",
@@ -6,5 +7,10 @@ export const metadata = {
 };
 
 export default function Home() {
-  return <CanvasSequencePage />;
+  return (
+    <>
+      <CanvasSequencePage />
+      <PWAInstallPrompt />
+    </>
+  );
 }
