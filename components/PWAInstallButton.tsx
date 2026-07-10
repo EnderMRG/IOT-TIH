@@ -43,7 +43,10 @@ export function PWAInstallButton({ className = "" }: { className?: string }) {
       return;
     }
 
-    if (!deferredPrompt) return;
+    if (!deferredPrompt) {
+      alert("Automatic installation is not supported by your current browser (e.g., Firefox, Safari). Please look for an 'Install' or 'Add to Home Screen' option in your browser's main menu.");
+      return;
+    }
     
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;

@@ -227,6 +227,8 @@ function buildInitialSimHistory(): TelemetryData[] {
 
 const TelemetryContext = createContext<TelemetryContextType | undefined>(undefined);
 
+import { useNativeNotification } from "@/hooks/useNativeNotification";
+
 export function TelemetryProvider({ children }: { children: React.ReactNode }) {
   // ── Core state ─────────────────────────────────────────────────────────────
   const [data, setData] = useState<TelemetryData | null>(null);
@@ -237,6 +239,9 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
   const [settings, setSettings] = useState<DashboardSettings>(defaultSettings);
   const [isLoading, setIsLoading] = useState(true);
   const [isOffline, setIsOffline] = useState(false);
+
+  // ── Native Notifications ───────────────────────────────────────────────────
+  const { sendNotification } = useNativeNotification();
 
   // ── Simulation / role state ────────────────────────────────────────────────
   const [isSimulating, setIsSimulatingState] = useState(false);
@@ -295,6 +300,15 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
 
     lastAlertTimeRef.current[incoming.type] = now;
     const nowIso = new Date().toISOString();
+
+    // Trigger native OS notification for new critical/warning alerts
+    if (incoming.severity === "critical" || incoming.severity === "warning") {
+      const title = incoming.severity === "critical" ? "⚠️ CRITICAL FLOOD ALERT" : "⚠️ FloodEye Warning";
+      sendNotification(title, {
+        body: incoming.message,
+        tag: incoming.type, // Prevents stacking same alert type
+      });
+    }
 
     setAlerts((prev) => {
       const existing = prev.find((a) => a.type === incoming.type);

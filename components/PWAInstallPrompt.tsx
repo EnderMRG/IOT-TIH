@@ -16,6 +16,7 @@ interface BeforeInstallPromptEvent extends Event {
 export function PWAInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isIOS, setIsIOS] = useState(false);
+  const [isUnsupported, setIsUnsupported] = useState(false);
   const [isStandalone, setIsStandalone] = useState(true); // Assume standalone initially to prevent flash
   const [isVisible, setIsVisible] = useState(false);
 
@@ -25,16 +26,23 @@ export function PWAInstallPrompt() {
                        (window.navigator as any).standalone === true;
     
     setIsStandalone(standalone);
+    if (standalone) return;
 
-    if (standalone) return; // Don't show if already installed
-
-    // Detect iOS (Safari doesn't support beforeinstallprompt)
     const ua = window.navigator.userAgent;
     const isIOSDevice = /iPad|iPhone|iPod/.test(ua) && !(window as any).MSStream;
     setIsIOS(isIOSDevice);
 
     if (isIOSDevice) {
-      // Show iOS prompt after a slight delay
+      const timer = setTimeout(() => setIsVisible(true), 1500);
+      return () => clearTimeout(timer);
+    }
+
+    // Check if browser is Chrome or Edge (which support beforeinstallprompt)
+    const isChrome = /Chrome/.test(ua) && /Google Inc/.test(navigator.vendor);
+    const isEdge = /Edg/.test(ua);
+    
+    if (!isChrome && !isEdge) {
+      setIsUnsupported(true);
       const timer = setTimeout(() => setIsVisible(true), 1500);
       return () => clearTimeout(timer);
     }
@@ -47,10 +55,7 @@ export function PWAInstallPrompt() {
     };
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-
-    return () => {
-      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-    };
+    return () => window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
   }, []);
 
   const handleInstallClick = async () => {
@@ -94,6 +99,13 @@ export function PWAInstallPrompt() {
                     1. Tap <Share className="w-4 h-4 text-blue-500" /> Share
                   </span>
                   <span>2. Select "Add to Home Screen"</span>
+                </div>
+              </div>
+            ) : isUnsupported ? (
+              <div className="mt-2 text-sm text-slate-600 leading-snug space-y-2">
+                <p>Add this dashboard to your home screen for instant offline access.</p>
+                <div className="font-medium text-slate-700 bg-slate-100/70 p-3 rounded-xl border border-slate-200/50 text-xs">
+                  Please look for an <strong>"Install"</strong> or <strong>"Add to Home Screen"</strong> option in your browser's main menu (⋮).
                 </div>
               </div>
             ) : (

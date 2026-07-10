@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { EncryptedText } from "@/components/ui/encrypted-text";
 import { logout } from "@/lib/actions/auth";
 import Link from "next/link";
+import { useNativeNotification } from "@/hooks/useNativeNotification";
 
 // ── Severity config ───────────────────────────────────────────────────────────
 
@@ -88,6 +89,8 @@ export function Navbar() {
     alerts, unreadCount, deviceStatus, userRole, userName,
     dismissAlert, clearAlerts, markAllRead,
   } = useTelemetry();
+
+  const { permission, isSupported, requestPermission } = useNativeNotification();
 
   const [time, setTime] = useState("");
   const [date, setDate] = useState("");
@@ -225,15 +228,26 @@ export function Navbar() {
                       </span>
                     )}
                   </div>
-                  {alerts.length > 0 && (
-                    <button
-                      onClick={() => clearAlerts()}
-                      className="flex items-center gap-1 text-[10px] font-semibold text-slate-400 hover:text-red-500 transition-colors px-2 py-1 rounded-lg hover:bg-red-50"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                      Clear all
-                    </button>
-                  )}
+                  <div className="flex items-center gap-1.5">
+                    {isSupported && permission === "default" && (
+                      <button
+                        onClick={() => requestPermission()}
+                        className="flex items-center gap-1 text-[10px] font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg hover:bg-blue-100 transition-colors"
+                      >
+                        <Bell className="w-3 h-3" />
+                        Enable OS Alerts
+                      </button>
+                    )}
+                    {alerts.length > 0 && (
+                      <button
+                        onClick={() => clearAlerts()}
+                        className="flex items-center gap-1 text-[10px] font-semibold text-slate-400 hover:text-red-500 transition-colors px-2 py-1 rounded-lg hover:bg-red-50"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        Clear all
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Alert list */}
