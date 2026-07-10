@@ -151,9 +151,9 @@ export default function GalleryPage() {
       <main className="relative z-10 max-w-5xl mx-auto px-6 pt-36 pb-24">
         {/* Header */}
         <div className="mb-12">
-          <p className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-3">
+          {/* <p className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-3">
             Photos &amp; Field Work
-          </p>
+          </p> */}
           <h1 className="font-sans text-5xl md:text-6xl font-bold text-white leading-[1.1] tracking-tight">
             Gallery
           </h1>

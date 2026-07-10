@@ -210,8 +210,8 @@ function HeroSection() {
           transition={{ duration: 0.9, delay: 0.7 }}
           className="text-base md:text-xl text-white drop-shadow-md max-w-lg mx-auto leading-relaxed mb-6"
         >
-          Real-time flood monitoring and early warning powered by ESP32 sensor
-          networks — keeping communities safe when it matters most.
+          Delivering precise, real-time flood monitoring and instant early warnings
+          — keeping communities safe when it matters most.
         </motion.p>
 
 
@@ -265,7 +265,7 @@ function CapabilitiesSection() {
         <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-12">
           <StatCard value="5+" label="Sensor Types" sub="per node" delay={0} />
           <StatCard value="15s" label="Refresh Rate" sub="live readings" delay={0.1} />
-          <StatCard value="24/7" label="Uptime" sub="continuous monitoring" delay={0.2} />
+          <StatCard value="24/7" label="Monitoring" sub="always on alert" delay={0.2} />
           <StatCard value="100%" label="Open Source" sub="MIT licensed" delay={0.3} />
         </div>
 
@@ -376,7 +376,7 @@ function DataAlertingSection() {
               Deployed across
               <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">
-                Assam's floodplains.
+                Assam and the Northeastern States.
               </span>
             </h2>
             <p className="text-white/65 leading-relaxed text-base mb-8">
