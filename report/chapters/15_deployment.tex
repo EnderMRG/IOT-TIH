@@ -1,0 +1,127 @@
+%=============================================================================
+% Chapter 15: Deployment
+%=============================================================================
+\chapter{Deployment}
+
+\section{Deployment Platform: Vercel}
+
+FloodEye is optimised for deployment on Vercel, the cloud platform created by the team behind Next.js. Vercel provides zero-configuration deployment for Next.js applications with automatic serverless function provisioning, global CDN distribution, and Git-integrated continuous deployment.
+
+\section{Deployment Architecture}
+
+\begin{figure}[H]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[node distance=0.8cm]
+  \node[startend, text width=3cm] (github) {GitHub\\Repository};
+  \node[process, text width=3cm, right=2cm of github] (ci) {Vercel Build\\Pipeline};
+  \node[process, text width=3cm, right=2cm of ci] (build) {Next.js Build\\\texttt{--webpack}};
+  \node[process, text width=3cm, right=2cm of build] (cdn) {Vercel CDN\\(Global Edge)};
+
+  \node[process, text width=3cm, below=1.5cm of ci] (env) {Environment\\Variables Injected};
+  \node[process, text width=3cm, below=1.5cm of build] (pwa) {PWA Assets\\Generated};
+  \node[startend, text width=3cm, below=1.5cm of cdn] (user) {End Users\\(Browser / PWA)};
+
+  \draw[arrow] (github) -- node[above,font=\tiny]{push} (ci);
+  \draw[arrow] (ci) -- (build);
+  \draw[arrow] (build) -- (cdn);
+  \draw[arrow] (ci) -- (env);
+  \draw[arrowg] (env) -- (build);
+  \draw[arrowg] (build) -- (pwa);
+  \draw[arrow] (cdn) -- (user);
+\end{tikzpicture}%
+}
+\caption{FloodEye Vercel Deployment Pipeline}
+\label{fig:deployment}
+\end{figure}
+
+\section{Build Process}
+
+The production build is triggered by:
+\begin{lstlisting}[language={},caption={Build command}]
+npm run build   -- internally runs: next build --webpack
+\end{lstlisting}
+
+The \texttt{--webpack} flag enables the webpack bundler (rather than Turbopack) for the production build, ensuring compatibility with all dependencies. Key build outputs:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Server functions:} Next.js Route Handlers compiled to Vercel serverless functions.
+  \item \textbf{Static assets:} JavaScript bundles, CSS, and public files distributed to Vercel's global CDN.
+  \item \textbf{PWA service worker:} \texttt{next-pwa} (Workbox) generates \texttt{sw.js} and \texttt{workbox-*.js} during build. These are excluded in development (\texttt{disable: process.env.NODE\_ENV === 'development'}).
+\end{itemize}
+
+\section{Environment Configuration}
+
+Environment variables are configured in the Vercel project dashboard (not in the repository):
+
+\begin{table}[H]
+\centering
+\caption{Vercel Environment Variable Configuration}
+\begin{tabularx}{\linewidth}{|l|l|X|}
+\hline
+\rowcolor{FloodLight}
+\textbf{Variable} & \textbf{Scope} & \textbf{Notes} \\
+\hline
+\texttt{THINGSPEAK\_CHANNEL\_ID} & Server & Never exposed to the browser \\
+\texttt{THINGSPEAK\_READ\_API\_KEY} & Server & Read-only; no write risk \\
+\texttt{NEXT\_PUBLIC\_MAPTILER\_KEY} & Client & Prefixed \texttt{NEXT\_PUBLIC\_}; included in browser bundle \\
+\hline
+\end{tabularx}
+\end{table}
+
+\section{PWA Configuration}
+
+PWA is configured in \texttt{next.config.ts} using \texttt{@ducanh2912/next-pwa}:
+
+\begin{lstlisting}[language=TypeScript,caption={PWA configuration in next.config.ts}]
+const withPWA = withPWAInit({
+  dest: "public",
+  cacheOnFrontEndNav: true,
+  aggressiveFrontEndNavCaching: true,
+  reloadOnOnline: true,
+  disable: process.env.NODE_ENV === "development",
+  workboxOptions: { disableDevLogs: true },
+});
+\end{lstlisting}
+
+The PWA manifest is defined in \texttt{app/manifest.ts} and specifies the app name, icons (\texttt{icon-192x192.png}, \texttt{icon-512x512.png}), theme colour, background colour, and display mode (\texttt{standalone}).
+
+\section{Deployment Steps}
+
+\begin{enumerate}[leftmargin=1.5em]
+  \item Push code to the GitHub repository (main branch).
+  \item Vercel detects the push and triggers a new build.
+  \item Environment variables are injected from the Vercel dashboard.
+  \item Next.js build runs (\texttt{next build --webpack}).
+  \item Build outputs are deployed to Vercel's global edge network.
+  \item The new deployment is promoted to the production URL (e.g.\ \texttt{floodeye.vercel.app}).
+  \item Preview deployments are automatically created for every pull request.
+\end{enumerate}
+
+\section{Local Development}
+
+\begin{lstlisting}[language={},caption={Local development startup}]
+# 1. Clone and install
+git clone <repo-url>
+cd IOT-TIH
+npm install
+
+# 2. Create .env.local
+echo "THINGSPEAK_CHANNEL_ID=your_id" >> .env.local
+echo "THINGSPEAK_READ_API_KEY=your_key" >> .env.local
+echo "NEXT_PUBLIC_MAPTILER_KEY=your_key" >> .env.local
+
+# 3. Start dev server
+npm run dev
+# Opens http://localhost:3000
+\end{lstlisting}
+
+\section{Performance Characteristics}
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Cold start:} Vercel serverless functions have a cold start of $\sim$100--300 ms for the first request after a period of inactivity.
+  \item \textbf{Cached API response:} $<$ 5 ms (served from CDN edge or server memory).
+  \item \textbf{Live ThingSpeak fetch:} $\sim$100--200 ms (HTTP round-trip to ThingSpeak API).
+  \item \textbf{ML model load:} $\sim$1--3 s (fetching and deserialising 291 KB binary weights + model JSON).
+  \item \textbf{ML inference:} $<$ 50 ms per prediction (WebGL-accelerated on modern devices).
+\end{itemize}

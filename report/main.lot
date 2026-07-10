@@ -1,0 +1,47 @@
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {2.1}{\ignorespaces FloodEye Long-Term Strategic Goals}}{7}{table.caption.4}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {3.1}{\ignorespaces FloodEye Core Modules}}{10}{table.caption.5}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {4.1}{\ignorespaces ThingSpeak Channel Field Mapping}}{16}{table.caption.8}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {5.1}{\ignorespaces Development Tools and Versions}}{23}{table.caption.9}%
+\contentsline {table}{\numberline {5.2}{\ignorespaces Hosting and Infrastructure}}{23}{table.caption.10}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {7.1}{\ignorespaces Landing Zone Pages}}{31}{table.caption.12}%
+\contentsline {table}{\numberline {7.2}{\ignorespaces Dashboard Zone Pages and Features}}{32}{table.caption.13}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {8.1}{\ignorespaces TelemetryProvider State Variables}}{36}{table.caption.14}%
+\contentsline {table}{\numberline {8.2}{\ignorespaces Alert Cooldown Configuration}}{37}{table.caption.15}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {9.1}{\ignorespaces ThingSpeak Data Schema}}{39}{table.caption.16}%
+\contentsline {table}{\numberline {9.2}{\ignorespaces localStorage Key Schema}}{41}{table.caption.17}%
+\contentsline {table}{\numberline {9.3}{\ignorespaces ML Data Files}}{41}{table.caption.18}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {10.1}{\ignorespaces Dataset Raw Columns}}{42}{table.caption.19}%
+\contentsline {table}{\numberline {10.2}{\ignorespaces Engineered Feature Set}}{43}{table.caption.20}%
+\contentsline {table}{\numberline {10.3}{\ignorespaces Model Layer Summary}}{46}{table.caption.21}%
+\contentsline {table}{\numberline {10.4}{\ignorespaces Risk Level Classification}}{49}{table.caption.22}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {11.1}{\ignorespaces ML Analysis Summary}}{56}{table.caption.25}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {12.1}{\ignorespaces Key ML Pipeline Design Decisions}}{61}{table.caption.27}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {13.1}{\ignorespaces History Range Query Strategy}}{65}{table.caption.28}%
+\contentsline {table}{\numberline {13.2}{\ignorespaces Required Environment Variables}}{68}{table.caption.29}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {15.1}{\ignorespaces Vercel Environment Variable Configuration}}{75}{table.caption.32}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {16.1}{\ignorespaces Implementation Status of All Features}}{78}{table.caption.33}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {C.1}{\ignorespaces Production NPM Dependencies}}{99}{table.caption.34}%
+\addvspace {10\p@ }

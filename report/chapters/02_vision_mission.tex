@@ -1,0 +1,98 @@
+﻿%=============================================================================
+% Chapter 2: Vision and Mission
+%=============================================================================
+\chapter{Vision and Mission}
+
+\section{Vision}
+
+\begin{center}
+\colorbox{FloodLight}{%
+  \parbox{0.88\linewidth}{%
+    \vspace{6pt}
+    \centering
+    {\large\bfseries\color{FloodBlue} ``To leverage advanced IoT technologies, sensor networks and real-time data analytics for accurate flood and water level monitoring, enabling timely early warnings to protect lives, property and the environment.''}\\[4pt]
+    {\normalsize\color{FloodGray}\textit{``Building a safer society and a flood-resilient future through smart technology.''}}
+    \vspace{6pt}
+  }%
+}
+\end{center}
+
+\vspace{0.5cm}
+
+The vision of FloodEye is rooted in the conviction that the catastrophic human and economic cost of flooding in vulnerable regions like Assam is not inevitable. Floods cannot be prevented, but the damage they inflict on unprepared communities can be dramatically reduced when accurate, real-time information is placed in the hands of those who need it most — residents, local administrators, disaster management authorities, and first responders.
+
+\subsection{Expanding the Vision}
+
+The long-term vision extends beyond a single sensor node dashboard to a distributed, intelligent flood early warning network:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Citywide and basin-wide coverage:} Multiple FloodEye nodes deployed along riverbanks, drainage canals, and flood plains, each uploading independently to ThingSpeak channels and visualised on a unified regional map.
+  \item \textbf{Democratised access:} A PWA architecture ensures that any resident with a smartphone and a data connection can receive flood alerts and monitor local conditions without installing a native app.
+  \item \textbf{Environmental intelligence:} Beyond water level, the simultaneous monitoring of temperature, humidity, pressure, and altitude enables multi-variable environmental analysis and the detection of weather patterns that correlate with elevated flood risk.
+  \item \textbf{AI-driven forecasting at scale:} As more sensor data accumulates, the machine learning model can be retrained to improve predictive accuracy and extended to cover longer forecast horizons.
+\end{itemize}
+
+\section{Mission}
+
+The operational mission of FloodEye, as stated in the project charter, is:
+
+\begin{enumerate}[leftmargin=1.5em]
+  \item \textbf{Monitor water levels in real time using IoT-enabled sensors.}\\
+  The ESP32 microcontroller, equipped with the HC-SR04 ultrasonic distance sensor, measures water proximity at 15-second intervals and uploads readings continuously via HTTP to the ThingSpeak cloud platform.
+
+  \item \textbf{Provide timely and reliable flood early warning alerts.}\\
+  The smart alerting engine evaluates each incoming reading against configurable thresholds for water level, rate of rise, pressure drop, temperature, and humidity. Alerts are classified as \textit{critical}, \textit{warning}, or \textit{info} and are pushed to the user as in-app notifications and, where permission is granted, as native OS-level push notifications.
+
+  \item \textbf{Deliver accurate and trustworthy data to government agencies and citizens.}\\
+  The dashboard presents data through interactive, time-series charts with configurable historical windows (1 hour, 6 hours, 24 hours, 7 days, 30 days) and provides CSV and PDF export functionality so that data can be shared with authorities and used in official reports.
+
+  \item \textbf{Reduce disaster risks and improve community preparedness.}\\
+  By predicting water levels 4 hours in advance using the embedded CNN-BiLSTM-Attention model, FloodEye gives communities a meaningful advance warning window to prepare for potential flooding, move property to safety, and initiate evacuation if required.
+\end{enumerate}
+
+\section{Long-Term Goals}
+
+\begin{table}[H]
+\centering
+\caption{FloodEye Long-Term Strategic Goals}
+\begin{tabularx}{\linewidth}{|l|X|}
+\hline
+\rowcolor{FloodLight}
+\textbf{Goal} & \textbf{Description} \\
+\hline
+Multi-Node Network & Deploy sensor nodes across multiple locations along rivers/canals with a unified map view \\
+\hline
+MQTT Integration & Replace HTTP polling with MQTT-over-WebSocket for lower-latency IoT telemetry \\
+\hline
+Improved ML Models & Retrain with larger datasets; incorporate weather API forecasts as additional features \\
+\hline
+Mobile App & Native iOS/Android companion app with background push notification support \\
+\hline
+Authority Integration & API integration with state disaster management portals for automated alerts \\
+\hline
+Community Dashboard & Public-facing read-only view for residents and media without authentication \\
+\hline
+\end{tabularx}
+\end{table}
+
+\section{Real-World Impact}
+
+FloodEye has been designed with direct applicability to the Brahmaputra Valley flood plains of Assam, where annual monsoon flooding affects millions of people. The system's key impact areas are:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Life safety:} A 4-hour advance warning of dangerous water levels gives households sufficient time to move to higher ground and alert neighbours.
+  \item \textbf{Property protection:} Early warnings enable the timely removal of vehicles, livestock, and stored goods from flood-vulnerable areas.
+  \item \textbf{Agricultural loss reduction:} Farmers can harvest or protect crops when imminent flooding is forecast.
+  \item \textbf{Cost-effective deployment:} The entire hardware component — ESP32, BMP180, DHT11, HC-SR04 — costs under \texteuro{}15, making wide-scale deployment economically viable.
+\end{itemize}
+
+\section{Scalability and Social Benefits}
+
+The FloodEye architecture is horizontally scalable by design:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Vercel deployment} provides automatic serverless scaling; traffic spikes during flood events do not degrade dashboard performance.
+  \item \textbf{ThingSpeak channels} can be added independently for each sensor node with no change to the backend code.
+  \item \textbf{The PWA} functions as an installable app on any device, eliminating the need for app store submissions or native development for initial deployment.
+  \item \textbf{Browser-side ML inference} removes the need for a GPU-equipped server; the prediction runs on the user's own device, reducing hosting cost to zero for the ML component.
+\end{itemize}

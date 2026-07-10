@@ -1,0 +1,107 @@
+%=============================================================================
+% Chapter 14: Project Workflow
+%=============================================================================
+\chapter{Project Workflow}
+
+\section{Overall System Workflow}
+
+The FloodEye system operates as a continuous real-time monitoring loop. Figure~\ref{fig:workflow_overall} shows the overall data flow workflow.
+
+\begin{figure}[H]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[node distance=0.65cm]
+  \node[iotbox] (sense) {Sense\\Environment};
+  \node[iotbox, below=of sense] (upload) {Upload to\\ThingSpeak};
+  \node[process, below=of upload] (fetch) {Next.js fetches\\latest reading};
+  \node[process, below=of fetch] (cache) {Cache \&\\parse};
+  \node[process, below=of cache] (context) {TelemetryProvider\\updates state};
+  \node[process, below=of context] (alert) {Alert engine\\evaluates};
+  \node[process, below=of alert] (ml) {ML inference\\(4h forecast)};
+  \node[process, below=of ml] (render) {UI re-renders\\with new data};
+  \node[startend, below=of render] (wait) {Wait 15 s};
+
+  \draw[arrow] (sense) -- (upload);
+  \draw[arrow] (upload) -- (fetch);
+  \draw[arrow] (fetch) -- (cache);
+  \draw[arrow] (cache) -- (context);
+  \draw[arrow] (context) -- (alert);
+  \draw[arrow] (alert) -- (ml);
+  \draw[arrow] (ml) -- (render);
+  \draw[arrow] (render) -- (wait);
+  \draw[arrow] (wait.west) -- ++(-1.2,0) |- (sense.west);
+\end{tikzpicture}%
+}
+\caption{Overall System Monitoring Loop}
+\label{fig:workflow_overall}
+\end{figure}
+
+\section{IoT Hardware Workflow}
+
+\begin{enumerate}[leftmargin=1.5em]
+  \item ESP32 powers on and initialises all sensors via \texttt{Wire.begin(21, 22)} for I\textsuperscript{2}C (BMP180) and the relevant digital pins for DHT11 and HC-SR04.
+  \item The \texttt{loop()} function reads all sensor values.
+  \item Values are formatted as an HTTP POST payload to ThingSpeak (\texttt{api.thingspeak.com/update}).
+  \item ThingSpeak responds with the entry ID on success, or an error code on failure.
+  \item ESP32 waits 15 seconds (ThingSpeak minimum interval) before the next upload.
+  \item On Wi-Fi disconnection, the ESP32 attempts reconnection with exponential backoff.
+\end{enumerate}
+
+\section{Backend Workflow}
+
+\begin{enumerate}[leftmargin=1.5em]
+  \item Client browser calls \texttt{/api/sensors} (every \texttt{refreshInterval} seconds).
+  \item Vercel serverless function invokes \texttt{getLatestReading()} from \texttt{lib/thingspeak.ts}.
+  \item Cache is checked: if age $<$ 14s, cached result returned immediately (no ThingSpeak call).
+  \item If stale/empty and no in-flight request: HTTP GET to ThingSpeak is fired.
+  \item If in-flight: callers await the existing Promise (coalescing).
+  \item Result is parsed into \texttt{TelemetryData}, cached, and returned as JSON.
+  \item \texttt{/api/history}, \texttt{/api/analytics} follow the same pattern with 55s TTL.
+\end{enumerate}
+
+\section{Frontend Workflow}
+
+\begin{enumerate}[leftmargin=1.5em]
+  \item On dashboard mount: \texttt{TelemetryProvider} hydrates from localStorage (if available).
+  \item Initial API call to \texttt{/api/sensors}: loading overlay displayed until response.
+  \item On response: state updated; sensor cards, chart, map, and device status card render.
+  \item \texttt{useFloodPrediction} hook initialises: loads TF.js model + sample data.
+  \item After model ready: prediction runs (debounced 1s after history change).
+  \item Polling interval fires (default 15s): cycle repeats.
+  \item On offline detection: offline banner displayed; stale data from localStorage shown.
+\end{enumerate}
+
+\section{Alert Workflow}
+
+\begin{enumerate}[leftmargin=1.5em]
+  \item \texttt{evaluateAlerts(currentData, previousData, settings)} is called on every new reading.
+  \item Each alert condition is checked (water level, rate of rise, pressure, temperature, humidity).
+  \item For each triggered alert: cooldown is checked via \texttt{lastAlertTimeRef}.
+  \item If within cooldown: alert is silently skipped.
+  \item If cooldown expired: \texttt{pushAlert()} adds/refreshes the alert in state.
+  \item Native push notification sent via \texttt{useNativeNotification} hook (if permission granted).
+  \item Alert appears in: the AlertPanel on the dashboard, the Alerts page, and the bell icon counter.
+\end{enumerate}
+
+\section{ML Prediction Workflow}
+
+\begin{enumerate}[leftmargin=1.5em]
+  \item \texttt{useFloodPrediction(history)} hook mounts and calls \texttt{loadModel()}.
+  \item \texttt{loadModel()} fetches \texttt{model.json}, \texttt{group1-shard1of1.bin}, config, and scalers in parallel.
+  \item Weights are manually assigned to each layer; model is marked as ready.
+  \item Sample data is fetched from \texttt{/public/sample\_data.json} for padding.
+  \item On each new history entry: \texttt{runPrediction(history)} is called (debounced 1s).
+  \item If history $<$ 48 readings: prepend from sample data to reach 48.
+  \item \texttt{engineerFeatures()} builds the 11-feature matrix for all 48 steps.
+  \item \texttt{predictFloodRisk()} runs inference; result is returned.
+  \item \texttt{FloodPredictionCard} and \texttt{FloodPredictionPanel} re-render with new forecast.
+\end{enumerate}
+
+\section{Data Export Workflow}
+
+\begin{enumerate}[leftmargin=1.5em]
+  \item User clicks ``Export CSV'' or ``Export PDF'' on the History page.
+  \item \textbf{CSV:} History array is formatted as comma-separated rows; a Blob is created; a temporary \texttt{<a>} element triggers browser download.
+  \item \textbf{PDF:} jsPDF creates a new document; jspdf-autotable renders the data table; the PDF is downloaded via the jsPDF \texttt{save()} method.
+  \item Both exports are entirely client-side; no server request is made.
+\end{enumerate}

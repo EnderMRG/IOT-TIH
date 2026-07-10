@@ -1,0 +1,249 @@
+﻿%=============================================================================
+% Chapter 13: API Documentation
+%=============================================================================
+\chapter{API Documentation}
+
+This chapter documents all implemented API endpoints in FloodEye. Each endpoint is a Next.js Route Handler deployed as a Vercel serverless function under \texttt{app/api/}.
+
+\section{Base URL}
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Development:} \texttt{http://localhost:3000}
+  \item \textbf{Production:} \texttt{https://\{project\}.vercel.app}
+\end{itemize}
+
+\section{Common Response Headers}
+
+All endpoints return:
+\begin{itemize}[leftmargin=1.5em]
+  \item \texttt{Content-Type: application/json}
+  \item ISR cache headers set by the \texttt{revalidate} export.
+\end{itemize}
+
+\section{Endpoint: GET /api/sensors}
+
+\subsection{Purpose}
+Returns the single most recent sensor reading from the ESP32 via ThingSpeak, along with device status information.
+
+\subsection{Cache}
+\texttt{export const revalidate = 15;} --- Responses are cached by Vercel CDN for 15 seconds.
+
+\subsection{Request}
+\begin{lstlisting}[language={},caption={GET /api/sensors request}]
+GET /api/sensors
+Headers: (none required)
+Body: (none)
+\end{lstlisting}
+
+\subsection{Response (200 OK)}
+\begin{lstlisting}[language={},caption={GET /api/sensors success response}]
+{
+  "data": {
+    "temperature": 24.5,
+    "humidity": 67.0,
+    "pressure": 1012.3,
+    "altitude": 118.4,
+    "distance": 82.0,
+    "timestamp": "2026-07-10T10:30:00Z"
+  },
+  "deviceStatus": {
+    "esp32Online": true,
+    "thingspeakConnected": true,
+    "lastUpload": "2026-07-10T10:30:00Z",
+    "rssi": 0
+  }
+}
+\end{lstlisting}
+
+\subsection{Response (503 Service Unavailable)}
+Returned when ThingSpeak credentials are missing or the ThingSpeak request fails.
+\begin{lstlisting}[language={},caption={GET /api/sensors error response}]
+{
+  "error": "Failed to fetch data from ThingSpeak. Check your credentials in .env.local."
+}
+\end{lstlisting}
+
+\subsection{Status Codes}
+\begin{tabular}{|l|l|}
+\hline
+\rowcolor{FloodLight}
+\textbf{Status} & \textbf{Meaning} \\
+\hline
+200 & Success \\
+503 & ThingSpeak unavailable or credentials missing \\
+\hline
+\end{tabular}
+
+\section{Endpoint: GET /api/history}
+
+\subsection{Purpose}
+Returns an array of historical sensor readings from ThingSpeak for a specified time range.
+
+\subsection{Cache}
+\texttt{export const revalidate = 60;} --- Responses cached for 60 seconds.
+
+\subsection{Query Parameters}
+\begin{tabular}{|l|l|l|}
+\hline
+\rowcolor{FloodLight}
+\textbf{Parameter} & \textbf{Type} & \textbf{Values} \\
+\hline
+range & string & \texttt{1h}, \texttt{6h}, \texttt{24h}, \texttt{7d}, \texttt{30d} (default: \texttt{1h}) \\
+\hline
+\end{tabular}
+
+\subsection{Request}
+\begin{lstlisting}[language={},caption={GET /api/history request}]
+GET /api/history?range=6h
+\end{lstlisting}
+
+\subsection{Response (200 OK)}
+\begin{lstlisting}[language={},caption={GET /api/history success response}]
+[
+  {
+    "temperature": 24.1,
+    "humidity": 65.0,
+    "pressure": 1013.1,
+    "altitude": 118.0,
+    "distance": 84.0,
+    "timestamp": "2026-07-10T04:30:00Z"
+  },
+  ...
+]
+\end{lstlisting}
+
+\subsection{Range to Query Mapping}
+\begin{table}[H]
+\centering
+\caption{History Range Query Strategy}
+\begin{tabular}{|l|l|l|}
+\hline
+\rowcolor{FloodLight}
+\textbf{Range} & \textbf{Strategy} & \textbf{ThingSpeak Parameter} \\
+\hline
+1h & Count-based & \texttt{results=240} \\
+6h & Count-based & \texttt{results=1440} \\
+24h & Count-based & \texttt{results=5760} \\
+7d & Date range & \texttt{start=...\&end=...} \\
+30d & Date range & \texttt{start=...\&end=...} \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{Endpoint: GET /api/analytics}
+
+\subsection{Purpose}
+Returns per-sensor descriptive statistics (average, min, max, trend) computed over the specified time range.
+
+\subsection{Cache}
+\texttt{export const revalidate = 60;}
+
+\subsection{Query Parameters}
+Same \texttt{range} parameter as \texttt{/api/history}. Default: \texttt{24h}.
+
+\subsection{Request}
+\begin{lstlisting}[language={},caption={GET /api/analytics request}]
+GET /api/analytics?range=24h
+\end{lstlisting}
+
+\subsection{Response (200 OK)}
+\begin{lstlisting}[language={},caption={GET /api/analytics success response}]
+{
+  "range": "24h",
+  "count": 5412,
+  "analytics": {
+    "temperature": { "avg": 24.3, "min": 21.1, "max": 28.7, "trend": "up" },
+    "humidity":    { "avg": 68.2, "min": 55.0, "max": 82.1, "trend": "stable" },
+    "pressure":    { "avg": 1011.5, "min": 1008.0, "max": 1014.2, "trend": "down" },
+    "altitude":    { "avg": 118.4, "min": 117.0, "max": 120.1, "trend": "stable" },
+    "distance":    { "avg": 79.3,  "min": 35.0, "max": 110.0, "trend": "up" }
+  }
+}
+\end{lstlisting}
+
+\subsection{Trend Computation}
+The trend is computed by comparing the average of the last 10\% of readings against the first 10\%:
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{up}: last average $>$ first average $+ 0.5$
+  \item \textbf{down}: last average $<$ first average $- 0.5$
+  \item \textbf{stable}: otherwise
+\end{itemize}
+
+\section{Endpoint: GET /api/environment-score}
+
+\subsection{Purpose}
+Returns the computed Environmental Comfort Score based on the latest temperature and humidity readings.
+
+\subsection{Request}
+\begin{lstlisting}[language={},caption={GET /api/environment-score request}]
+GET /api/environment-score
+\end{lstlisting}
+
+\subsection{Response (200 OK)}
+\begin{lstlisting}[language={},caption={GET /api/environment-score response}]
+{
+  "score": 78,
+  "status": "Good"
+}
+\end{lstlisting}
+
+Score ranges: 0--40 (Poor), 41--60 (Moderate), 61--80 (Good), 81--100 (Excellent).
+
+\section{Endpoint: POST /api/flood-predict}
+
+\subsection{Purpose}
+Structural placeholder for future server-side TensorFlow.js Node.js inference. In the current implementation, actual inference runs client-side via \texttt{lib/flood-model.ts}.
+
+\subsection{Request Body}
+\begin{lstlisting}[language={},caption={POST /api/flood-predict request body}]
+{
+  "history": [
+    { "temperature": 24.5, "humidity": 67.0, "pressure": 1012.3,
+      "altitude": 118.0, "distance": 82.0,
+      "timestamp": "2026-07-10T09:30:00Z" },
+    ...  // minimum 48 entries required
+  ]
+}
+\end{lstlisting}
+
+\subsection{Response (501 Not Implemented)}
+\begin{lstlisting}[language={},caption={POST /api/flood-predict current response}]
+{
+  "message": "Server-side inference is currently disabled. Please run predictions client-side using lib/flood-model.ts",
+  "status": "pending_implementation"
+}
+\end{lstlisting}
+
+\subsection{Error Responses}
+\begin{tabular}{|l|l|}
+\hline
+\rowcolor{FloodLight}
+\textbf{Status} & \textbf{Condition} \\
+\hline
+400 & Invalid payload (missing or non-array \texttt{history} field) \\
+400 & Insufficient data (\texttt{history.length < 48}) \\
+501 & Server-side inference not yet implemented \\
+500 & Internal server error \\
+\hline
+\end{tabular}
+
+\section{API Authentication}
+
+The current implementation does not implement API-level authentication. Environment variables (\texttt{THINGSPEAK\_CHANNEL\_ID}, \texttt{THINGSPEAK\_READ\_API\_KEY}) are kept server-side only and are never exposed to the client. The ThingSpeak Read API Key provides read-only access to the channel and does not expose write credentials.
+
+\section{Environment Variables}
+
+\begin{table}[H]
+\centering
+\caption{Required Environment Variables}
+\begin{tabularx}{\linewidth}{|l|l|X|}
+\hline
+\rowcolor{FloodLight}
+\textbf{Variable} & \textbf{Scope} & \textbf{Description} \\
+\hline
+\texttt{THINGSPEAK\_CHANNEL\_ID} & Server-only & ThingSpeak channel numeric ID \\
+\texttt{THINGSPEAK\_READ\_API\_KEY} & Server-only & ThingSpeak read-only API key \\
+\texttt{NEXT\_PUBLIC\_MAPTILER\_KEY} & Public (client) & MapTiler API key for map tile service \\
+\hline
+\end{tabularx}
+\end{table}

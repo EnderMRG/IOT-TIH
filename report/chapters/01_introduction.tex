@@ -1,0 +1,81 @@
+﻿%=============================================================================
+% Chapter 1: Introduction
+%=============================================================================
+\chapter{Introduction}
+
+\section{Background}
+
+Flooding is one of the most frequent and destructive natural disasters affecting millions of people globally, and the Indian subcontinent — in particular the Brahmaputra river basin of Assam — is among the most vulnerable regions in the world. Each monsoon season, rapidly rising water levels inundate vast agricultural tracts, damage infrastructure, displace communities, and claim lives. Historically, disaster response in these regions has been reactive: by the time human observers detect an unsafe water level and communicate the warning to downstream communities, the available evacuation window is dangerously narrow.
+
+The convergence of Internet of Things (IoT) sensor technology, real-time cloud data platforms, and modern machine learning has created a new class of early warning systems that can operate continuously, inexpensively, and at the network edge. Instead of relying on manual gauge readings or expensive government-operated stations, a low-cost ESP32 microcontroller equipped with environmental sensors can upload telemetry to the cloud every 15 seconds, 24 hours a day, feeding an intelligent dashboard that monitors conditions, generates alerts, and predicts water levels up to four hours in advance.
+
+\textbf{FloodEye} is a response to this need: a full-stack Progressive Web Application (PWA) developed during the internship at the Technology Innovation Hub (TIH), IIT Guwahati, that brings together IoT hardware, cloud integration, a modern web frontend, and an in-browser machine learning model into a cohesive, deployable flood early warning system.
+
+\section{Problem Statement}
+
+Despite the widespread availability of affordable IoT components and cloud platforms, most rural and semi-urban monitoring deployments in flood-prone regions suffer from one or more of the following deficiencies:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Manual data collection:} Water level gauges require physical inspection, introducing delays and gaps.
+  \item \textbf{No predictive capability:} Existing simple telemetry dashboards display only current readings; they cannot forecast whether levels will reach dangerous thresholds in the next several hours.
+  \item \textbf{No offline resilience:} If the network link to a sensor breaks, many dashboards simply show an error, losing even the last known reading.
+  \item \textbf{High infrastructure cost:} Dedicated server deployments for prediction models require significant maintenance overhead not feasible for research or municipal teams.
+  \item \textbf{Poor user experience:} Many monitoring tools present raw JSON feeds or rudimentary tables rather than actionable, visually clear information.
+\end{itemize}
+
+FloodEye was designed to address every one of these gaps using modern, open, and cost-effective technology.
+
+\section{Existing Challenges}
+
+Several technical and operational challenges were encountered that shaped the design of FloodEye:
+
+\begin{enumerate}[leftmargin=1.5em]
+  \item \textbf{Sensor data latency:} The ESP32 uploads to ThingSpeak every 15 seconds; the dashboard must cache data intelligently to avoid serving stale readings while preventing excessive API calls.
+  \item \textbf{Model deployment at the edge:} Running a deep learning model server-side requires dedicated infrastructure. Running it entirely in the browser using TensorFlow.js requires careful weight management and compatibility patching.
+  \item \textbf{Keras 3 -- TensorFlow.js incompatibility:} The trained model uses Keras 3, whose export format differs from what TensorFlow.js expects, requiring a custom patch script.
+  \item \textbf{Insufficient real-time data for prediction:} The model requires 48 consecutive hourly readings; new installations do not have this history, requiring a sample-data padding strategy.
+  \item \textbf{Alert fatigue:} Naive threshold alerting fires continuously while a condition persists. A per-type cooldown and deduplication system was required.
+\end{enumerate}
+
+\section{Motivation}
+
+The motivation for FloodEye stems from three sources:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Social impact:} Assam experiences severe annual flooding. An affordable, deployable early warning system could give vulnerable communities the minutes to hours of advance notice needed to protect lives and property.
+  \item \textbf{Technical exploration:} The project provided an opportunity to integrate four distinct engineering disciplines — embedded systems, cloud data pipelines, full-stack web development, and applied machine learning — into a single cohesive product.
+  \item \textbf{Research alignment:} The internship host, TIH IIT Guwahati, focuses on technology translation from lab to field; FloodEye is a concrete demonstration of how academic research in IoT and ML can be packaged for real-world deployment.
+\end{itemize}
+
+\section{Objectives}
+
+The primary objectives of the FloodEye project are:
+
+\begin{enumerate}[leftmargin=1.5em]
+  \item Monitor water level and environmental conditions in real time using an ESP32 microcontroller equipped with BMP180, DHT11, and HC-SR04 sensors.
+  \item Transmit sensor readings to the ThingSpeak cloud platform at 15-second intervals via HTTP.
+  \item Build a responsive Next.js full-stack web application that fetches, caches, and visualises live and historical telemetry.
+  \item Implement a smart alerting engine with configurable thresholds and per-type cooldowns for: high water level, rapid water rise, high temperature, high humidity, rapid pressure change, and sensor offline conditions.
+  \item Deploy and run a 1D-CNN + Bidirectional LSTM + Attention deep learning model entirely within the browser using TensorFlow.js, providing 4-hour water level forecasts.
+  \item Implement a Progressive Web App (PWA) so users can install the dashboard on mobile and desktop devices and receive native OS notifications.
+  \item Deploy the entire application on Vercel with zero-server-management continuous deployment.
+\end{enumerate}
+
+\section{Scope of the Project}
+
+FloodEye covers the following scope:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{In scope:} Single-channel ESP32 sensor node; ThingSpeak cloud integration; Next.js full-stack dashboard; browser-side ML inference; PWA; Vercel deployment; real-time alerts; historical analytics; PDF/CSV export; interactive map.
+  \item \textbf{Out of scope:} Multi-node mesh networks (future enhancement); MQTT broker integration; on-device model inference on the ESP32; SMS/email notification gateway; user authentication with database persistence (authentication routes exist as a structural placeholder only).
+\end{itemize}
+
+\section{Expected Outcomes}
+
+\begin{itemize}[leftmargin=1.5em]
+  \item A fully functional, publicly deployable flood monitoring dashboard accessible from any modern web browser.
+  \item A trained deep learning model capable of predicting water levels 4 hours ahead with a mean absolute error below 5 cm on the test dataset.
+  \item Automated alerts with configurable thresholds, cooldowns, and native browser push notification support.
+  \item A Progressive Web App installable on Android, iOS, and desktop platforms.
+  \item Comprehensive technical documentation suitable for replication, extension, and field deployment.
+\end{itemize}

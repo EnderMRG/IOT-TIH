@@ -1,0 +1,64 @@
+﻿%=============================================================================
+% Chapter 17: Challenges Faced
+%=============================================================================
+\chapter{Challenges Faced}
+
+\section{Keras 3 to TensorFlow.js Incompatibility}
+
+\textbf{Challenge:} The model was trained using TensorFlow/Keras 3, which exports a \texttt{model.json} format that differs from what TensorFlow.js (built for Keras 2) expects. Specific incompatibilities included:
+\begin{itemize}[leftmargin=1.5em]
+  \item \texttt{input\_layers} and \texttt{output\_layers} were flat arrays in Keras 3 instead of nested arrays.
+  \item \texttt{inbound\_nodes} used Keras tensor objects instead of flat \texttt{[name, node, tensor]} arrays.
+  \item InputLayer used \texttt{batch\_shape} instead of \texttt{batchInputShape}.
+  \item LSTM weight paths contained \texttt{lstm\_cell/} sub-scopes not expected by TFJS.
+  \item The \texttt{Orthogonal} weight initialiser caused a severe slowdown during TFJS model loading.
+  \item \texttt{DTypePolicy} objects were used for dtype instead of plain strings.
+\end{itemize}
+
+\textbf{Solution:} A custom \texttt{patch\_model.js} utility script was developed that reads the exported \texttt{model.json}, applies seven structural transformations to convert it to Keras 2 format, and writes the patched file back. Additionally, the weight loading strategy was changed from TFJS's default name-based matching to manual positional assignment using \texttt{layer.setWeights()}, completely bypassing TFJS's internal naming resolution.
+
+\section{Custom AttentionLayer in Browser}
+
+\textbf{Challenge:} The Python training code defines a custom \texttt{AttentionLayer} as a Keras Layer subclass. TensorFlow.js does not know about this layer and cannot deserialise it from the model JSON without explicit registration.
+
+\textbf{Solution:} The AttentionLayer was reimplemented in TypeScript as a \texttt{tf.layers.Layer} subclass with the correct \texttt{build()}, \texttt{call()}, and \texttt{computeOutputShape()} methods. The attention mechanism (tanh scoring + softmax weighting + weighted sum) was replicated using TensorFlow.js tensor operations. The layer is registered via \texttt{tf.serialization.registerClass(AttentionLayer)} before model loading, allowing the model JSON to be deserialised correctly.
+
+\section{Insufficient Live Data for Model Inference}
+
+\textbf{Challenge:} The model requires exactly 48 readings (representing 48 hours of history) to make a prediction. A freshly deployed dashboard with only a few live readings cannot run inference.
+
+\textbf{Solution:} A \texttt{sample\_data.json} file containing 200 rows from the test set is shipped with the application (\texttt{public/sample\_data.json}). When the live history is shorter than 48 entries, the prediction hook prepends records from the sample data to reach the required window size. This allows the ML inference to operate immediately on new deployments, with the live data gradually replacing the sample data as the session accumulates readings.
+
+\section{ThingSpeak API Rate Limits and Cache Stampedes}
+
+\textbf{Challenge:} ThingSpeak's free tier limits updates to one per 15 seconds. With multiple concurrent dashboard users (e.g., during a flood event when many people check the app simultaneously), naive polling would trigger many parallel ThingSpeak API calls, potentially exceeding rate limits or introducing race conditions.
+
+\textbf{Solution:} A two-layer protection strategy was implemented:
+\begin{enumerate}[leftmargin=1.5em]
+  \item \textbf{In-memory cache with TTL:} Results are cached for 14 s (server) and 60 s (ISR CDN). Any request within the TTL window is served from cache without hitting ThingSpeak.
+  \item \textbf{Request coalescing:} If a fetch is already in-flight (first cache miss), all subsequent callers await the same Promise rather than firing new parallel requests to ThingSpeak.
+\end{enumerate}
+
+\section{Alert Fatigue}
+
+\textbf{Challenge:} A simple threshold alert system fires on every poll cycle while a condition persists, generating hundreds of duplicate alerts during a multi-hour flood event.
+
+\textbf{Solution:} A per-type cooldown system was implemented using \texttt{lastAlertTimeRef}. Each alert type has a configurable cooldown period (1--10 minutes). Alerts of the same type are suppressed within the cooldown window. Additionally, deduplication ensures that if the same alert type is already in the list, its message and timestamp are updated rather than adding a duplicate entry. Alert counts are limited to a maximum of 20 items in the list.
+
+\section{Offline Data Loss}
+
+\textbf{Challenge:} When the ESP32 goes offline or the network is interrupted, the dashboard loses all sensor data, showing only an error state.
+
+\textbf{Solution:} The TelemetryProvider was extended with \texttt{localStorage} persistence. On every successful data fetch, the latest reading, history array, device status, and last-seen timestamp are written to localStorage. When a fetch fails, the provider reads these cached values and enters ``stale'' mode, showing the last known data with an appropriate offline banner.
+
+\section{GSAP + Lenis SSR Compatibility}
+
+\textbf{Challenge:} GSAP's ScrollTrigger and Lenis smooth scroll both rely on browser-specific APIs (\texttt{window}, \texttt{document}) that are not available during Next.js server-side rendering.
+
+\textbf{Solution:} All GSAP and Lenis code is guarded with \texttt{"use client"} directives and lazily initialised after component mount using \texttt{useEffect}. The \texttt{useGSAP} hook from \texttt{@gsap/react} handles proper cleanup of ScrollTrigger instances to prevent memory leaks on route changes.
+
+\section{MapLibre GL SSR Incompatibility}
+
+\textbf{Challenge:} MapLibre GL requires a browser canvas context (WebGL) unavailable in Node.js/SSR.
+
+\textbf{Solution:} The Map component is loaded using Next.js \texttt{dynamic()} with \texttt{\{ssr: false\}} to ensure it only renders in the browser. A skeleton placeholder is shown during the loading state.

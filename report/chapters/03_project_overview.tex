@@ -1,0 +1,143 @@
+%=============================================================================
+% Chapter 3: Project Overview
+%=============================================================================
+\chapter{Project Overview}
+
+\section{System Description}
+
+FloodEye is a highly responsive Progressive Web Application (PWA) built with Next.js 16 (App Router) and Tailwind CSS v4. It is designed to visualise real-time water level data and environmental conditions captured by an ESP32 microcontroller. The system combines a glassmorphism UI, interactive Recharts-powered charts, an intelligent alerting engine, a live MapLibre GL map, and an in-browser TensorFlow.js deep learning model into a unified monitoring and prediction platform.
+
+The system operates in three interconnected layers:
+
+\begin{enumerate}[leftmargin=1.5em]
+  \item \textbf{Hardware Layer:} An ESP32 DevKit with BMP180 (pressure, altitude), DHT11 (temperature, humidity), and HC-SR04 (water distance) sensors uploads readings to ThingSpeak every 15 seconds.
+  \item \textbf{Backend Layer:} Next.js Route Handlers fetch data from ThingSpeak, apply caching with request coalescing, compute analytics statistics, and serve clean telemetry objects to the frontend.
+  \item \textbf{Frontend Layer:} A React-based dashboard renders real-time sensor cards, historical trend charts, an alert log, a device location map, an ML prediction card, and an environmental comfort score.
+\end{enumerate}
+
+\section{Core Modules}
+
+\begin{table}[H]
+\centering
+\caption{FloodEye Core Modules}
+\begin{tabularx}{\linewidth}{|l|X|}
+\hline
+\rowcolor{FloodLight}
+\textbf{Module} & \textbf{Description} \\
+\hline
+IoT Hardware & ESP32 + sensors; uploads telemetry every 15 s via HTTP POST \\
+\hline
+ThingSpeak Integration & Cloud IoT data platform; stores field-mapped sensor readings \\
+\hline
+TelemetryProvider & React Context providing live data, history, alerts, settings, and device status to all dashboard components \\
+\hline
+Sensor Data APIs & Next.js Route Handlers: \texttt{/api/sensors}, \texttt{/api/history}, \texttt{/api/analytics}, \texttt{/api/environment-score} \\
+\hline
+Smart Alert Engine & Configurable threshold evaluation with cooldown and deduplication; native OS push notification support \\
+\hline
+ML Prediction Engine & 1D-CNN + BiLSTM + Attention model; runs client-side in TensorFlow.js; predicts water level 4 hours ahead \\
+\hline
+Historical Analytics & Time-series charts for all five sensor channels with selectable windows: 1h, 6h, 24h, 7d, 30d \\
+\hline
+Interactive Map & MapLibre GL + MapTiler; shows sensor node location with live reading overlay \\
+\hline
+PWA & Installable offline-capable app via \texttt{next-pwa}; service worker caching; native install prompt \\
+\hline
+Data Export & CSV and PDF download of the last 100 historical readings using jsPDF and PapaParse \\
+\hline
+\end{tabularx}
+\end{table}
+
+\section{Key Features}
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{AI-Powered Flood Prediction:} A hybrid 1D-CNN + Bidirectional LSTM + Attention model, trained on Assam sensor data and converted to TensorFlow.js, runs entirely in the browser and predicts water levels 4 hours in advance.
+  \item \textbf{Progressive Web App (PWA):} Installable on iOS, Android, and desktop with custom install prompts and offline caching of the last known sensor readings.
+  \item \textbf{Scrollytelling Landing Page:} An immersive introduction page built with GSAP ScrollTrigger and Lenis smooth scrolling, featuring animated sections and a background slideshow.
+  \item \textbf{Live Interactive Map:} MapLibre GL and MapTiler render an interactive map pinpointing the sensor node location with live water level, temperature, and humidity overlays.
+  \item \textbf{Real-Time Telemetry:} Five sensor channels (Water Level, Temperature, Humidity, Atmospheric Pressure, Altitude) are displayed with live trend arrows, delta indicators, and sparkline mini-charts.
+  \item \textbf{Dynamic Analytics:} Interactive line charts with configurable time windows and per-sensor colour coding.
+  \item \textbf{Environmental Comfort Score:} A composite score derived from temperature and humidity readings, displayed as a percentage with a qualitative label (Excellent / Good / Moderate / Poor).
+  \item \textbf{Smart Alerts Engine:} Seven alert types with severity levels (critical / warning / info), per-type cooldowns, deduplication, and native OS push notification support.
+  \item \textbf{Offline/Cached Data:} When the ESP32 goes offline, the dashboard persists the last known reading in \texttt{localStorage} and displays an offline banner rather than an error.
+  \item \textbf{Data Export:} History page supports one-click export of sensor logs as a CSV file or a formatted PDF report.
+  \item \textbf{Role-Based Access:} Admin role unlocks the Settings page and diagnostic panels; the User role provides read-only access.
+\end{itemize}
+
+\section{Functional Workflow}
+
+The end-to-end functional workflow of FloodEye is illustrated in Figure~\ref{fig:pipeline_overview}.
+
+\begin{figure}[H]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[node distance=0.7cm]
+  % Column 1: Hardware
+  \node[iotbox] (sensor) {ESP32 +\\Sensors};
+  \node[iotbox, below=of sensor] (ts) {ThingSpeak\\Cloud};
+
+  % Column 2: Backend
+  \node[process, right=2.5cm of sensor] (api) {Next.js\\API Routes};
+  \node[process, below=of api] (cache) {Cache \&\\Coalescing};
+  \node[process, below=of cache] (analytics) {Analytics\\Engine};
+
+  % Column 3: Frontend
+  \node[process, right=2.5cm of api] (dash) {Dashboard\\UI};
+  \node[process, below=of dash] (alert) {Alert\\Engine};
+  \node[process, below=of alert] (ml) {TF.js ML\\Inference};
+
+  % Column 4: Output
+  \node[startend, right=2.5cm of dash] (out1) {Live\\Cards};
+  \node[startend, below=of out1] (out2) {Alerts \&\\Notifs};
+  \node[startend, below=of out2] (out3) {4-Hour\\Forecast};
+
+  % Arrows col 1
+  \draw[arrow] (sensor) -- (ts);
+  % Arrows col 1->2
+  \draw[arrow] (ts) -- node[above,font=\tiny]{REST} (api);
+  % Arrows col 2
+  \draw[arrow] (api) -- (cache);
+  \draw[arrow] (cache) -- (analytics);
+  % Arrows col 2->3
+  \draw[arrow] (api) -- (dash);
+  \draw[arrowg] (analytics) -| (alert);
+  % Arrows col 3
+  \draw[arrow] (dash) -- (alert);
+  \draw[arrow] (alert) -- (ml);
+  % Arrows col 3->4
+  \draw[arrow] (dash) -- (out1);
+  \draw[arrow] (alert) -- (out2);
+  \draw[arrow] (ml) -- (out3);
+\end{tikzpicture}%
+}
+\caption{FloodEye End-to-End Functional Pipeline}
+\label{fig:pipeline_overview}
+\end{figure}
+
+\section{User Workflow}
+
+A typical user interaction with FloodEye follows this sequence:
+
+\begin{enumerate}[leftmargin=1.5em]
+  \item The user navigates to the FloodEye URL (e.g.\ on Vercel) or opens the installed PWA on their device.
+  \item The immersive landing page loads with GSAP animations and a background slideshow of flood monitoring imagery.
+  \item The user clicks ``Go to Dashboard'' or the direct dashboard link.
+  \item The dashboard fetches the latest sensor reading from \texttt{/api/sensors}. The TelemetryProvider begins polling at the configured refresh interval (default: 15 seconds).
+  \item Five sensor cards display live values (Water Level, Temperature, Humidity, Pressure, Altitude) with trend arrows.
+  \item Simultaneously, the \texttt{useFloodPrediction} hook loads the TensorFlow.js model from \texttt{/public/tfjs\_model/} and, once the model is ready and at least one reading is available (padded with sample data if necessary), runs inference to display the 4-hour water level forecast.
+  \item If any sensor reading breaches a configured threshold, an alert card appears in the Alert Panel. Critical alerts trigger a native browser push notification (if permission was granted).
+  \item The user can navigate to the \textbf{Analytics} page to view per-channel time-series charts with the time-window selector.
+  \item The \textbf{History} page presents a statistical summary table and allows download of sensor logs as CSV or PDF.
+  \item The \textbf{Predictions} page provides a detailed ML forecasting panel with risk gauge and feature contributions.
+  \item The \textbf{Alerts} page shows the full alert log, filterable by severity.
+  \item Admin users can navigate to \textbf{Settings} to adjust alert thresholds, refresh interval, and toggle simulation mode.
+\end{enumerate}
+
+\section{Navigation Structure}
+
+FloodEye has two main navigation zones:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Landing Zone:} Root route (\texttt{/}) — the scrollytelling landing page with navigation bar, hero section, feature showcase, team profiles, and technology section.
+  \item \textbf{Dashboard Zone:} All routes under \texttt{/dashboard} — protected by a shared layout with a sidebar navigation containing: Dashboard, Analytics, History, Predictions, Alerts, Devices, and Settings.
+\end{itemize}

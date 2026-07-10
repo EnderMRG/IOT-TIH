@@ -1,0 +1,226 @@
+﻿%=============================================================================
+% Appendix
+%=============================================================================
+\chapter{Project Folder Structure}
+\label{app:structure}
+
+\begin{lstlisting}[language={},caption={Top-level project folder structure}]
+IOT-TIH/
+|-- app/                      Next.js App Router pages
+|   |-- (auth)/               Auth route group (placeholder)
+|   |-- about/                About page
+|   |-- api/                  API Route Handlers
+|   |   |-- analytics/        GET /api/analytics
+|   |   |-- environment-score/ GET /api/environment-score
+|   |   |-- flood-predict/    POST /api/flood-predict
+|   |   |-- history/          GET /api/history
+|   |   `-- sensors/          GET /api/sensors
+|   |-- dashboard/            Dashboard zone
+|   |   |-- alerts/           Alert log page
+|   |   |-- analytics/        Analytics charts page
+|   |   |-- devices/          Device management page
+|   |   |-- history/          History + export page
+|   |   |-- predictions/      ML forecasting page
+|   |   |-- settings/         Settings page (admin)
+|   |   |-- layout.tsx        Dashboard shared layout
+|   |   `-- page.tsx          Dashboard home
+|   |-- gallary/              Gallery page
+|   |-- technologies/         Technologies page
+|   |-- globals.css           Global Tailwind CSS
+|   |-- layout.tsx            Root layout
+|   |-- manifest.ts           PWA manifest
+|   `-- page.tsx              Landing page
+|-- components/
+|   |-- Map.tsx               MapLibre GL sensor location map
+|   |-- PWAInstallButton.tsx  PWA install button
+|   |-- PWAInstallPrompt.tsx  PWA install modal
+|   |-- about/                About page components
+|   |-- alerts/               AlertPanel, FloodAlertBanner
+|   |-- cards/                SensorCard, DeviceStatusCard, etc.
+|   |-- charts/               CustomLineChart
+|   |-- common/               TimeFilter, EmptyState, etc.
+|   |-- gauges/               Gauge components
+|   |-- landing/              Landing page components
+|   |-- layout/               Sidebar, TopBar
+|   |-- providers/
+|   |   `-- TelemetryProvider.tsx  Central data provider
+|   `-- ui/                   shadcn/ui primitives
+|-- hooks/
+|   |-- use-outside-click.ts
+|   |-- useFloodPrediction.ts
+|   `-- useNativeNotification.ts
+|-- lib/
+|   |-- actions/              Server Actions
+|   |-- flood-model.ts        TF.js model loader + inference
+|   |-- thingspeak.ts         ThingSpeak REST client + cache
+|   `-- utils.ts              cn() utility
+|-- Model/
+|   |-- FloodMonitoring.ipynb Jupyter training notebook
+|   |-- config.json           Model configuration
+|   |-- flood_plots/          Training/evaluation plots
+|   |   |-- eda_plots.png
+|   |   `-- evaluation_plots.png
+|   |-- nb_code.py            Extracted Python training script
+|   |-- sample_data.json      Test-set sample data (200 rows)
+|   |-- scalers.json          StandardScaler parameters
+|   `-- tfjs_model/           Exported TF.js model
+|       |-- group1-shard1of1.bin
+|       `-- model.json
+|-- IOTcode/
+|   `-- IOTcode.ino           ESP32 Arduino sketch
+|-- public/
+|   |-- FloodEye.jpeg         Logo
+|   |-- iitlogo.png           IIT Guwahati logo
+|   |-- logotih.png           TIH logo
+|   |-- model_config.json     (copy of Model/config.json)
+|   |-- model_scalers.json    (copy of Model/scalers.json)
+|   |-- sample_data.json      (copy for browser access)
+|   |-- tfjs_model/           (copy for browser access)
+|   `-- ...team photos, icons, service worker files...
+|-- .env.local                Local environment variables
+|-- next.config.ts            Next.js + PWA configuration
+|-- package.json              NPM dependencies
+|-- patch_model.js            Keras 3 to TFJS compat patch
+|-- tsconfig.json             TypeScript configuration
+`-- README.md                 Project documentation
+\end{lstlisting}
+
+%─────────────────────────────────────────────────────────────────────────────
+\chapter{Key Configuration Files}
+\label{app:config}
+
+\section{Model Configuration (\texttt{config.json})}
+
+\begin{lstlisting}[language={},caption={Model/config.json}]
+{
+  "LOOKBACK": 48,
+  "DANGER_THRESHOLD": 450,
+  "features": [
+    "hour_sin", "hour_cos", "month_sin", "month_cos",
+    "temperature_c", "humidity_percent", "pressure_hpa",
+    "pressure_trend_3h", "humidity_trend_3h",
+    "water_level_cm", "rate_of_change_cm_per_hr"
+  ]
+}
+\end{lstlisting}
+
+\section{Scaler Parameters (\texttt{scalers.json}) -- Excerpt}
+
+\begin{lstlisting}[language={},caption={Model/scalers.json (abbreviated)}]
+{
+  "x_mean": [0.000119, -0.000207, 0.211536, 0.007709,
+             23.024, 75.704, 1007.80, -0.001786,
+             0.001941, 319.70, 0.002487],
+  "x_scale": [0.707146, 0.707067, 0.696888, 0.685229,
+              5.131263, 9.102349, 4.417720, 1.080218,
+              4.439483, 53.942310, 2.080931],
+  "y_mean": 319.70989,
+  "y_scale": 53.93774,
+  "feature_order": ["hour_sin", "hour_cos", ...]
+}
+\end{lstlisting}
+
+\section{ESP32 Firmware (\texttt{IOTcode.ino})}
+
+\begin{lstlisting}[language=C,caption={IOTcode/IOTcode.ino -- BMP180 sensor sketch}]
+#include <Wire.h>
+#include <Adafruit_BMP085.h>
+
+Adafruit_BMP085 bmp;
+
+void setup() {
+  Serial.begin(115200);
+  delay(3000);
+  Wire.begin(21, 22);  // SDA=21, SCL=22
+  if (!bmp.begin()) {
+    Serial.println("BMP180 NOT FOUND!");
+    while (1);
+  }
+  Serial.println("BMP180 FOUND!");
+}
+
+void loop() {
+  Serial.print("Temperature : ");
+  Serial.print(bmp.readTemperature());
+  Serial.println(" C");
+  Serial.print("Pressure    : ");
+  Serial.print(bmp.readPressure() / 100.0);
+  Serial.println(" hPa");
+  Serial.print("Altitude    : ");
+  Serial.print(bmp.readAltitude());
+  Serial.println(" m");
+  delay(2000);
+}
+\end{lstlisting}
+
+%─────────────────────────────────────────────────────────────────────────────
+\chapter{Package Dependencies}
+\label{app:dependencies}
+
+\begin{table}[H]
+\centering
+\caption{Production NPM Dependencies}
+\begin{tabularx}{\linewidth}{|l|l|X|}
+\hline
+\rowcolor{FloodLight}
+\textbf{Package} & \textbf{Version} & \textbf{Purpose} \\
+\hline
+next & 16.2.10 & Full-stack React framework \\
+react & 19.2.4 & UI library \\
+react-dom & 19.2.4 & React DOM renderer \\
+typescript & \^{}5 & Type safety \\
+tailwindcss & \^{}4 & Utility-first CSS \\
+@tensorflow/tfjs & \^{}4.22.0 & Browser ML inference \\
+@ducanh2912/next-pwa & \^{}10.2.9 & PWA service worker \\
+recharts & \^{}3.9.2 & Time-series charts \\
+maplibre-gl & \^{}5.24.0 & WebGL map rendering \\
+react-map-gl & \^{}8.1.1 & React wrapper for MapLibre \\
+framer-motion & \^{}12.42.2 & UI animations \\
+gsap & \^{}3.15.0 & Scroll animations (landing) \\
+lenis & \^{}1.3.25 & Smooth scroll \\
+jspdf & \^{}4.2.1 & PDF generation \\
+jspdf-autotable & \^{}5.0.8 & PDF table formatting \\
+lucide-react & \^{}1.23.0 & Icon library \\
+axios & \^{}1.7.9 & HTTP client \\
+date-fns & \^{}4.1.0 & Date formatting utilities \\
+@tanstack/react-query & \^{}5.66.0 & Data fetching cache \\
+shadcn & \^{}4.13.0 & UI component system \\
+\hline
+\end{tabularx}
+\end{table}
+
+%─────────────────────────────────────────────────────────────────────────────
+\chapter{Glossary and Acronyms}
+\label{app:glossary}
+
+\begin{description}[leftmargin=3cm, style=nextline]
+  \item[API] Application Programming Interface
+  \item[BMP180] Bosch BMP180 digital pressure sensor (I\textsuperscript{2}C)
+  \item[BiLSTM] Bidirectional Long Short-Term Memory neural network
+  \item[CDN] Content Delivery Network
+  \item[CI/CD] Continuous Integration / Continuous Deployment
+  \item[CNN] Convolutional Neural Network
+  \item[Conv1D] One-dimensional Convolutional Layer
+  \item[DHT11] Digital Humidity and Temperature sensor
+  \item[ESP32] Espressif Systems ESP32 dual-core Wi-Fi + Bluetooth SoC
+  \item[GSAP] GreenSock Animation Platform
+  \item[HC-SR04] HC-SR04 ultrasonic distance sensor
+  \item[HTTP] Hypertext Transfer Protocol
+  \item[IoT] Internet of Things
+  \item[ISR] Incremental Static Regeneration (Next.js caching)
+  \item[JSON] JavaScript Object Notation
+  \item[LSTM] Long Short-Term Memory recurrent neural network
+  \item[MAE] Mean Absolute Error
+  \item[ML] Machine Learning
+  \item[MQTT] Message Queuing Telemetry Transport
+  \item[MSE] Mean Squared Error
+  \item[PWA] Progressive Web Application
+  \item[REST] Representational State Transfer
+  \item[SSR] Server-Side Rendering
+  \item[TF.js] TensorFlow.js
+  \item[TIH] Technology Innovation Hub
+  \item[TTL] Time To Live (cache duration)
+  \item[UI] User Interface
+  \item[URL] Uniform Resource Locator
+  \item[WebGL] Web Graphics Library (browser GPU API)
+\end{description}

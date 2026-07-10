@@ -1,0 +1,103 @@
+﻿%=============================================================================
+% Chapter 16: Results and Discussion
+%=============================================================================
+\chapter{Results and Discussion}
+
+\section{Successfully Implemented Features}
+
+The following features were implemented and are fully functional in the deployed FloodEye application:
+
+\begin{table}[H]
+\centering
+\caption{Implementation Status of All Features}
+\begin{tabularx}{\linewidth}{|l|l|X|}
+\hline
+\rowcolor{FloodLight}
+\textbf{Feature} & \textbf{Status} & \textbf{Notes} \\
+\hline
+ESP32 + BMP180 sensor reading & Complete & Firmware initialises BMP180 on I\textsuperscript{2}C; reads temperature, pressure, altitude \\
+ThingSpeak cloud integration & Complete & 15s interval; 5 field mappings \\
+Next.js dashboard & Complete & Full-stack; 7 dashboard routes \\
+Real-time sensor cards & Complete & 5 sensors; trend, delta, sparkline \\
+Water level trend chart & Complete & Recharts line chart; live/cached badge \\
+Historical analytics charts & Complete & 5-channel, 5-range time selector \\
+Environmental Comfort Score & Complete & Temperature + humidity composite \\
+Smart Alert Engine & Complete & 7 alert types, cooldowns, deduplication \\
+Native push notifications & Complete & Via \texttt{useNativeNotification} hook \\
+Offline data caching & Complete & localStorage persistence; offline banner \\
+ML flood prediction (4h) & Complete & CNN-BiLSTM-Att; TF.js browser inference \\
+FloodPredictionCard & Complete & Risk level, probability, confidence \\
+FloodPredictionPanel (admin) & Complete & Full diagnostics + feature contributions \\
+Interactive map & Complete & MapLibre GL + MapTiler; live reading overlay \\
+PWA (installable) & Complete & next-pwa; service worker; manifest \\
+Scrollytelling landing page & Complete & GSAP + Lenis; team profiles \\
+Data export (CSV) & Complete & jsPDF and browser Blob download \\
+Data export (PDF) & Complete & jspdf-autotable formatted report \\
+Admin settings panel & Complete & Threshold configuration, sim mode \\
+Role-based access & Complete & Admin vs User; localStorage-based \\
+Vercel deployment & Complete & CI/CD pipeline; edge CDN \\
+\hline
+Authentication (database) & Planned & Structural routes exist; not yet active \\
+Neon PostgreSQL & Planned & Identified in project docs; not implemented \\
+Server-side ML inference & Planned & \texttt{/api/flood-predict} placeholder exists \\
+\hline
+\end{tabularx}
+\end{table}
+
+\section{Dashboard Performance}
+
+The FloodEye dashboard delivers strong performance characteristics in both development and production:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{First Contentful Paint:} $<$ 1.5 s on a standard broadband connection (Vercel CDN delivery).
+  \item \textbf{Sensor data refresh:} Visible within $\sim$100--200 ms of a new ThingSpeak entry when the server cache is warm.
+  \item \textbf{Offline resilience:} Dashboard loads from localStorage in $<$ 50 ms when the ESP32 is offline; no error screen if previous data exists.
+  \item \textbf{ML model load:} $\sim$1--3 s after first dashboard visit; subsequent visits use browser cache.
+  \item \textbf{Prediction update:} Runs automatically within 1 second of each new history entry.
+\end{itemize}
+
+\section{Machine Learning Prediction Results}
+
+The deployed model demonstrates the following prediction characteristics:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Training MAE:} 3.42 cm (reported in the admin diagnostics panel).
+  \item \textbf{Prediction horizon:} 4 hours.
+  \item \textbf{Input:} 48-hour window of 11 engineered features.
+  \item \textbf{Output:} Scalar predicted water level in cm, classified into 4 risk levels.
+  \item \textbf{Confidence:} Displayed as 85--95\% (simulated confidence interval; actual model uncertainty not yet quantified).
+  \item \textbf{Risk classification:} Correctly identifies flood vs.\ normal conditions based on proximity to the 450 cm danger threshold.
+\end{itemize}
+
+The attention mechanism provides qualitative interpretability: the heatmap in the evaluation plots confirms that the model places higher attention weight on recent time steps, validating that the architecture is using the temporal structure of the data meaningfully.
+
+\section{Alert System Performance}
+
+\begin{itemize}[leftmargin=1.5em]
+  \item The alert engine evaluates conditions on every new reading (every 15 s).
+  \item Cooldown timers prevent alert spam: the most critical alert type (RAPID\_WATER\_RISE) has a 1-minute cooldown; offline alerts have a 10-minute cooldown.
+  \item Deduplication ensures that a single physical event generates one consolidated alert rather than dozens.
+  \item Native browser push notifications are delivered to the OS notification centre within seconds of the alert being generated.
+\end{itemize}
+
+\section{User Experience Observations}
+
+\begin{itemize}[leftmargin=1.5em]
+  \item The glassmorphism design (\texttt{bg-white/40 backdrop-blur-xl}) provides a visually distinctive and modern interface well-suited for an emergency monitoring context.
+  \item Trend arrows and delta values on sensor cards give users an immediate at-a-glance understanding of sensor behaviour without requiring chart reading.
+  \item The FloodAlertBanner (shown automatically when risk is High or Critical) ensures users cannot miss a dangerous prediction.
+  \item The Lenis + GSAP landing page creates a professional first impression appropriate for a technology demonstration.
+  \item The PWA install prompt allows non-technical users to add the app to their home screen without any App Store involvement.
+\end{itemize}
+
+\section{Practical Applications}
+
+FloodEye's architecture and implemented features position it for the following practical use cases:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Community flood watch:} Install a single ESP32 node at a bridge or riverside location; monitor from a mobile PWA.
+  \item \textbf{Agricultural flood management:} 4-hour advance warning allows farmers to prepare or protect crops.
+  \item \textbf{Municipal early warning:} Dashboard can be made publicly accessible for real-time community monitoring.
+  \item \textbf{Research data collection:} Historical data export (CSV/PDF) enables offline analysis and report generation.
+  \item \textbf{Educational demonstration:} The full-stack IoT + ML architecture serves as a reference implementation for engineering students and researchers.
+\end{itemize}

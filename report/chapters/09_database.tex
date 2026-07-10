@@ -1,0 +1,151 @@
+﻿%=============================================================================
+% Chapter 9: Database Design
+%=============================================================================
+\chapter{Database Design}
+
+\section{Data Storage Strategy}
+
+FloodEye employs a distributed data storage strategy consisting of three complementary layers rather than a single monolithic database:
+
+\begin{enumerate}[leftmargin=1.5em]
+  \item \textbf{ThingSpeak Cloud Storage:} The primary time-series store for all sensor readings. ThingSpeak acts as the IoT backend database, storing every field-mapped reading uploaded by the ESP32 with a UTC timestamp and an auto-incrementing \texttt{entry\_id}.
+  \item \textbf{Browser localStorage:} A client-side persistence layer that stores the last known sensor reading, history array, device status, and last-seen timestamp. This enables offline resilience when the ESP32 or ThingSpeak is unreachable.
+  \item \textbf{In-Memory Server Cache:} The Next.js server maintains an in-process cache (using \texttt{globalThis.\_\_thingspeakCache}) that prevents repeated API calls to ThingSpeak within the cache TTL window.
+\end{enumerate}
+
+\textit{Note: The project documentation (\texttt{TIHDash.md}) references a Neon PostgreSQL database for storing users, devices, alert history, and settings. In the current implementation, this database layer is not active. All session data, settings, and alerts are managed in-memory/localStorage only. A Neon PostgreSQL integration is identified as a future enhancement.}
+
+\section{ThingSpeak Data Model}
+
+\subsection{Channel Structure}
+
+ThingSpeak organises data into channels, each containing up to eight fields. FloodEye uses five fields:
+
+\begin{table}[H]
+\centering
+\caption{ThingSpeak Data Schema}
+\begin{tabularx}{\linewidth}{|l|l|l|X|}
+\hline
+\rowcolor{FloodLight}
+\textbf{Field} & \textbf{Name} & \textbf{Type} & \textbf{Description} \\
+\hline
+\texttt{field1} & temperature & FLOAT & DHT11 temperature reading in °C \\
+\texttt{field2} & humidity & FLOAT & DHT11 relative humidity in \% \\
+\texttt{field3} & pressure & FLOAT & BMP180 atmospheric pressure in hPa \\
+\texttt{field4} & altitude & FLOAT & BMP180 derived altitude in metres \\
+\texttt{field5} & distance & FLOAT & HC-SR04 distance to water surface in cm \\
+\texttt{created\_at} & timestamp & DATETIME & UTC timestamp of the upload \\
+\texttt{entry\_id} & id & INTEGER & Auto-increment entry identifier \\
+\hline
+\end{tabularx}
+\end{table}
+
+\subsection{Data Access Patterns}
+
+Two primary query patterns are used:
+
+\begin{enumerate}[leftmargin=1.5em]
+  \item \textbf{Latest Entry:} \texttt{GET /channels/\{id\}/feeds/last.json?api\_key=\{key\}} --- Returns a single JSON object (the most recent feed entry). Used by \texttt{/api/sensors}.
+  \item \textbf{Historical Range:}
+    \begin{itemize}
+      \item By count: \texttt{GET /channels/\{id\}/feeds.json?results=N\&api\_key=\{key\}} --- Returns the last N entries (max 8000 per call). Used for ranges $\leq$ 24h.
+      \item By date range: \texttt{GET /channels/\{id\}/feeds.json?start=\{dt\}\&end=\{dt\}\&api\_key=\{key\}} --- Returns all entries in the specified UTC date window. Used for 7d and 30d ranges.
+    \end{itemize}
+\end{enumerate}
+
+\section{Client-Side Data Model}
+
+\subsection{TelemetryData Interface}
+
+\begin{lstlisting}[language=TypeScript,caption={TelemetryData interface}]
+export interface TelemetryData {
+  temperature: number;  // deg C
+  humidity:    number;  // %
+  pressure:    number;  // hPa
+  altitude:    number;  // metres
+  distance:    number;  // cm (water distance)
+  timestamp:   string;  // ISO 8601 UTC string
+}
+\end{lstlisting}
+
+\subsection{DeviceStatus Interface}
+
+\begin{lstlisting}[language=TypeScript,caption={DeviceStatus interface}]
+export interface DeviceStatus {
+  esp32Online:         boolean;
+  thingspeakConnected: boolean;
+  lastUpload:          string;  // ISO timestamp
+  rssi:                number;  // Not available via REST (0)
+}
+\end{lstlisting}
+
+\subsection{Alert Interface}
+
+\begin{lstlisting}[language=TypeScript,caption={Alert interface}]
+export interface Alert {
+  id:        string;        // random alphanumeric
+  type:      AlertType;     // HIGH_TEMPERATURE | HIGH_HUMIDITY | ...
+  severity:  AlertSeverity; // "critical" | "warning" | "info"
+  message:   string;
+  timestamp: string;        // ISO creation time
+  read:      boolean;
+  updatedAt: string;        // ISO of last refresh
+}
+\end{lstlisting}
+
+\subsection{DashboardSettings Interface}
+
+\begin{lstlisting}[language=TypeScript,caption={DashboardSettings interface}]
+export interface DashboardSettings {
+  refreshInterval:   number;  // seconds (5 | 15 | 30 | 60)
+  tempThreshold:     number;  // deg C  (default: 35)
+  humidityThreshold: number;  // %       (default: 80)
+  distanceThreshold: number;  // cm      (default: 20)
+  pressureThreshold: number;  // hPa     (default: 1005)
+}
+\end{lstlisting}
+
+\section{localStorage Schema}
+
+\begin{table}[H]
+\centering
+\caption{localStorage Key Schema}
+\begin{tabularx}{\linewidth}{|l|l|X|}
+\hline
+\rowcolor{FloodLight}
+\textbf{Key} & \textbf{Value Type} & \textbf{Description} \\
+\hline
+\texttt{ecosense:lastData} & TelemetryData (JSON) & Most recent live reading \\
+\texttt{ecosense:lastHistory} & TelemetryData[] (JSON) & Last known history array \\
+\texttt{ecosense:lastStatus} & DeviceStatus (JSON) & Last known device status \\
+\texttt{ecosense:lastSeenAt} & string (ISO) & Timestamp of last live contact \\
+\texttt{floodeye\_session} & "admin" | "user" & Current user role \\
+\texttt{floodeye\_user\_name} & string & Display name \\
+\hline
+\end{tabularx}
+\end{table}
+
+\section{ML Model Data Files}
+
+The machine learning pipeline uses several JSON data files stored in \texttt{/public/} for browser access:
+
+\begin{table}[H]
+\centering
+\caption{ML Data Files}
+\begin{tabularx}{\linewidth}{|l|X|}
+\hline
+\rowcolor{FloodLight}
+\textbf{File} & \textbf{Contents} \\
+\hline
+\texttt{public/model\_config.json} & LOOKBACK (48), DANGER\_THRESHOLD (450 cm), feature list \\
+\texttt{public/model\_scalers.json} & StandardScaler means and scales for X (11 features) and Y (water level) \\
+\texttt{public/tfjs\_model/model.json} & TensorFlow.js LayersModel topology and weights manifest \\
+\texttt{public/tfjs\_model/group1-shard1of1.bin} & Float32 binary weights file (291 KB) \\
+\texttt{public/sample\_data.json} & 200-row sample of test-set data used to pad insufficient history for inference \\
+\hline
+\end{tabularx}
+\end{table}
+
+\section{Data Retention and History}
+
+ThingSpeak free-tier channels retain data for 1 year. The dashboard can query up to 30 days of history via the date-range API. The history panel displays the last 100 readings in the scrollable table. CSV/PDF export is limited to the last 100 readings in the current implementation.

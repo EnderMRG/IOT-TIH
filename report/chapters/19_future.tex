@@ -1,0 +1,63 @@
+﻿%=============================================================================
+% Chapter 19: Future Enhancements
+%=============================================================================
+\chapter{Future Enhancements}
+
+\section{Multi-Node Sensor Network}
+
+Extend the backend to support multiple ThingSpeak channels, each representing a different sensor node at distinct geographic locations along a river or drainage system. The map would display multiple markers with live readings, and the dashboard would provide a regional overview as well as per-node drill-down views.
+
+\section{Full Database Integration}
+
+Integrate the Neon PostgreSQL database (already identified in project documentation) to persist:
+\begin{itemize}[leftmargin=1.5em]
+  \item User accounts with proper authentication (NextAuth.js or Clerk).
+  \item Alert history with long-term retention.
+  \item Per-user and per-device configuration settings.
+  \item Device registration and metadata (location, installation date, sensor types).
+\end{itemize}
+
+\section{MQTT Integration}
+
+Replace the HTTP polling mechanism with MQTT over WebSocket for lower-latency IoT telemetry. MQTT is the standard IoT messaging protocol; it enables sub-second event delivery and reduces bandwidth compared to REST polling.
+
+\section{Improved Machine Learning Models}
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Longer forecast horizons:} Extend the model to predict 8, 12, and 24 hours ahead, enabling earlier evacuation planning.
+  \item \textbf{Weather API integration:} Augment sensor features with external weather forecast data (e.g., IMD or OpenWeatherMap) to improve prediction during rapidly developing storm events.
+  \item \textbf{Calibrated uncertainty:} Implement Monte Carlo dropout or conformal prediction to produce calibrated confidence intervals rather than simulated ones.
+  \item \textbf{Retraining pipeline:} Automated periodic retraining as more live sensor data accumulates.
+\end{itemize}
+
+\section{Native Mobile Application}
+
+Develop companion iOS and Android apps using React Native or Expo that share business logic with the web dashboard. Native apps can provide background push notifications (critical for flood alerts) and access device sensors for additional context.
+
+\section{Email and SMS Alerts}
+
+Integrate with an email gateway (SendGrid, AWS SES) and/or SMS gateway (Twilio) to deliver critical flood alerts to registered subscribers independent of browser notification permissions.
+
+\section{Server-Side ML Inference}
+
+Implement the \texttt{/api/flood-predict} endpoint using \texttt{@tensorflow/tfjs-node}, allowing server-side prediction for clients without WebGL support (IoT displays, kiosk terminals, old mobile browsers).
+
+\section{OTA Firmware Updates}
+
+Implement Over-the-Air (OTA) firmware update capability for the ESP32 using the Arduino OTA library, enabling remote firmware patches without physical access to deployed sensor nodes.
+
+\section{Multi-Language Support}
+
+Add internationalisation (i18n) support using \texttt{next-intl} for regional languages (Assamese, Hindi) to improve accessibility for local communities.
+
+\section{PDF Scheduled Reports}
+
+Implement automated scheduled PDF reports (daily/weekly summaries of sensor readings, alert counts, and ML forecast accuracy) delivered by email to registered administrators.
+
+\section{Predictive Maintenance}
+
+Extend the alerting engine to detect sensor anomalies (e.g., the HC-SR04 returning constant readings, suggesting the sensor has been submerged) and generate \textbf{SENSOR\_FAULT} alerts to prompt maintenance visits.
+
+\section{Community Alert Subscription}
+
+A public-facing subscription page where community members can register their phone numbers or email addresses to receive flood alerts for specific sensor node locations, without needing a dashboard login.

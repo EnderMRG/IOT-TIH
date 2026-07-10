@@ -1,0 +1,134 @@
+%=============================================================================
+% Chapter 4: System Architecture
+%=============================================================================
+\chapter{System Architecture}
+
+\section{Architectural Overview}
+
+FloodEye follows a three-tier architecture consisting of an IoT hardware layer, a cloud-connected backend layer, and a client-side frontend layer. All tiers are orchestrated through the Next.js full-stack framework, which unifies the backend API routes and the React frontend into a single deployable unit. Figure~\ref{fig:system_arch} illustrates the overall architecture.
+
+\begin{figure}[H]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[node distance=0.9cm, every node/.style={font=\small}]
+  % ── IoT Layer ──
+  \node[iotbox, text width=2.5cm] (dht) {DHT11\\Sensor};
+  \node[iotbox, text width=2.5cm, right=0.5cm of dht] (bmp) {BMP180\\Sensor};
+  \node[iotbox, text width=2.5cm, right=0.5cm of bmp] (hc) {HC-SR04\\Sensor};
+
+  \node[iotbox, text width=7.5cm, below=0.5cm of bmp] (esp) {ESP32 DevKit (Firmware: IOTcode.ino)};
+
+  \node[iotbox, text width=7.5cm, below=0.7cm of esp] (ts) {ThingSpeak Cloud (REST API \& Field Storage)};
+
+  % ── Backend Layer ──
+  \node[process, text width=7.5cm, below=0.9cm of ts] (next) {Next.js 16 Server (Vercel Serverless Functions)};
+  \node[process, text width=3.5cm, below=0.5cm of next, xshift=-2.1cm] (apiroute) {Route Handlers\\(\texttt{/api/*})};
+  \node[process, text width=3.5cm, below=0.5cm of next, xshift=2.1cm] (tscache) {ThingSpeak Client\\+ Cache Layer};
+
+  % ── Frontend Layer ──
+  \node[process, text width=7.5cm, below=1.0cm of next, yshift=-0.8cm] (react) {React 19 Client (TelemetryProvider Context)};
+  \node[process, text width=3.2cm, below=0.5cm of react, xshift=-2.2cm] (ui) {Dashboard UI\\Components};
+  \node[process, text width=3.2cm, below=0.5cm of react, xshift=2.2cm] (tfjs) {TensorFlow.js\\ML Inference};
+
+  % ── Arrows ──
+  \draw[arrow] (dht) -- (esp);
+  \draw[arrow] (bmp) -- (esp);
+  \draw[arrow] (hc) -- (esp);
+  \draw[arrow] (esp) -- node[right,font=\tiny]{HTTP POST (15s)} (ts);
+  \draw[arrow] (ts) -- node[right,font=\tiny]{REST GET} (next);
+  \draw[arrow] (next) -- (apiroute);
+  \draw[arrow] (next) -- (tscache);
+  \draw[arrow] (next) -- node[right,font=\tiny]{JSON} (react);
+  \draw[arrow] (react) -- (ui);
+  \draw[arrow] (react) -- (tfjs);
+\end{tikzpicture}%
+}
+\caption{FloodEye Three-Tier System Architecture}
+\label{fig:system_arch}
+\end{figure}
+
+\section{IoT Hardware Layer}
+
+The hardware layer consists of an ESP32 DevKit microcontroller connected to three sensors:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{BMP180 (I\textsuperscript{2}C):} Measures atmospheric pressure (hPa) and derives altitude (m). Connected via I\textsuperscript{2}C bus on GPIO 21 (SDA) and GPIO 22 (SCL).
+  \item \textbf{DHT11 (Digital):} Measures ambient temperature (°C) and relative humidity (\%). A simple single-wire digital sensor.
+  \item \textbf{HC-SR04 (GPIO):} Ultrasonic distance sensor. The distance reading, in centimetres, represents the proximity to the water surface (inversely proportional to water level).
+\end{itemize}
+
+The firmware (\texttt{IOTcode/IOTcode.ino}) initialises the BMP180 via the \texttt{Adafruit\_BMP085} library and polls readings in a 2-second loop, printing values to the serial monitor. The full deployment extends this sketch to post field values to ThingSpeak via an HTTP client library.
+
+\section{ThingSpeak Cloud Layer}
+
+ThingSpeak serves as the cloud IoT data platform. The ESP32 uploads to a ThingSpeak channel, whose five fields are mapped as shown in Table~\ref{tab:thingspeak_fields}.
+
+\begin{table}[H]
+\centering
+\caption{ThingSpeak Channel Field Mapping}
+\label{tab:thingspeak_fields}
+\begin{tabular}{|c|l|l|}
+\hline
+\rowcolor{FloodLight}
+\textbf{ThingSpeak Field} & \textbf{Sensor} & \textbf{Unit} \\
+\hline
+Field 1 & Temperature (DHT11) & °C \\
+Field 2 & Humidity (DHT11) & \% \\
+Field 3 & Atmospheric Pressure (BMP180) & hPa \\
+Field 4 & Altitude (BMP180) & m \\
+Field 5 & Water Distance (HC-SR04) & cm \\
+\hline
+\end{tabular}
+\end{table}
+
+ThingSpeak imposes a free-tier rate limit of one update per 15 seconds, which aligns with the ESP32 firmware upload interval. The REST API supports both ``last entry'' and ``range'' queries used by the Next.js backend.
+
+\section{Backend Layer}
+
+The backend is implemented as Next.js Route Handlers (the App Router equivalent of API routes). All server logic resides in the \texttt{app/api/} directory. The key components are:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{\texttt{lib/thingspeak.ts}:} A server-side ThingSpeak client with an in-memory cache and request coalescing. The latest-reading cache has a 14-second TTL (just under the 15-second upload interval); the history cache has a 55-second TTL. Request coalescing prevents cache stampedes when multiple server renders arrive simultaneously.
+  \item \textbf{Route Handlers:} \texttt{/api/sensors}, \texttt{/api/history}, \texttt{/api/analytics}, \texttt{/api/environment-score}, \texttt{/api/flood-predict} (placeholder for server-side inference). Each returns a structured JSON response.
+  \item \textbf{Incremental Static Revalidation (ISR):} The \texttt{revalidate} export constant on each route sets the Next.js CDN cache TTL (15 s for sensors, 60 s for history/analytics).
+\end{itemize}
+
+\section{Frontend Layer}
+
+The frontend is a React 19 application built with Next.js App Router. The central state management mechanism is the \textbf{TelemetryProvider}, a React Context provider that:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item Polls \texttt{/api/sensors} at a configurable interval (default 15 s).
+  \item Persists the latest reading and history in \texttt{localStorage} for offline resilience.
+  \item Evaluates alerts on every new data point using the \texttt{evaluateAlerts()} function.
+  \item Exposes telemetry data, history array, alert list, device status, and settings to all child components via the \texttt{useTelemetry()} hook.
+\end{itemize}
+
+The ML inference layer runs separately in the \textbf{\texttt{useFloodPrediction}} hook, which loads the TensorFlow.js model from \texttt{/public/tfjs\_model/}, engineers the 11 input features from the history array, and calls \texttt{predictFloodRisk()} to obtain a 4-hour water level forecast.
+
+\section{Data Flow}
+
+The complete data flow from sensor reading to dashboard visualisation is:
+
+\begin{enumerate}[leftmargin=1.5em]
+  \item ESP32 reads sensor values and HTTP-POSTs them to ThingSpeak (every 15 s).
+  \item ThingSpeak stores the reading in its channel database.
+  \item The Next.js server's \texttt{TelemetryProvider} polls \texttt{/api/sensors} (every 15 s).
+  \item \texttt{/api/sensors} calls \texttt{getLatestReading()} in \texttt{lib/thingspeak.ts}, which fetches \\ \texttt{https://api.thingspeak.com/channels/\{id\}/feeds/last.json} and parses the five field values into a typed \texttt{TelemetryData} object.
+  \item The result is cached for 14 s and returned as JSON to the frontend.
+  \item The TelemetryProvider stores the new reading in state and history, evaluates alerts, and persists to \texttt{localStorage}.
+  \item All dashboard components subscribed to \texttt{useTelemetry()} re-render with fresh data.
+  \item Concurrently, the \texttt{useFloodPrediction} hook detects a new history entry and schedules an ML inference run (debounced by 1 s).
+  \item The inference result updates the FloodPredictionCard and FloodPredictionPanel with the new forecast.
+\end{enumerate}
+
+\section{Cloud and Deployment Architecture}
+
+FloodEye is deployed on Vercel using its Git-integrated continuous deployment pipeline. Each push to the main branch triggers an automatic build and deployment. Key architectural features of the deployment:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Serverless Edge Functions:} Next.js Route Handlers are deployed as Vercel serverless functions, scaling automatically to handle traffic spikes.
+  \item \textbf{CDN Caching:} ISR cache headers ensure that the ThingSpeak API is not hammered during high-traffic periods; cached responses are served from Vercel's global CDN edge network.
+  \item \textbf{Environment Variables:} ThingSpeak credentials (\texttt{THINGSPEAK\_CHANNEL\_ID}, \texttt{THINGSPEAK\_READ\_API\_KEY}) and the MapTiler key (\texttt{NEXT\_PUBLIC\_MAPTILER\_KEY}) are injected as Vercel environment variables, never exposed in the repository.
+  \item \textbf{PWA Service Worker:} The \texttt{next-pwa} package generates a Workbox service worker that caches static assets for offline access.
+\end{itemize}

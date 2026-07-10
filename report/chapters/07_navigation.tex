@@ -1,0 +1,133 @@
+%=============================================================================
+% Chapter 7: Application Navigation
+%=============================================================================
+\chapter{Application Navigation}
+
+\section{Navigation Architecture}
+
+FloodEye uses Next.js App Router's file-system-based routing. The application has two primary zones: the public Landing Zone and the authenticated Dashboard Zone. The dashboard zone uses a shared layout (\texttt{app/dashboard/layout.tsx}) that renders the sidebar navigation on every dashboard page.
+
+\section{Navigation Flow Diagram}
+
+Figure~\ref{fig:nav_flow} illustrates the complete navigation flow of the application.
+
+\begin{figure}[H]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[node distance=0.7cm, every node/.style={font=\footnotesize}]
+  % Landing
+  \node[startend, text width=2.8cm] (root) {Root \texttt{/}\\Landing Page};
+
+  % Landing sub-pages
+  \node[process, text width=2.5cm, right=2.5cm of root, yshift=1.8cm] (about) {About Page\\(\texttt{/about})};
+  \node[process, text width=2.5cm, right=2.5cm of root, yshift=0.0cm] (tech) {Technologies\\(\texttt{/technologies})};
+  \node[process, text width=2.5cm, right=2.5cm of root, yshift=-1.8cm] (gallery) {Gallery\\(\texttt{/gallary})};
+
+  % Dashboard entry
+  \node[startend, text width=3cm, right=5.5cm of root] (dash) {Dashboard\\(\texttt{/dashboard})};
+
+  % Dashboard pages
+  \node[process, text width=2.5cm, right=2.5cm of dash, yshift=3.5cm] (analytics) {Analytics\\(\texttt{/analytics})};
+  \node[process, text width=2.5cm, right=2.5cm of dash, yshift=2.1cm] (history) {History\\(\texttt{/history})};
+  \node[process, text width=2.5cm, right=2.5cm of dash, yshift=0.7cm] (predict) {Predictions\\(\texttt{/predictions})};
+  \node[process, text width=2.5cm, right=2.5cm of dash, yshift=-0.7cm] (alerts) {Alerts\\(\texttt{/alerts})};
+  \node[process, text width=2.5cm, right=2.5cm of dash, yshift=-2.1cm] (devices) {Devices\\(\texttt{/devices})};
+  \node[process, text width=2.5cm, right=2.5cm of dash, yshift=-3.5cm] (settings) {Settings\\(\texttt{/settings})};
+
+  % Arrows from root
+  \draw[arrowg] (root) -- (about);
+  \draw[arrowg] (root) -- (tech);
+  \draw[arrowg] (root) -- (gallery);
+  \draw[arrow] (root) -- node[above,font=\tiny]{CTA} (dash);
+
+  % Arrows from dashboard
+  \draw[arrow] (dash) -- (analytics);
+  \draw[arrow] (dash) -- (history);
+  \draw[arrow] (dash) -- (predict);
+  \draw[arrow] (dash) -- (alerts);
+  \draw[arrow] (dash) -- (devices);
+  \draw[arrow] (dash) -- (settings);
+\end{tikzpicture}%
+}
+\caption{FloodEye Complete Navigation Flow}
+\label{fig:nav_flow}
+\end{figure}
+
+\section{Landing Zone Pages}
+
+\begin{table}[H]
+\centering
+\caption{Landing Zone Pages}
+\begin{tabularx}{\linewidth}{|l|l|X|}
+\hline
+\rowcolor{FloodLight}
+\textbf{Route} & \textbf{Page} & \textbf{Purpose} \\
+\hline
+\texttt{/} & Landing Page & Scrollytelling intro with GSAP animations, feature showcase, team section \\
+\hline
+\texttt{/about} & About & Project background, team details, internship context \\
+\hline
+\texttt{/technologies} & Technologies & Technology stack showcase with animated cards \\
+\hline
+\texttt{/gallary} & Gallery & Project photo gallery and hardware demonstration images \\
+\hline
+\end{tabularx}
+\end{table}
+
+\section{Dashboard Zone Layout}
+
+The dashboard zone uses a shared \texttt{layout.tsx} that wraps all \texttt{/dashboard/*} pages. This layout renders:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Sidebar Navigation:} A fixed left sidebar containing:
+    \begin{itemize}
+      \item FloodEye logo and version.
+      \item Navigation links: Dashboard, Analytics, History, Predictions, Alerts, Devices, Settings.
+      \item User role indicator (Admin / User) and username display.
+      \item Alert bell icon with unread count badge.
+    \end{itemize}
+  \item \textbf{Top Header Bar:} Displays the current page title, date/time, connection status indicator, and the PWA install button.
+  \item \textbf{Main Content Area:} The \texttt{\{children\}} slot where each page renders.
+  \item \textbf{TelemetryProvider:} The layout wraps all content in the TelemetryProvider context so every dashboard page has access to live sensor data.
+\end{itemize}
+
+\section{Dashboard Pages}
+
+\begin{table}[H]
+\centering
+\caption{Dashboard Zone Pages and Features}
+\begin{tabularx}{\linewidth}{|l|X|}
+\hline
+\rowcolor{FloodLight}
+\textbf{Route} & \textbf{Features} \\
+\hline
+\texttt{/dashboard} & Live sensor cards, water level chart, comfort score, flood prediction card, alert panel, device map \\
+\hline
+\texttt{/dashboard/analytics} & Five individual time-series charts, time window selector (1h–30d) \\
+\hline
+\texttt{/dashboard/history} & Statistical summary cards, reading table, CSV export, PDF export \\
+\hline
+\texttt{/dashboard/predictions} & ML prediction panel, risk gauge, feature contributions, admin diagnostics \\
+\hline
+\texttt{/dashboard/alerts} & Full alert log, severity badges, dismiss and clear functionality \\
+\hline
+\texttt{/dashboard/devices} & Device registration and status (single-channel in current implementation) \\
+\hline
+\texttt{/dashboard/settings} & Threshold configuration, refresh interval, simulation toggle (admin only) \\
+\hline
+\end{tabularx}
+\end{table}
+
+\section{Authentication Routes}
+
+The \texttt{app/(auth)/} route group contains structural placeholder pages for a future authentication system. In the current implementation, user role is stored in \texttt{localStorage} (key: \texttt{floodeye\_session}) and toggled through the Settings page, rather than through a proper login/password flow. This is noted as a known limitation and future enhancement.
+
+\section{PWA Navigation}
+
+When FloodEye is installed as a PWA:
+\begin{itemize}[leftmargin=1.5em]
+  \item The app opens in a standalone browser window (without browser chrome) displaying the dashboard home.
+  \item The service worker (\texttt{public/sw.js}) caches static assets and serves the last known dashboard state offline.
+  \item Native back/forward navigation works as in a native app.
+  \item The \texttt{PWAInstallButton} in the top header bar triggers the native install prompt when the PWA is not yet installed.
+\end{itemize}

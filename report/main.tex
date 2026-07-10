@@ -1,0 +1,150 @@
+%=============================================================================
+% FloodEye - Internship Project Report
+% Main driver file: compile with pdflatex (run twice for ToC/refs)
+%=============================================================================
+\documentclass[12pt,a4paper,oneside]{report}
+
+%--------------------------------------------------------------
+% Packages
+%--------------------------------------------------------------
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[top=2.5cm,bottom=2.5cm,left=3cm,right=2.5cm]{geometry}
+\usepackage{microtype}
+\usepackage{setspace}
+\onehalfspacing
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage[table,xcdraw,dvipsnames]{xcolor}
+\usepackage{float}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric,arrows.meta,positioning,fit,backgrounds,shadows,calc}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{listings}
+\usepackage{fancyhdr}
+\usepackage{emptypage}
+\usepackage[colorlinks=true,linkcolor=NavyBlue,citecolor=NavyBlue,urlcolor=NavyBlue,bookmarksnumbered=true,pdftitle={FloodEye Internship Project Report},pdfauthor={Moharnab Gogoi; Aryyaman Bora; Mayuree Khanikar; Indrani Gogoi}]{hyperref}
+\usepackage{bookmark}
+\usepackage[labelfont=bf,font=small,skip=6pt]{caption}
+\usepackage{subcaption}
+\usepackage{enumitem}
+\usepackage[bottom]{footmisc}
+\usepackage{titlesec}
+
+%--------------------------------------------------------------
+% Colors
+%--------------------------------------------------------------
+\definecolor{FloodBlue}{HTML}{1D4ED8}
+\definecolor{FloodTeal}{HTML}{0891B2}
+\definecolor{FloodGray}{HTML}{64748B}
+\definecolor{FloodLight}{HTML}{EFF6FF}
+\definecolor{CodeBg}{HTML}{F8FAFC}
+\definecolor{CodeKeyword}{HTML}{1D4ED8}
+\definecolor{CodeString}{HTML}{166534}
+\definecolor{CodeComment}{HTML}{6B7280}
+
+%--------------------------------------------------------------
+% Chapter/section titles
+%--------------------------------------------------------------
+\titleformat{\chapter}[display]{\normalfont\huge\bfseries\color{FloodBlue}}{\chaptertitlename\ \thechapter}{12pt}{\Huge}
+\titlespacing*{\chapter}{0pt}{0pt}{24pt}
+\titleformat{\section}{\normalfont\Large\bfseries\color{FloodBlue!80!black}}{\thesection}{1em}{}
+\titleformat{\subsection}{\normalfont\large\bfseries\color{FloodGray}}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}{\normalfont\normalsize\bfseries\color{FloodGray}}{\thesubsubsection}{1em}{}
+
+%--------------------------------------------------------------
+% Header/Footer
+%--------------------------------------------------------------
+\setlength{\headheight}{14pt}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textit{FloodEye: Real-time Flood Alert \& Water Level Monitoring}}
+\fancyhead[R]{\small\thepage}
+\fancyfoot[C]{\small\textcolor{FloodGray}{Technology Innovation Hub, IIT Guwahati}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+%--------------------------------------------------------------
+% Code listings
+%--------------------------------------------------------------
+\lstset{
+  backgroundcolor=\color{CodeBg},
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\bfseries\color{CodeKeyword},
+  stringstyle=\color{CodeString},
+  commentstyle=\itshape\color{CodeComment},
+  numberstyle=\tiny\color{FloodGray},
+  numbers=left,stepnumber=1,numbersep=8pt,
+  showstringspaces=false,breaklines=true,breakatwhitespace=true,
+  frame=single,framerule=0.4pt,rulecolor=\color{FloodBlue!30},
+  tabsize=2,captionpos=b,
+  xleftmargin=12pt,xrightmargin=4pt,aboveskip=8pt,belowskip=8pt,
+}
+\lstdefinelanguage{TypeScript}{
+  keywords={const,let,var,function,async,await,return,export,import,from,interface,type,class,extends,new,this,if,else,for,while,switch,case,break,default,null,undefined,true,false,try,catch,finally,throw,void},
+  sensitive=true,comment=[l]{//},morecomment=[s]{/*}{*/},
+  string=[b]",morestring=[b]',morestring=[b],
+}
+
+%--------------------------------------------------------------
+% TikZ styles
+%--------------------------------------------------------------
+\tikzset{
+  process/.style={rectangle,rounded corners=6pt,draw=FloodBlue,fill=FloodLight,text width=3.2cm,minimum height=0.9cm,align=center,font=\small\bfseries},
+  iotbox/.style={rectangle,rounded corners=6pt,draw=FloodTeal,fill=FloodTeal!10,text width=3.2cm,minimum height=0.9cm,align=center,font=\small\bfseries},
+  arrow/.style={-{Stealth[length=6pt]},thick,color=FloodBlue},
+  arrowg/.style={-{Stealth[length=6pt]},thick,color=FloodGray},
+  startend/.style={ellipse,draw=FloodBlue,fill=FloodBlue!15,text width=2.4cm,minimum height=0.8cm,align=center,font=\small\bfseries},
+  wideproc/.style={rectangle,rounded corners=6pt,draw=FloodBlue,fill=FloodLight,text width=4.5cm,minimum height=0.9cm,align=center,font=\small\bfseries},
+}
+
+\newcommand{\colorrule}{\vspace{4pt}\noindent\textcolor{FloodBlue!40}{\rule{\linewidth}{0.6pt}}\vspace{4pt}}
+
+%=============================================================================
+% DOCUMENT
+%=============================================================================
+\begin{document}
+
+\pagenumbering{roman}
+\input{chapters/00_cover}
+
+\tableofcontents
+\listoffigures
+\listoftables
+
+\clearpage
+\pagenumbering{arabic}
+
+\input{chapters/01_introduction}
+\input{chapters/02_vision_mission}
+\input{chapters/03_project_overview}
+\input{chapters/04_system_architecture}
+\input{chapters/05_technology_stack}
+\input{chapters/06_frontend}
+\input{chapters/07_navigation}
+\input{chapters/08_backend}
+\input{chapters/09_database}
+\input{chapters/10_ml_module}
+\input{chapters/11_ml_analysis}
+\input{chapters/12_ml_pipeline}
+\input{chapters/13_api_documentation}
+\input{chapters/14_workflow}
+\input{chapters/15_deployment}
+\input{chapters/16_results}
+\input{chapters/17_challenges}
+\input{chapters/18_limitations}
+\input{chapters/19_future}
+\input{chapters/20_conclusion}
+
+\appendix
+\input{chapters/appendix}
+
+\end{document}
+

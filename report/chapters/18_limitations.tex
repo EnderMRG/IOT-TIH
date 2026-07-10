@@ -1,0 +1,46 @@
+﻿%=============================================================================
+% Chapter 18: Limitations
+%=============================================================================
+\chapter{Limitations}
+
+This chapter describes only actual limitations of the current FloodEye implementation, as observed in the source code and project documentation.
+
+\section{Single Sensor Node}
+
+The current implementation is designed for a single ThingSpeak channel corresponding to a single ESP32 sensor node. The \texttt{THINGSPEAK\_CHANNEL\_ID} environment variable accepts only one channel ID. Multiple sensor nodes would require code changes to support a multi-channel data model.
+
+\section{No Database Persistence}
+
+Alert history, user accounts, and dashboard settings are maintained only in-memory (alerts) and localStorage (settings, user role). There is no server-side database persisting this data. If the browser's localStorage is cleared, settings revert to defaults and all alert history is lost. The project documentation references a Neon PostgreSQL integration that was not implemented in the current codebase.
+
+\section{localStorage-Based Authentication}
+
+User role (\texttt{admin}/\texttt{user}) and username are stored in browser localStorage without any cryptographic validation. This is not a production-grade authentication system. Anyone can open browser DevTools and modify \texttt{floodeye\_session} to gain admin access.
+
+\section{Simulated Confidence Interval}
+
+The ML prediction confidence displayed in the FloodPredictionCard and FloodPredictionPanel (85--95\%) is a simulated value (\texttt{85 + Math.random() * 10}) rather than a statistically computed uncertainty estimate. Proper prediction intervals or Monte Carlo dropout would be needed for calibrated uncertainty quantification.
+
+\section{Sample Data Padding}
+
+When fewer than 48 live readings are available, the inference is padded with test-set sample data that may not match the geographic or seasonal context of the actual deployment. This introduces a potential prediction error during the initial hours of a new session or a newly deployed node.
+
+\section{IOT Code Sketch Covers Only BMP180}
+
+The provided Arduino sketch (\texttt{IOTcode/IOTcode.ino}) demonstrates only the BMP180 sensor reading via serial print. It does not include DHT11 or HC-SR04 sensor code, nor Wi-Fi connectivity or ThingSpeak HTTP upload logic. The full firmware required to actually drive the dashboard is not included in the repository.
+
+\section{ThingSpeak Free Tier Constraints}
+
+The free ThingSpeak tier imposes a 15-second minimum upload interval and retains data for 1 year with a maximum of 8,000 entries per API call. For deployments requiring higher-frequency sensing or longer data retention, a paid ThingSpeak plan or a different IoT platform would be needed.
+
+\section{Server-Side ML Inference Not Implemented}
+
+The \texttt{/api/flood-predict} endpoint exists as a structural placeholder and returns HTTP 501 (Not Implemented). Server-side TensorFlow.js Node.js inference would be needed for use cases where the client device does not support WebGL (e.g., very old phones, embedded kiosk systems).
+
+\section{No Multi-Location Map}
+
+The MapLibre GL map currently shows a single hardcoded sensor location. Dynamic multi-node support with live marker overlays for each node requires backend changes to aggregate multi-channel data and pass location metadata per sensor.
+
+\section{PDF Export Limitation}
+
+The PDF export is limited to the last 100 readings from the history array currently in memory. Exporting larger datasets or custom date ranges requires an additional backend query and a PDF generation service.

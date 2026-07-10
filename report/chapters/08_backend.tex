@@ -1,0 +1,194 @@
+﻿%=============================================================================
+% Chapter 8: Backend Implementation
+%=============================================================================
+\chapter{Backend Implementation}
+
+\section{Overview}
+
+The FloodEye backend is implemented using Next.js App Router Route Handlers, which run as serverless functions on Vercel. There is no separate Express.js or FastAPI server. All backend logic is colocated with the frontend in the single Next.js project.
+
+\section{Folder Structure}
+
+\begin{lstlisting}[language={},caption={Backend-relevant directory structure},label={lst:folder_structure}]
+app/
+  api/
+    sensors/          route.ts   -- GET /api/sensors
+    history/          route.ts   -- GET /api/history
+    analytics/        route.ts   -- GET /api/analytics
+    environment-score/ route.ts  -- GET /api/environment-score
+    flood-predict/    route.ts   -- POST /api/flood-predict
+lib/
+  thingspeak.ts       -- ThingSpeak client + cache
+  flood-model.ts      -- TF.js model loader + inference
+  utils.ts            -- cn() utility
+  actions/            -- Next.js Server Actions (if any)
+hooks/
+  useFloodPrediction.ts  -- Client-side ML hook
+  useNativeNotification.ts
+  use-outside-click.ts
+components/
+  providers/
+    TelemetryProvider.tsx  -- Central data/state provider
+\end{lstlisting}
+
+\section{ThingSpeak Client (\texttt{lib/thingspeak.ts})}
+
+The ThingSpeak client is the core of the backend data layer. It encapsulates all communication with the ThingSpeak REST API and implements a sophisticated caching strategy to minimise external API calls.
+
+\subsection{Field Parsing}
+
+The \texttt{feedToTelemetry()} function maps ThingSpeak feed fields to the \texttt{TelemetryData} type:
+
+\begin{lstlisting}[language=TypeScript,caption={ThingSpeak field-to-telemetry mapping}]
+function feedToTelemetry(feed: ThingSpeakFeed): TelemetryData {
+  return {
+    temperature: parseField(feed.field1),      // DHT11 temp (deg C)
+    humidity:    parseField(feed.field2),      // DHT11 humidity (%)
+    pressure:    parseField(feed.field3, 1013.25), // BMP180 (hPa)
+    altitude:    parseField(feed.field4),      // BMP180 altitude (m)
+    distance:    parseField(feed.field5),      // HC-SR04 distance (cm)
+    timestamp:   feed.created_at,
+  };
+}
+\end{lstlisting}
+
+\subsection{Caching and Request Coalescing}
+
+The cache is implemented using a global singleton pattern (\texttt{globalThis.\_\_thingspeakCache}) to persist across serverless function invocations within the same Node.js instance:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Latest cache TTL:} 14,000 ms (14 s), just under the 15-second ESP32 upload interval.
+  \item \textbf{History cache TTL:} 55,000 ms (55 s), with separate cache slots per query key (range string).
+  \item \textbf{Request coalescing:} If a fetch is already in-flight, subsequent callers await the same Promise rather than firing additional parallel requests to ThingSpeak.
+  \item \textbf{Stale-while-revalidate:} If a stale (expired) entry exists, it is returned immediately while a background refetch is initiated, preventing blocking.
+\end{itemize}
+
+\subsection{Device Online Detection}
+
+The \texttt{deriveDeviceStatus()} function checks whether the ESP32 is online by comparing the ThingSpeak \texttt{created\_at} timestamp against the current time. If the last upload was more than 60 seconds ago, \texttt{esp32Online} is set to \texttt{false}.
+
+\section{API Route Handlers}
+
+\subsection{\texttt{GET /api/sensors}}
+
+Returns the single latest sensor reading as a \texttt{\{data, deviceStatus\}} JSON object. Uses a 15-second ISR revalidation window (\texttt{export const revalidate = 15}).
+
+\subsection{\texttt{GET /api/history?range=\{range\}}}
+
+Returns historical sensor readings mapped from ThingSpeak feeds. The \texttt{rangeToQuery()} function maps time range strings to ThingSpeak query parameters:
+
+\begin{lstlisting}[language=TypeScript,caption={History range-to-query mapping}]
+case "1h":  return { results: 240 };   // 240 * 15s = 1 hour
+case "6h":  return { results: 1440 };
+case "24h": return { results: 5760 };  // ThingSpeak max = 8000
+case "7d":  return { start: ..., end: ... };  // date range
+case "30d": return { start: ..., end: ... };
+\end{lstlisting}
+
+For ranges $>$ 24h, explicit date ranges are used to avoid the 8000-entry cap limiting the effective window to ~33 hours.
+
+\subsection{\texttt{GET /api/analytics?range=\{range\}}}
+
+Fetches history feeds and computes per-sensor statistics. The \texttt{computeStats()} function calculates:
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{avg}, \textbf{min}, \textbf{max}: Standard descriptive statistics over all readings in the window.
+  \item \textbf{trend}: Compares the average of the last 10\% of readings against the first 10\% to classify as ``up'', ``down'', or ``stable'' (threshold: $\pm 0.5$ units).
+\end{itemize}
+
+Returns: \texttt{\{range, count, analytics: \{temperature, humidity, pressure, altitude, distance\}\}}.
+
+\subsection{\texttt{GET /api/environment-score}}
+
+Fetches the latest reading and computes the Environmental Comfort Score from temperature and humidity using a weighted formula. Returns \texttt{\{score, status\}}.
+
+\subsection{\texttt{POST /api/flood-predict}}
+
+A structural placeholder for future server-side TensorFlow.js Node inference. In the current implementation it validates the request body (must contain a \texttt{history} array of at least 48 entries) and returns HTTP 501 (Not Implemented) with a message directing callers to use the client-side \texttt{lib/flood-model.ts} inference path.
+
+\section{TelemetryProvider (\texttt{components/providers/TelemetryProvider.tsx})}
+
+The TelemetryProvider is the most complex component in the codebase at 566 lines. It serves as the central state management layer for the entire dashboard.
+
+\subsection{State Variables}
+
+\begin{table}[H]
+\centering
+\caption{TelemetryProvider State Variables}
+\begin{tabularx}{\linewidth}{|l|l|X|}
+\hline
+\rowcolor{FloodLight}
+\textbf{Variable} & \textbf{Type} & \textbf{Description} \\
+\hline
+data & TelemetryData | null & Current (latest) reading \\
+history & TelemetryData[] & Rolling history array \\
+deviceStatus & DeviceStatus | null & ESP32 and ThingSpeak connection state \\
+alerts & Alert[] & Active alert list (max 20) \\
+settings & DashboardSettings & Configurable thresholds and refresh interval \\
+isLoading & boolean & True during first fetch \\
+isOffline & boolean & True when ESP32 is not reachable \\
+isStale & boolean & True when offline but cached data exists \\
+lastSeenAt & string | null & ISO timestamp of last live reading \\
+unreadCount & number & Count of unread alerts \\
+isSimulating & boolean & Simulation mode toggle \\
+userRole & "admin" | "user" & Current user role \\
+userName & string | null & Display name \\
+\hline
+\end{tabularx}
+\end{table}
+
+\subsection{Alert Engine}
+
+The \texttt{evaluateAlerts()} function is called on every new data point and returns an array of alert payloads based on threshold comparisons. Alert logic covers:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{RAPID\_WATER\_RISE:} Water rose $\geq$ 5 cm since the previous reading (critical).
+  \item \textbf{HIGH\_WATER\_LEVEL:} Distance below \texttt{distanceThreshold}; sub-60\% is critical.
+  \item \textbf{RAPID\_PRESSURE\_CHANGE:} Pressure below threshold with $>$ 2 hPa drop, or $<$ 998 hPa.
+  \item \textbf{HIGH\_TEMPERATURE:} Temperature $>$ \texttt{tempThreshold} + 1°C margin.
+  \item \textbf{HIGH\_HUMIDITY:} Humidity $>$ \texttt{humidityThreshold} + 2\% margin.
+\end{itemize}
+
+Per-type cooldowns prevent alert spam:
+
+\begin{table}[H]
+\centering
+\caption{Alert Cooldown Configuration}
+\begin{tabular}{|l|r|}
+\hline
+\rowcolor{FloodLight}
+\textbf{Alert Type} & \textbf{Cooldown} \\
+\hline
+HIGH\_TEMPERATURE & 5 min \\
+HIGH\_HUMIDITY & 5 min \\
+RAPID\_PRESSURE\_CHANGE & 3 min \\
+HIGH\_WATER\_LEVEL & 2 min \\
+RAPID\_WATER\_RISE & 1 min \\
+OBJECT\_TOO\_CLOSE & 2 min \\
+SENSOR\_OFFLINE & 10 min \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Local Storage Persistence}
+
+Four localStorage keys provide offline resilience:
+\begin{itemize}[leftmargin=1.5em]
+  \item \texttt{ecosense:lastData} — latest telemetry reading.
+  \item \texttt{ecosense:lastHistory} — last known history array.
+  \item \texttt{ecosense:lastStatus} — last device status.
+  \item \texttt{ecosense:lastSeenAt} — ISO timestamp of last live contact.
+\end{itemize}
+
+On mount, if \texttt{/api/sensors} returns null (offline), the provider hydrates from localStorage so the dashboard has data to show immediately.
+
+\section{Request–Response Lifecycle}
+
+\begin{enumerate}[leftmargin=1.5em]
+  \item Browser mounts the dashboard; \texttt{TelemetryProvider} calls \texttt{/api/sensors}.
+  \item Next.js server handler calls \texttt{getLatestReading()} in \texttt{lib/thingspeak.ts}.
+  \item Cache is checked: if fresh (age $<$ 14s), cached result is returned immediately.
+  \item If stale or empty: ThingSpeak REST endpoint is fetched; result is parsed, stored in cache, and returned.
+  \item Response travels back to the TelemetryProvider as a typed \texttt{TelemetryData} object.
+  \item Provider updates React state, persists to localStorage, evaluates alerts.
+  \item All subscribed components re-render. Total round-trip: $<$ 200 ms when cached.
+\end{enumerate}

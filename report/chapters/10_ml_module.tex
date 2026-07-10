@@ -1,0 +1,275 @@
+﻿%=============================================================================
+% Chapter 10: Machine Learning Module
+%=============================================================================
+\chapter{Machine Learning Module}
+
+\section{Problem Definition}
+
+The core ML challenge addressed by FloodEye is \textbf{multi-step time-series regression}: given a 48-step window of multivariate environmental sensor readings, predict the water level at $t + 4$ hours. This is a regression task (continuous output) rather than a classification task, and the sequence nature of the data requires architectures that can capture temporal dependencies across the full 48-hour lookback window.
+
+\section{Dataset}
+
+\subsection{Source and Structure}
+
+The training dataset is a custom-built synthetic sensor dataset modelled on the Brahmaputra river basin, Assam (\texttt{assam\_flood\_sensor\_data.csv}). The dataset was loaded and processed in Google Colab (\texttt{Model/FloodMonitoring.ipynb}).
+
+\begin{table}[H]
+\centering
+\caption{Dataset Raw Columns}
+\begin{tabularx}{\linewidth}{|l|l|X|}
+\hline
+\rowcolor{FloodLight}
+\textbf{Column} & \textbf{Type} & \textbf{Description} \\
+\hline
+date & string & Date in YYYY-MM-DD format \\
+time & string & Time in HH:MM:SS format \\
+water\_level\_cm & float & Current water level (cm) \\
+temperature\_c & float & Ambient temperature (°C) \\
+humidity\_percent & float & Relative humidity (\%) \\
+pressure\_hpa & float & Atmospheric pressure (hPa) \\
+hour\_of\_day & int & Hour of day (0--23) \\
+month\_of\_year & int & Month (1--12) \\
+flood\_alert\_now & int & Binary flag: 1 if flood condition \\
+water\_level\_plus\_4h & float & Target: water level 4 hours later (cm) \\
+pressure\_trend\_3h & float & Pressure change over last 3 hours \\
+humidity\_trend\_3h & float & Humidity change over last 3 hours \\
+rate\_of\_change\_cm\_per\_hr & float & Rate of water level change (cm/hr) \\
+\hline
+\end{tabularx}
+\end{table}
+
+\subsection{Dataset Characteristics}
+
+The dataset is sorted chronologically and indexed by a combined datetime column (\texttt{date + time}). The target variable \texttt{water\_level\_plus\_4h} represents the actual water level 4 hours into the future, constructed from the time-series by a look-ahead shift.
+
+\section{Data Cleaning}
+
+\begin{itemize}[leftmargin=1.5em]
+  \item Datetime index constructed by combining the \texttt{date} and \texttt{time} columns using \texttt{pd.to\_datetime()}.
+  \item Chronological sorting applied via \texttt{sort\_values('datetime')}.
+  \item Missing values in numeric fields handled by the \texttt{parseField()} function (defaults to 0 or 1013.25 for pressure).
+  \item No duplicate timestamps were present in the training data.
+\end{itemize}
+
+\section{Feature Engineering}
+
+Eleven features are engineered from the raw dataset:
+
+\begin{table}[H]
+\centering
+\caption{Engineered Feature Set}
+\begin{tabularx}{\linewidth}{|l|l|X|}
+\hline
+\rowcolor{FloodLight}
+\textbf{Feature} & \textbf{Formula} & \textbf{Rationale} \\
+\hline
+hour\_sin & $\sin(2\pi \cdot \text{hour}/24)$ & Cyclical time encoding (avoids hour 0 vs 23 discontinuity) \\
+hour\_cos & $\cos(2\pi \cdot \text{hour}/24)$ & Cyclical complement \\
+month\_sin & $\sin(2\pi \cdot \text{month}/12)$ & Seasonality encoding \\
+month\_cos & $\cos(2\pi \cdot \text{month}/12)$ & Cyclical complement \\
+temperature\_c & raw reading & Direct environmental measurement \\
+humidity\_percent & raw reading & Direct environmental measurement \\
+pressure\_hpa & raw reading & Barometric pressure (storm indicator) \\
+pressure\_trend\_3h & $p_t - p_{t-3}$ & Pressure drop over 3 hours (storm predictor) \\
+humidity\_trend\_3h & $h_t - h_{t-3}$ & Humidity change over 3 hours \\
+water\_level\_cm & raw reading & Current water level \\
+rate\_of\_change\_cm\_per\_hr & $d_t - d_{t-1}$ & Instantaneous rate of water rise \\
+\hline
+\end{tabularx}
+\end{table}
+
+\textbf{Cyclical encoding} is essential for time features to preserve their periodic nature. Without it, a linear model would treat hour 23 as far from hour 0, when they are actually adjacent.
+
+\section{Data Preprocessing}
+
+\subsection{Train-Val-Test Split}
+
+A strictly chronological (non-shuffled) split is used to prevent data leakage:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Training set:} First 70\% of the time series.
+  \item \textbf{Validation set:} Next 15\% (indices 70\%--85\%).
+  \item \textbf{Test set:} Remaining 15\% (indices 85\%--100\%).
+\end{itemize}
+
+This ensures the model is evaluated on data it has never seen and that no future information leaks into training.
+
+\subsection{Feature Normalisation}
+
+\texttt{sklearn.preprocessing.StandardScaler} is fitted on the training set only and applied to all three splits:
+
+\begin{equation}
+  x_{\text{scaled}} = \frac{x - \mu_{\text{train}}}{\sigma_{\text{train}}}
+\end{equation}
+
+Separate scalers are fitted for features (X) and target (Y). The scaler parameters are serialised to \texttt{Model/scalers.json} and copied to \texttt{public/model\_scalers.json} for browser-side use.
+
+Scaler parameters (from \texttt{scalers.json}):
+\begin{itemize}[leftmargin=1.5em]
+  \item Target Y mean: $\mu_y = 319.71$ cm; scale: $\sigma_y = 53.94$ cm.
+  \item This indicates the average water level in the training dataset is approximately 320 cm with a standard deviation of 54 cm.
+\end{itemize}
+
+\subsection{Sequence Window Creation}
+
+The \texttt{create\_windows()} function creates overlapping sliding windows of length LOOKBACK = 48 over the scaled feature matrix:
+
+\begin{equation}
+  X_i = \mathbf{x}_{i-48:i}, \quad Y_i = y_i \quad \text{for } i \geq 48
+\end{equation}
+
+This produces input tensors of shape \texttt{(N, 48, 11)} and target tensors of shape \texttt{(N, 1)}.
+
+\section{Model Architecture: 1D-CNN + Bidirectional LSTM + Attention}
+
+The predictive model is a hybrid deep learning architecture combining three complementary techniques for time-series forecasting.
+
+\subsection{Architecture Components}
+
+\subsubsection{1D Convolutional Layer (Conv1D)}
+\begin{itemize}[leftmargin=1.5em]
+  \item Filters: 64; Kernel size: 3; Padding: ``same''.
+  \item \textbf{Purpose:} Extracts short-term local temporal features and immediate trends from the 48-step input sequence. The convolutional filters learn patterns such as rapid rate-of-change spikes or sudden pressure drops within a 3-step window.
+  \item Followed by Batch Normalisation and ReLU activation.
+\end{itemize}
+
+\subsubsection{Bidirectional LSTM (64 units)}
+\begin{itemize}[leftmargin=1.5em]
+  \item Units: 64 per direction (128 total output features due to concatenation).
+  \item \textbf{Purpose:} Processes the sequence in both forward and backward directions simultaneously. The forward pass captures causal dependencies (rising water level trends); the backward pass can weight later evidence to contextualise earlier readings.
+  \item \texttt{return\_sequences=True} so the full sequence output \texttt{(batch, 48, 128)} is passed to the Attention layer.
+\end{itemize}
+
+\subsubsection{Custom Attention Layer}
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Purpose:} Dynamically learns to weight which of the 48 time steps are most relevant for predicting the future water level. During flood events, time steps with sudden pressure drops or rapid water rises receive higher attention weights.
+  \item \textbf{Implementation:}
+    \begin{align}
+      e_t &= \tanh\!\left(\mathbf{x}_t \mathbf{W}_{\text{att}} + \mathbf{b}_t\right) \\
+      \alpha_t &= \text{softmax}(e_t) \quad \text{(over timestep axis)} \\
+      \mathbf{c} &= \sum_{t=1}^{48} \alpha_t \cdot \mathbf{x}_t
+    \end{align}
+  \item Output: context vector $\mathbf{c}$ of shape \texttt{(batch, 128)}.
+  \item The Attention layer is implemented in both Python (training) and TypeScript (browser inference) and registered as a custom serialisable layer.
+\end{itemize}
+
+\subsubsection{Dense Layers}
+\begin{itemize}[leftmargin=1.5em]
+  \item Dense(32, activation=`relu') → Dense(1): Produces the scalar water level prediction.
+\end{itemize}
+
+\subsection{Full Architecture Summary}
+
+\begin{table}[H]
+\centering
+\caption{Model Layer Summary}
+\begin{tabular}{|l|l|r|}
+\hline
+\rowcolor{FloodLight}
+\textbf{Layer} & \textbf{Output Shape} & \textbf{Parameters} \\
+\hline
+Input & (48, 11) & 0 \\
+Conv1D (64, k=3) + BN + ReLU & (48, 64) & 2,240 \\
+Bidirectional LSTM (64+64) & (48, 128) & 107,008 \\
+AttentionLayer & (128,) & 176 \\
+Dense(32, relu) & (32,) & 4,128 \\
+Dense(1) & (1,) & 33 \\
+\hline
+\textbf{Total} & & \textbf{$\approx$113,585} \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{Training Configuration}
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Optimizer:} Adam (default learning rate 0.001).
+  \item \textbf{Loss function:} Mean Squared Error (MSE).
+  \item \textbf{Metrics:} Mean Absolute Error (MAE).
+  \item \textbf{Epochs:} Up to 50.
+  \item \textbf{Batch size:} 32.
+  \item \textbf{Callbacks:}
+    \begin{itemize}
+      \item \texttt{EarlyStopping(monitor=`val\_loss', patience=10, restore\_best\_weights=True)}: Terminates training when validation loss does not improve for 10 consecutive epochs and restores the best-seen weights.
+      \item \texttt{ReduceLROnPlateau(monitor=`val\_loss', factor=0.5, patience=5)}: Halves the learning rate when validation loss plateaus for 5 epochs, aiding convergence.
+    \end{itemize}
+  \item \textbf{Training environment:} Google Colab (GPU accelerated).
+\end{itemize}
+
+\section{Model Performance}
+
+The trained model achieves a Mean Absolute Error of \textbf{3.42 cm} on the training set, as reported in the Predictions page admin diagnostics panel. This indicates that on average the model's 4-hour forecasts deviate by less than 3.5 cm from the actual water level, which is well within an operationally useful range for flood warning purposes.
+
+\section{Model Serialisation and Export}
+
+\begin{enumerate}[leftmargin=1.5em]
+  \item The model is saved as \texttt{flood\_model.h5} using Keras's legacy H5 format.
+  \item The TensorFlow.js converter (\texttt{tensorflowjs\_converter}) converts it to LayersModel format: \texttt{model.json} (topology + weights manifest) and \texttt{group1-shard1of1.bin} (binary weights).
+  \item \textbf{Compatibility patching:} Because the model was trained with Keras 3 but TensorFlow.js expects Keras 2 format, the \texttt{patch\_model.js} script performs seven structural transformations:
+    \begin{enumerate}
+      \item Fix \texttt{input\_layers} / \texttt{output\_layers} nesting.
+      \item Convert \texttt{inbound\_nodes} from Keras 3 tensor objects to Keras 2 flat arrays.
+      \item Rename \texttt{batch\_shape} to \texttt{batchInputShape} in InputLayer.
+      \item Strip LSTM \texttt{lstm\_cell/} weight path sub-scopes.
+      \item Convert \texttt{DTypePolicy} dtype objects to plain strings.
+      \item Replace \texttt{Orthogonal} initialiser with \texttt{Zeros} (prevents slow initialisation).
+      \item Remove unknown \texttt{optional}/\texttt{ragged} fields from InputLayer config.
+    \end{enumerate}
+  \item Scaler parameters are exported to \texttt{scalers.json} and model configuration to \texttt{config.json}.
+\end{enumerate}
+
+\section{Browser-Side Inference (\texttt{lib/flood-model.ts})}
+
+\subsection{Model Loading}
+
+The \texttt{loadModel()} function:
+\begin{enumerate}[leftmargin=1.5em]
+  \item Fetches \texttt{model.json}, \texttt{group1-shard1of1.bin}, \texttt{model\_config.json}, and \texttt{model\_scalers.json} in parallel.
+  \item Parses all weights from the binary file using the manifest's dtype/shape spec.
+  \item Loads the model topology only (no weight loading from TFJS's default name-matching mechanism).
+  \item Manually assigns weights to each layer via \texttt{layer.setWeights(tensors)} in positional order, bypassing TFJS internal variable naming.
+\end{enumerate}
+
+This manual weight assignment strategy is necessary because of the Keras 3 naming differences (e.g., \texttt{lstm\_cell/} sub-scopes) that survive even after the patch script.
+
+\subsection{Feature Engineering in TypeScript}
+
+The \texttt{engineerFeatures()} function replicates the Python feature engineering pipeline in TypeScript:
+\begin{itemize}[leftmargin=1.5em]
+  \item Computes cyclical encodings from the reading's timestamp.
+  \item Computes 3-hour pressure and humidity trends by differencing with 3-step-back values.
+  \item Computes the rate of change as the difference from the previous reading.
+  \item Applies StandardScaler normalisation using the loaded scaler parameters.
+\end{itemize}
+
+\subsection{Inference Pipeline}
+
+\begin{enumerate}[leftmargin=1.5em]
+  \item Take the last 48 readings from the live history (padded with \texttt{sample\_data.json} if insufficient).
+  \item Call \texttt{engineerFeatures()} to produce a \texttt{(48, 11)} feature matrix.
+  \item Wrap in a \texttt{tf.tensor3d} of shape \texttt{(1, 48, 11)}.
+  \item Call \texttt{model.predict(inputTensor)}.
+  \item Extract scalar prediction; denormalise: $y = \text{pred\_scaled} \times \sigma_y + \mu_y$.
+  \item Map predicted water level to a risk level and flood probability.
+  \item Dispose all tensors to prevent WebGL memory leaks.
+\end{enumerate}
+
+\section{Risk Classification}
+
+The predicted water level is mapped to a risk level based on proximity to the DANGER\_THRESHOLD (450 cm):
+
+\begin{table}[H]
+\centering
+\caption{Risk Level Classification}
+\begin{tabularx}{\linewidth}{|l|l|X|}
+\hline
+\rowcolor{FloodLight}
+\textbf{Risk Level} & \textbf{Condition} & \textbf{Flood Probability} \\
+\hline
+Critical & $\geq 450$ cm & 99\% \\
+High & $400$--$450$ cm & 75\%--95\% \\
+Moderate & $300$--$400$ cm & 30\%--75\% \\
+Low & $< 300$ cm & 1\%--30\% \\
+\hline
+\end{tabularx}
+\end{table}

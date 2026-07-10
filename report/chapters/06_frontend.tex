@@ -1,0 +1,179 @@
+﻿%=============================================================================
+% Chapter 6: Frontend Implementation
+%=============================================================================
+\chapter{Frontend Implementation}
+
+The FloodEye frontend is a Next.js 16 App Router application. All pages live under either the root \texttt{/} (landing) or the nested \texttt{/dashboard/} route group. This chapter describes each page in detail.
+
+\section{Landing Page (\texttt{app/page.tsx})}
+
+\subsection{Purpose}
+The landing page serves as the public-facing introduction to FloodEye. It is designed to be visually striking and informative, communicating the project's purpose to new visitors before they enter the monitoring dashboard.
+
+\subsection{Components}
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{LandingNav:} Fixed top navigation bar with logo, navigation links, and a ``Go to Dashboard'' call-to-action button. Includes blur-glass styling.
+  \item \textbf{BackgroundSlideshow:} An auto-advancing slideshow of flood monitoring imagery rendered as a full-viewport background layer.
+  \item \textbf{ScrollytellingSections:} The primary content component. Uses GSAP ScrollTrigger to animate content sections as the user scrolls: Hero, Problem Statement, Features Showcase, Technology Stack, Team Profiles (with individual member photos from \texttt{/public/}), and a call-to-action.
+  \item \textbf{AssamNodeMap:} A landing-page specific map component showing the geographic coverage area of the monitoring network in Assam.
+  \item \textbf{PWAInstallPrompt:} A floating prompt that appears when the browser's beforeinstallprompt event fires, inviting the user to install the PWA.
+\end{itemize}
+
+\subsection{Key Features}
+\begin{itemize}[leftmargin=1.5em]
+  \item Lenis smooth scroll integration for physics-based scroll inertia.
+  \item GSAP \texttt{fromTo} and \texttt{ScrollTrigger} animations for each section entrance.
+  \item Fully responsive layout adapting from mobile through desktop breakpoints.
+  \item Team member profile cards with photos from the public directory.
+\end{itemize}
+
+\section{Dashboard Home (\texttt{app/dashboard/page.tsx})}
+
+\subsection{Purpose}
+The main dashboard provides a comprehensive real-time overview of all sensor readings, device status, live charts, alerts, and the flood risk prediction in a single scrollable view.
+
+\subsection{Layout Structure}
+
+The dashboard is organised in four rows:
+
+\begin{enumerate}[leftmargin=1.5em]
+  \item \textbf{Row 1:} Five sensor cards (Temperature, Humidity, Pressure, Altitude, Water Level) in a responsive grid (1 col on mobile \textrightarrow{} 5 cols on XL screens).
+  \item \textbf{Row 2:} A 2:1 grid containing the Water Level Trend chart (left, spanning 2 columns) and a right column with ComfortScoreCard, FloodPredictionCard, and DeviceStatusCard stacked vertically.
+  \item \textbf{Row 3:} The AlertPanel spanning the full width.
+  \item \textbf{Row 4:} The interactive sensor location map (MapLibre GL, loaded dynamically with SSR disabled).
+\end{enumerate}
+
+\subsection{Sensor Cards (SensorCard Component)}
+
+Each SensorCard renders:
+\begin{itemize}[leftmargin=1.5em]
+  \item Current reading with unit.
+  \item Trend arrow icon (up / down / stable) calculated by comparing the current reading against the previous one.
+  \item Delta value showing the numeric change from the previous reading.
+  \item A sparkline mini-chart rendered using the \texttt{historyData} prop.
+  \item A status badge (normal / warning / critical) with colour coding.
+  \item Offline-state: Cards are labelled ``(Cached)'' when the device is offline.
+\end{itemize}
+
+Alert thresholds per card:
+\begin{itemize}[leftmargin=1.5em]
+  \item Temperature $>$ 35°C: warning status.
+  \item Humidity $>$ 80\%: warning status.
+  \item Water Level $<$ 20 cm: critical; $<$ 40 cm: warning.
+\end{itemize}
+
+\subsection{Water Level Trend Chart}
+An interactive Recharts \texttt{CustomLineChart} displays the last N data points of water level (cm) vs.\ time. A ``Live'' or ``Cached'' pill badge indicates the current data freshness.
+
+\subsection{Comfort Score Card}
+Calculates and displays the Environmental Comfort Score as a percentage derived from temperature and humidity. Score ranges map to qualitative labels (Excellent / Good / Moderate / Poor).
+
+\subsection{Flood Prediction Card}
+A compact summary of the ML prediction result: predicted water level in 4 hours, risk level badge (Low / Moderate / High / Critical), and flood probability percentage.
+
+\subsection{Device Status Card}
+Displays ESP32 online/offline status, ThingSpeak connection status, and last upload time derived from the \texttt{DeviceStatus} object.
+
+\subsection{Alert Panel}
+The AlertPanel component renders a horizontally scrollable list of active alerts, with severity-coded colour bands. It links to the full Alerts page.
+
+\subsection{Offline Behaviour}
+When the ESP32 is unreachable:
+\begin{itemize}[leftmargin=1.5em]
+  \item An orange \textbf{OfflineBanner} is shown at the top with the time of the last live reading.
+  \item Sensor cards show ``(Cached)'' labels.
+  \item The Live badge on the chart changes to ``Cached''.
+  \item A \textbf{NoDataState} component replaces the dashboard if no cached data exists at all.
+\end{itemize}
+
+\section{Analytics Page (\texttt{app/dashboard/analytics/page.tsx})}
+
+\subsection{Purpose}
+Provides individual time-series charts for all five sensor channels, each rendered in its own card.
+
+\subsection{Components}
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{TimeFilter:} A pill-tab selector for 1h, 6h, 24h, 7d, 30d windows. Selecting a window triggers a new \texttt{/api/history?range=\{window\}} request.
+  \item \textbf{Five CustomLineChart cards:} Temperature (°C), Humidity (\%), Atmospheric Pressure (hPa), Altitude (m), Water Level (cm). The Water Level card uses a dark gradient background to visually distinguish it as the primary safety metric.
+  \item The Pressure chart spans two columns (\texttt{lg:col-span-2}) as a wide chart for better readability.
+\end{itemize}
+
+\section{History Page (\texttt{app/dashboard/history/page.tsx})}
+
+\subsection{Purpose}
+Displays statistical summaries of sensor history and provides data export functionality.
+
+\subsection{Components}
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{StatCard grid:} Six cards showing average, min, and max for temperature, humidity, and water level across the current history window.
+  \item \textbf{Data table:} A scrollable table of the last 100 readings with columns: Time, Temperature, Humidity, Pressure, Altitude, Water Level.
+  \item \textbf{Export buttons:}
+    \begin{itemize}
+      \item \textbf{CSV Export:} Generates a Blob from the history array and downloads it as \texttt{floodeye\_logs\_\{date\}.csv}.
+      \item \textbf{PDF Export:} Uses jsPDF + jspdf-autotable to generate a formatted PDF with the FloodEye header and a data table.
+    \end{itemize}
+\end{itemize}
+
+\section{Predictions Page (\texttt{app/dashboard/predictions/page.tsx})}
+
+\subsection{Purpose}
+A dedicated full-page view of the ML flood forecasting results with admin diagnostic tools.
+
+\subsection{Components}
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{FloodPredictionPanel:} A large card displaying the predicted water level, a circular risk gauge, flood probability bar, confidence score, feature contributions list (Water Level, Temperature, Humidity, Pressure), and a timestamp of the last inference.
+  \item \textbf{Admin Diagnostics (admin role only):}
+    \begin{itemize}
+      \item Model Architecture card: Type (CNN-BiLSTM-Att), Input Shape [48, 11], Output (4hr Forecast), MAE (Train: 3.42 cm).
+      \item Inference Engine card: Provider (TensorFlow.js/WebGL), live status (COMPUTING/READY), last run timestamp.
+      \item Settings CTA card: Links to the Settings page.
+    \end{itemize}
+\end{itemize}
+
+\section{Alerts Page (\texttt{app/dashboard/alerts/page.tsx})}
+
+\subsection{Purpose}
+The full alert log with severity filtering and per-alert dismissal.
+
+\subsection{Components}
+\begin{itemize}[leftmargin=1.5em]
+  \item Summary badges showing counts of Critical, Warning, and Info alerts.
+  \item \textbf{AlertCard:} Each alert card displays: severity icon, type label, severity badge, timestamp (relative, e.g.\ ``3m ago''), message text, and a dismiss button.
+  \item Alerts are ordered critical-first, then warning, then info.
+  \item ``Clear All'' button clears the log and resets all alert cooldown timers.
+\end{itemize}
+
+\textbf{Alert types implemented:}
+\begin{itemize}[leftmargin=1.5em]
+  \item HIGH\_TEMPERATURE, HIGH\_HUMIDITY, RAPID\_PRESSURE\_CHANGE
+  \item HIGH\_WATER\_LEVEL, RAPID\_WATER\_RISE, OBJECT\_TOO\_CLOSE, SENSOR\_OFFLINE
+\end{itemize}
+
+\section{Settings Page (\texttt{app/dashboard/settings/page.tsx})}
+
+\subsection{Purpose}
+Allows admin users to configure alert thresholds, refresh interval, and simulation mode.
+
+\subsection{Access Control}
+The Settings page checks \texttt{userRole === "admin"} from the TelemetryProvider context. Non-admin users see an access-restricted screen with a ShieldAlert icon.
+
+\subsection{Settings Sections}
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Connection Settings:} Refresh interval selector (5s, 15s, 30s, 60s). Simulation mode toggle (uses synthetic data instead of live ThingSpeak readings).
+  \item \textbf{Alert Thresholds:} Input fields for Temperature threshold (°C), Humidity threshold (\%), Water Level threshold (cm), Pressure threshold (hPa).
+  \item \textbf{Save:} Persists settings to the TelemetryProvider context (in-memory; not yet persisted to a database in the current implementation).
+\end{itemize}
+
+\section{Devices Page (\texttt{app/dashboard/devices/})}
+
+The Devices section provides device management views showing registered ESP32 nodes and their connection status. In the current implementation, this page displays the status of the single configured ThingSpeak channel.
+
+\section{Responsive Design}
+
+All dashboard pages are fully responsive using Tailwind CSS breakpoint utilities:
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Mobile (default):} Single column layout; cards stack vertically.
+  \item \textbf{Tablet (\texttt{sm:}):} Sensor cards 2-column grid.
+  \item \textbf{Laptop (\texttt{lg:}):} 3-column grid for sensor cards; 3:1 chart+sidebar split.
+  \item \textbf{Desktop (\texttt{xl:}):} 5-column sensor card grid; full analytics 2-column layout.
+\end{itemize}
