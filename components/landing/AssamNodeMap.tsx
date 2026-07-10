@@ -82,7 +82,13 @@ function NodePin({ status, active }: { status: NodeStatus; active: boolean }) {
   return (
     <div
       className="relative flex items-center justify-center cursor-pointer select-none"
-      style={{ width: 40, height: 40 }}
+      style={{
+        width: 40,
+        height: 40,
+        willChange: "transform",
+        transform: "translateZ(0)",
+        backfaceVisibility: "hidden",
+      }}
     >
       {/* Pulse ring */}
       <span
@@ -131,7 +137,10 @@ export default function AssamNodeMap() {
   const selectedNode = NODES.find((n) => n.id === activeNode) ?? null;
 
   return (
-    <div className="relative w-full h-[340px] rounded-2xl overflow-hidden">
+    <div
+      className="relative w-full h-[340px] rounded-2xl overflow-hidden"
+      style={{ overscrollBehavior: "none", touchAction: "none" }}
+    >
       <Map
         initialViewState={{ longitude: 92.9, latitude: 26.2, zoom: 6.2 }}
         mapStyle={MAP_STYLE}

@@ -25,7 +25,7 @@ export function Sidebar() {
   const { userRole } = useTelemetry();
 
   return (
-    <aside className="fixed bottom-0 left-0 right-0 z-50 md:relative md:w-24 shrink-0 flex flex-row md:flex-col items-center justify-around md:justify-start md:py-8 bg-white md:rounded-[2.5rem] rounded-t-3xl shadow-[0_-8px_30px_rgb(0,0,0,0.08)] md:shadow-[0_8px_30px_rgb(0,0,0,0.04)] h-20 md:h-[calc(100vh-3rem)] md:overflow-y-auto md:my-6 md:ml-6 md:sticky md:top-6 no-scrollbar">
+    <aside className="fixed bottom-0 left-0 right-0 z-50 md:relative md:w-24 shrink-0 flex flex-row md:flex-col items-center justify-around md:justify-start md:py-8 bg-white/40 backdrop-blur-xl md:rounded-[2.5rem] rounded-t-3xl shadow-[0_-8px_30px_rgb(0,0,0,0.06)] md:shadow-[0_8px_30px_rgb(0,0,0,0.04)] border-t border-white/60 md:border md:border-white/60 h-20 md:h-[calc(100vh-3rem)] md:overflow-y-auto md:my-6 md:ml-6 md:sticky md:top-6 no-scrollbar">
 
       {/* Main Navigation */}
       <nav className="flex-1 flex flex-row md:flex-col items-center justify-center md:justify-start gap-2 sm:gap-6 w-full md:w-auto px-4 md:px-0">

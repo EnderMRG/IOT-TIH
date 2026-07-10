@@ -32,8 +32,8 @@ export function SensorCard({
   const chartData = historyData.map((val, i) => ({ value: val, index: i }));
 
   const themeConfig = {
-    light: "bg-white border border-slate-100",
-    primary: "bg-blue-600 text-white",
+    light: "bg-white/40 backdrop-blur-xl border border-white/60 shadow-lg shadow-slate-200/40",
+    primary: "bg-gradient-to-br from-blue-600 to-blue-700 backdrop-blur-xl text-white border border-blue-500/50 shadow-lg shadow-blue-500/30",
   };
 
   const bgClasses = themeConfig[variant];
@@ -61,7 +61,11 @@ export function SensorCard({
   const unitClass = isDark ? "text-white/60" : "text-[#78716c]";
 
   return (
-    <div className={cn("rounded-[2rem] p-5 shadow-sm flex flex-col gap-4 transition-shadow hover:shadow-md", bgClasses)}>
+    <div className={cn("relative rounded-[1.75rem] p-5 flex flex-col gap-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl group overflow-hidden", bgClasses)}>
+      {/* Accent gradient shimmer at top */}
+      {!isDark && (
+        <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-blue-400/60 via-sky-300/60 to-transparent rounded-t-[1.75rem]" />
+      )}
       {/* Header row */}
       <div className="flex items-center justify-between mb-4">
         <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center transition-colors", iconBgClass)}>

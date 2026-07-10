@@ -8,7 +8,8 @@ export function AlertPanel() {
   const { alerts } = useTelemetry();
 
   return (
-    <div className="bg-white rounded-[2rem] p-6 shadow-sm h-full flex flex-col">
+    <div className="relative bg-white/40 backdrop-blur-xl border border-white/60 shadow-lg shadow-slate-200/40 rounded-[1.75rem] p-6 h-full flex flex-col transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl overflow-hidden">
+      <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-blue-400/60 via-sky-300/60 to-transparent" />
       <h3 className="text-[#1c1c1a] font-bold text-base mb-4">Active Alerts</h3>
 
       {alerts.length === 0 ? (

@@ -104,8 +104,12 @@ export default function TechnologiesPage() {
           <Cell className="md:col-span-3 flex flex-col md:flex-row items-center gap-2 p-2">
             <div className="w-full md:w-[55%] shrink-0 overflow-hidden rounded-[20px] bg-black border border-white/5 shadow-inner">
               <video
-                src="/flood_monitoring_system.mp4"
+                src="/flood_monitoring_system.mp4?v=2"
                 controls
+                autoPlay
+                muted
+                loop
+                playsInline
                 className="w-full h-auto aspect-video object-contain"
                 preload="metadata"
               />
@@ -239,32 +243,7 @@ export default function TechnologiesPage() {
             </div>
           </Cell>
 
-          {/* Data flow — full width, no image */}
-          <Cell className="md:col-span-2 p-8 flex flex-col justify-center gap-6">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">Data Pipeline</p>
-            <div className="flex flex-col sm:flex-row items-center justify-start gap-2 sm:gap-0 text-sm font-medium text-white/70">
-              {[
-                { label: "Sensors", sub: "HC-SR04 + BME280" },
-                { label: "ESP32", sub: "HTTPS POST" },
-                { label: "ThingSpeak", sub: "cloud storage" },
-                { label: "Next.js API", sub: "server proxy" },
-                { label: "Dashboard", sub: "FloodEye" },
-              ].map((step, i, arr) => (
-                <div key={step.label} className="flex items-center gap-2">
-                  <div className="flex flex-col items-center px-4 py-3 rounded-2xl border border-white/10 bg-white/5 text-center min-w-[90px]">
-                    <span className="font-bold text-white text-sm">{step.label}</span>
-                    <span className="text-white/40 text-[10px] mt-0.5">{step.sub}</span>
-                  </div>
-                  {i < arr.length - 1 && (
-                    <>
-                      <span className="text-white/20 text-base hidden sm:block">→</span>
-                      <span className="text-white/20 text-base block sm:hidden">↓</span>
-                    </>
-                  )}
-                </div>
-              ))}
-            </div>
-          </Cell>
+
 
         </div>
       </main>

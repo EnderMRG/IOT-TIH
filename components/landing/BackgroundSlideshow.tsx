@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import Image from "next/image";
 
-import img1 from "@/assests/landpage/india-weather-floods.webp";
+import img1 from "@/assests/landpage/india-weather-floods.jpg";
 import img2 from "@/assests/landpage/guwahati-flood.jpg";
 import img3 from "@/assests/landpage/1045183-assam-floods-1x.png";
 

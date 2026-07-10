@@ -88,7 +88,7 @@ export default function AboutPage() {
             {/* Header: Title on left, Logo on right */}
             <div className="flex flex-col-reverse md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-white/20 mb-8">
               <div>
-                <h3 className="text-3xl font-bold text-white mb-1">IoT Based Water Level Monitoring System</h3>
+                <h3 className="text-3xl font-bold text-white mb-1">IoT Based Flood Monitoring System</h3>
                 <p className="text-blue-400 font-medium text-lg">TIH | IIT Guwahati</p>
               </div>
               <div className="shrink-0 flex justify-start md:justify-end">

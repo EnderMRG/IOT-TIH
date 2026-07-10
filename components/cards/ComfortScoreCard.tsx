@@ -31,7 +31,8 @@ export function ComfortScoreCard({ temperature, humidity }: ComfortScoreCardProp
   const offset = circumference - (score / 100) * circumference;
 
   return (
-    <div className="bg-white border border-slate-100 rounded-[2rem] p-6 shadow-sm flex flex-col items-center justify-center gap-4">
+    <div className="relative bg-white/40 backdrop-blur-xl border border-white/60 shadow-lg shadow-slate-200/40 rounded-[1.75rem] p-6 flex flex-col items-center justify-center gap-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl overflow-hidden">
+      <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-blue-400/60 via-sky-300/60 to-transparent" />
       <h3 className="text-[#78716c] font-medium text-sm w-full text-left">Comfort Score</h3>
 
       {/* SVG Ring */}

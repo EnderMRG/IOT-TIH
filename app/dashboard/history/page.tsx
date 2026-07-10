@@ -11,7 +11,11 @@ function StatCard({
   icon: React.ElementType; highlight?: string;
 }) {
   return (
-    <div className={cn("rounded-[2rem] p-6 shadow-sm flex flex-col justify-between gap-3", bg)}>
+    <div className={cn("relative rounded-[1.75rem] p-6 flex flex-col justify-between gap-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl overflow-hidden", bg)}>
+      {/* Accent gradient shimmer at top for light cards */}
+      {!bg.includes("bg-blue-600") && !bg.includes("bg-gradient") && (
+        <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-blue-400/60 via-sky-300/60 to-transparent" />
+      )}
       <div className="flex items-center justify-between">
         <p className={cn("text-xs font-semibold uppercase tracking-wide", subText)}>{label}</p>
         <div className={cn("w-8 h-8 rounded-full flex items-center justify-center", highlight ?? "bg-white/20")}>
@@ -38,15 +42,18 @@ export default function HistoryPage() {
   const min = (key: keyof typeof history[0]) =>
     Math.min(...history.map((h) => h[key] as number), 9999);
 
+  const baseLightBg = "bg-white/40 backdrop-blur-xl border border-white/60 shadow-lg shadow-slate-200/40";
+  const baseDarkBg = "bg-gradient-to-br from-blue-600 to-blue-700 backdrop-blur-xl text-white border border-blue-500/50 shadow-lg shadow-blue-500/30";
+
   const stats = [
-    { label: "Avg Temperature",  value: avg("temperature"),  unit: "°C",  icon: Thermometer, bg: "bg-white",       text: "text-slate-900", subText: "text-slate-500", highlight: "bg-blue-50 text-blue-600" },
-    { label: "Max Temperature",  value: max("temperature"),  unit: "°C",  icon: TrendingUp,  bg: "bg-white border border-slate-100",   text: "text-slate-900", subText: "text-slate-500", highlight: "bg-orange-100 text-orange-600" },
-    { label: "Min Temperature",  value: min("temperature"),  unit: "°C",  icon: TrendingDown,bg: "bg-blue-600",   text: "text-white",      subText: "text-white/70",  highlight: "bg-white/20 text-white" },
-    { label: "Avg Humidity",     value: avg("humidity"),     unit: "%",   icon: Droplets,    bg: "bg-white",       text: "text-slate-900", subText: "text-slate-500", highlight: "bg-blue-100 text-blue-600" },
-    { label: "Avg Pressure",     value: avg("pressure"),     unit: "hPa", icon: Wind,        bg: "bg-white border border-slate-100",   text: "text-slate-900", subText: "text-slate-500", highlight: "bg-green-100 text-green-600" },
-    { label: "Avg Altitude",     value: avg("altitude"),     unit: "m",   icon: Mountain,    bg: "bg-white",       text: "text-slate-900", subText: "text-slate-500", highlight: "bg-purple-100 text-purple-600" },
-    { label: "Avg Water Level",     value: avg("distance"),     unit: "cm",  icon: Ruler,       bg: "bg-blue-600",   text: "text-white",      subText: "text-white/70",  highlight: "bg-white/20 text-white" },
-    { label: "Max Water Level",     value: min("distance"),     unit: "cm",  icon: Ruler,       bg: "bg-white border border-slate-100",   text: "text-slate-900", subText: "text-slate-500", highlight: "bg-amber-100 text-amber-600" },
+    { label: "Avg Temperature",  value: avg("temperature"),  unit: "°C",  icon: Thermometer, bg: baseLightBg,       text: "text-slate-900", subText: "text-slate-500", highlight: "bg-blue-50 text-blue-600" },
+    { label: "Max Temperature",  value: max("temperature"),  unit: "°C",  icon: TrendingUp,  bg: baseLightBg,       text: "text-slate-900", subText: "text-slate-500", highlight: "bg-orange-100 text-orange-600" },
+    { label: "Min Temperature",  value: min("temperature"),  unit: "°C",  icon: TrendingDown,bg: baseDarkBg,        text: "text-white",      subText: "text-white/70",  highlight: "bg-white/20 text-white" },
+    { label: "Avg Humidity",     value: avg("humidity"),     unit: "%",   icon: Droplets,    bg: baseLightBg,       text: "text-slate-900", subText: "text-slate-500", highlight: "bg-blue-100 text-blue-600" },
+    { label: "Avg Pressure",     value: avg("pressure"),     unit: "hPa", icon: Wind,        bg: baseLightBg,       text: "text-slate-900", subText: "text-slate-500", highlight: "bg-green-100 text-green-600" },
+    { label: "Avg Altitude",     value: avg("altitude"),     unit: "m",   icon: Mountain,    bg: baseLightBg,       text: "text-slate-900", subText: "text-slate-500", highlight: "bg-purple-100 text-purple-600" },
+    { label: "Avg Water Level",     value: avg("distance"),     unit: "cm",  icon: Ruler,       bg: baseDarkBg,        text: "text-white",      subText: "text-white/70",  highlight: "bg-white/20 text-white" },
+    { label: "Max Water Level",     value: min("distance"),     unit: "cm",  icon: Ruler,       bg: baseLightBg,       text: "text-slate-900", subText: "text-slate-500", highlight: "bg-amber-100 text-amber-600" },
   ];
 
   return (
@@ -64,7 +71,8 @@ export default function HistoryPage() {
       </div>
 
       {/* Historical Log Table */}
-      <div className="bg-white rounded-[2rem] p-6 shadow-sm">
+      <div className="relative bg-white/40 backdrop-blur-xl border border-white/60 shadow-lg shadow-slate-200/40 rounded-[1.75rem] p-6 overflow-hidden transition-all duration-200 hover:shadow-xl">
+        <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-blue-400/60 via-sky-300/60 to-transparent" />
         <h3 className="text-slate-900 font-bold mb-4">Recent Sensor Logs</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">

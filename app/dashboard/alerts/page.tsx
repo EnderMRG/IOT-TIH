@@ -20,9 +20,9 @@ function AlertCard({ alert }: { alert: Alert }) {
   const Icon = cfg.icon;
 
   const bgClass =
-    alert.severity === "critical" ? "bg-red-50 border-red-200" :
-    alert.severity === "warning"  ? "bg-orange-50 border-orange-200" :
-                                    "bg-blue-50 border-blue-200";
+    alert.severity === "critical" ? "bg-red-50/70 border-red-200/60" :
+    alert.severity === "warning"  ? "bg-orange-50/70 border-orange-200/60" :
+                                    "bg-blue-50/70 border-blue-200/60";
 
   const textClass =
     alert.severity === "critical" ? "text-red-800" :
@@ -35,7 +35,7 @@ function AlertCard({ alert }: { alert: Alert }) {
                                     <Info className="w-5 h-5 text-blue-500" />;
 
   return (
-    <div className={cn("p-5 rounded-2xl border flex items-start gap-4", bgClass)}>
+    <div className={cn("p-5 rounded-2xl border flex items-start gap-4 transition-colors hover:bg-white/50", bgClass)}>
       <div className="shrink-0 mt-0.5">{iconEl}</div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2 flex-wrap">
@@ -77,7 +77,8 @@ export default function AlertsPage() {
         )}
       </div>
 
-      <div className="bg-white rounded-[2rem] p-6 shadow-sm min-h-[500px]">
+      <div className="relative bg-white/40 backdrop-blur-xl border border-white/60 shadow-lg shadow-slate-200/40 rounded-[1.75rem] p-6 min-h-[500px] transition-all duration-200 hover:shadow-xl overflow-hidden">
+        <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-blue-400/60 via-sky-300/60 to-transparent" />
         {alerts.length === 0 ? (
           <EmptyState
             icon={ShieldAlert}

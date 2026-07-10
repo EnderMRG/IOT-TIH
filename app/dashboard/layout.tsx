@@ -1,5 +1,6 @@
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Navbar } from "@/components/layout/Navbar";
+import { WaveBackground } from "@/components/ui/WaveBackground";
 
 export default function DashboardLayout({
   children,
@@ -7,7 +8,10 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col md:flex-row w-full min-h-screen bg-slate-50">
+    <div className="flex flex-col md:flex-row w-full min-h-screen bg-transparent relative">
+      {/* Animated water wave background */}
+      <WaveBackground />
+
       {/* Sidebar - Bottom nav on mobile, left sidebar on desktop */}
       <Sidebar />
       

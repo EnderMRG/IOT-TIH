@@ -47,8 +47,9 @@ export default function SettingsPage() {
 
   if (userRole !== "admin") {
     return (
-      <div className="flex flex-col items-center justify-center h-[60vh] gap-4 text-center bg-white rounded-[2rem] border border-slate-100 shadow-sm p-10">
-        <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center text-red-500 mb-2">
+      <div className="relative bg-white/40 backdrop-blur-xl border border-white/60 shadow-lg shadow-slate-200/40 rounded-[1.75rem] p-10 flex flex-col items-center justify-center h-[60vh] gap-4 text-center overflow-hidden">
+        <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-blue-400/60 via-sky-300/60 to-transparent" />
+        <div className="w-20 h-20 bg-red-50/80 rounded-full flex items-center justify-center text-red-500 mb-2">
           <ShieldAlert className="w-10 h-10" />
         </div>
         <div>
@@ -78,7 +79,8 @@ export default function SettingsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
         {/* Refresh Interval */}
-        <div className="bg-white rounded-[2rem] p-7 shadow-sm">
+        <div className="relative bg-white/40 backdrop-blur-xl border border-white/60 shadow-lg shadow-slate-200/40 rounded-[1.75rem] p-7 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl overflow-hidden">
+          <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-blue-400/60 via-sky-300/60 to-transparent" />
           <SectionHeader icon={RefreshCw} title="Refresh Interval" />
           <div className="flex gap-3 flex-wrap">
             {INTERVALS.map((iv) => (
@@ -101,7 +103,8 @@ export default function SettingsPage() {
         </div>
 
         {/* Alert Thresholds */}
-        <div className="bg-white border border-slate-100 rounded-[2rem] p-7 shadow-sm">
+        <div className="relative bg-white/40 backdrop-blur-xl border border-white/60 shadow-lg shadow-slate-200/40 rounded-[1.75rem] p-7 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl overflow-hidden">
+          <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-blue-400/60 via-sky-300/60 to-transparent" />
           <SectionHeader icon={BellRing} title="Alert Thresholds" />
           <div className="grid grid-cols-1 gap-4">
             <FieldRow label="Temperature Threshold (°C)">
@@ -140,7 +143,8 @@ export default function SettingsPage() {
         </div>
 
         {/* Device Connection */}
-        <div className="bg-white rounded-[2rem] p-7 shadow-sm">
+        <div className="relative bg-white/40 backdrop-blur-xl border border-white/60 shadow-lg shadow-slate-200/40 rounded-[1.75rem] p-7 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl overflow-hidden">
+          <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-blue-400/60 via-sky-300/60 to-transparent" />
           <SectionHeader icon={Wifi} title="Device Connection" />
           <div className="flex flex-col gap-4">
             <FieldRow label="ESP32 IP Address / Hostname">
@@ -165,7 +169,8 @@ export default function SettingsPage() {
         </div>
 
         {/* ThingSpeak */}
-        <div className="bg-blue-600 rounded-[2rem] p-7 shadow-sm text-white">
+        <div className="relative bg-gradient-to-br from-blue-600 to-blue-700 backdrop-blur-xl text-white border border-blue-500/50 shadow-lg shadow-blue-500/30 rounded-[1.75rem] p-7 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl overflow-hidden">
+          <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-blue-400/60 via-sky-300/60 to-transparent" />
           <div className="flex items-center gap-3 border-b border-white/20 pb-4 mb-6">
             <div className="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center text-white">
               <Database className="w-4 h-4" />

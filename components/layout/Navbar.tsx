@@ -1,15 +1,14 @@
 "use client";
 
-import { Bell, Zap, ZapOff, Wifi, WifiOff, LogOut } from "lucide-react";
+import { Bell, Zap, ZapOff, Wifi, WifiOff, LogOut, Activity } from "lucide-react";
 import { useTelemetry } from "@/components/providers/TelemetryProvider";
 import { useEffect, useState, useRef } from "react";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
 import { EncryptedText } from "@/components/ui/encrypted-text";
 import { logout } from "@/lib/actions/auth";
 
 export function Navbar() {
-  const { isSimulating, setIsSimulating, alerts, deviceStatus, userRole, userName, setUserRole } = useTelemetry();
+  const { isSimulating, setIsSimulating, alerts, deviceStatus, userRole, userName } = useTelemetry();
   const [time, setTime] = useState("");
   const [date, setDate] = useState("");
   const [showSimTooltip, setShowSimTooltip] = useState(false);
@@ -38,138 +37,166 @@ export function Navbar() {
   }, []);
 
   const isConnected = deviceStatus?.esp32Online ?? false;
+  const unreadCount = alerts.length;
 
   return (
-    <header className="flex flex-col md:flex-row items-start md:items-center justify-between w-full h-auto py-4 md:h-24 md:pt-6 md:pb-2 px-4 md:px-8 gap-4 md:gap-0">
-      {/* Left: Greeting + Date */}
-      <div className="flex flex-col">
-        <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900">
-          <EncryptedText
-            text={`Hello, ${userName || userRole || 'Operator'}!`}
-            encryptedClassName="text-slate-400"
-            revealedClassName="text-slate-900"
-            revealDelayMs={120}
-          />
-        </h1>
-        <div className="flex items-center gap-3 mt-1">
-          <p className="text-slate-500 text-xs md:text-sm">{date} · {time}</p>
-          <span className={cn(
-            "inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full",
-            isConnected ? "bg-green-50 text-green-700" : "bg-zinc-100 text-zinc-500"
-          )}>
-            {isConnected
-              ? <><Wifi className="w-3 h-3" /> Connected</>
-              : <><WifiOff className="w-3 h-3" /> Offline</>
-            }
-          </span>
-          <span className="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 uppercase tracking-wider">
-            {userRole}
-          </span>
-        </div>
-      </div>
+    <header className="sticky top-0 z-40 w-full">
+      {/* Glassmorphic bar */}
+      <div className="mx-4 md:mx-6 mt-4 mb-2 rounded-2xl bg-white/40 backdrop-blur-xl border border-white/60 shadow-lg shadow-slate-200/50 px-5 py-3 flex items-center justify-between gap-4">
 
-      {/* Right: Action Buttons */}
-      <div className="flex items-center gap-4">
-      
-        {/* Log Out */}
-        <button
-          onClick={async () => {
-            localStorage.removeItem("floodeye_session");
-            await logout();
-          }}
-          className="flex items-center gap-2 px-3 sm:px-4 py-2 text-xs font-semibold rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition-colors"
-        >
-          <LogOut className="w-4 h-4" />
-          Log out
-        </button>
+        {/* Left: Greeting */}
+        <div className="flex flex-col min-w-0">
+          <h1 className="text-base md:text-lg font-bold tracking-tight text-slate-900 leading-tight truncate">
+            <EncryptedText
+              text={`Hello, ${userName || userRole || "Operator"}!`}
+              encryptedClassName="text-slate-400"
+              revealedClassName="text-slate-900"
+              revealDelayMs={120}
+            />
+          </h1>
+          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+            <p className="text-slate-400 text-xs">{date} · {time}</p>
 
-        {/* Simulation Toggle - Admin Only */}
-        {userRole === "admin" && (
-          <div className="relative">
-          <button
-            onClick={() => setIsSimulating(!isSimulating)}
-            onMouseEnter={() => setShowSimTooltip(true)}
-            onMouseLeave={() => setShowSimTooltip(false)}
-            className={cn(
-              "flex items-center justify-center w-12 h-12 rounded-full shadow-sm transition-all duration-300 relative",
-              isSimulating
-                ? "bg-blue-600 text-white hover:bg-blue-700"
-                : "bg-white text-zinc-400 hover:text-blue-600"
-            )}
-          >
-            {isSimulating ? <Zap className="w-5 h-5" /> : <ZapOff className="w-5 h-5" />}
-            {isSimulating && <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-green-400 rounded-full animate-ping" />}
-            {isSimulating && <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-green-400 rounded-full" />}
-          </button>
-          {showSimTooltip && (
-            <div className="absolute top-14 right-0 bg-white border border-slate-200 text-slate-900 text-xs font-medium rounded-xl px-3 py-2 whitespace-nowrap shadow-xl z-50">
-              {isSimulating ? "Simulation ON — click to stop" : "Simulation OFF — click to start"}
-              <div className="absolute -top-1.5 right-4 w-3 h-3 bg-white border-l border-t border-slate-200 rotate-45" />
-            </div>
-          )}
+            {/* Connection pill */}
+            <span className={cn(
+              "inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border",
+              isConnected
+                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                : "bg-zinc-100 text-zinc-500 border-zinc-200"
+            )}>
+              {isConnected
+                ? <><span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />Live</>
+                : <><WifiOff className="w-2.5 h-2.5" />Offline</>
+              }
+            </span>
+
+            {/* Role pill */}
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200 uppercase tracking-widest">
+              {userRole}
+            </span>
           </div>
-        )}
+        </div>
 
-        {/* Bell / Notifications */}
-        <div className="relative" ref={notifRef}>
-          <button
-            onClick={() => setShowNotifications(!showNotifications)}
-            className={cn(
-              "flex items-center justify-center w-12 h-12 rounded-full shadow-sm transition-all duration-300 relative",
-              showNotifications ? "bg-blue-600 text-white" : "bg-white text-zinc-400 hover:text-blue-600"
-            )}
-          >
-            <Bell className="w-5 h-5" />
-            {alerts.length > 0 && (
-              <span className="absolute top-2 right-2 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
-                {alerts.length > 9 ? "9+" : alerts.length}
-              </span>
-            )}
-          </button>
+        {/* Right: Action buttons */}
+        <div className="flex items-center gap-2 shrink-0">
 
-          {showNotifications && (
-            <div className="absolute top-16 right-0 w-80 bg-white rounded-[1.5rem] shadow-xl border border-zinc-100 z-50 overflow-hidden">
-              <div className="px-5 py-4 border-b border-zinc-100 flex items-center justify-between">
-                <p className="font-bold text-[#1c1c1a] text-sm">Notifications</p>
-                {alerts.length > 0 && (
-                  <span className="text-xs text-zinc-400">{alerts.length} new</span>
+          {/* Simulation Toggle — Admin only */}
+          {userRole === "admin" && (
+            <div className="relative">
+              <button
+                onClick={() => setIsSimulating(!isSimulating)}
+                onMouseEnter={() => setShowSimTooltip(true)}
+                onMouseLeave={() => setShowSimTooltip(false)}
+                className={cn(
+                  "group flex items-center justify-center w-9 h-9 rounded-xl border transition-all duration-200 relative",
+                  isSimulating
+                    ? "bg-blue-600 border-blue-500 text-white shadow-md shadow-blue-500/30"
+                    : "bg-white/50 border-slate-200 text-slate-500 hover:border-blue-300 hover:text-blue-600 hover:bg-white/80"
                 )}
-              </div>
-              <div className="max-h-72 overflow-y-auto">
-                {alerts.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-10 text-zinc-400 gap-2">
-                    <Bell className="w-8 h-8 opacity-30" />
-                    <p className="text-sm font-medium">No notifications</p>
-                    <p className="text-xs opacity-70">Device alerts will appear here.</p>
-                  </div>
-                ) : (
-                  alerts.slice(0, 8).map((alert) => (
-                    <div key={alert.id} className={cn(
-                      "px-5 py-3 border-b border-zinc-50 last:border-0 flex items-start gap-3",
-                      alert.severity === "critical" && "bg-red-50",
-                      alert.severity === "warning"  && "bg-orange-50",
-                      alert.severity === "info"     && "bg-blue-50",
-                    )}>
-                      <div className="flex-1">
-                        <p className={cn(
-                          "text-xs font-bold",
-                          alert.severity === "critical" && "text-red-600",
-                          alert.severity === "warning"  && "text-orange-600",
-                          alert.severity === "info"     && "text-blue-600",
-                        )}>
-                          {alert.severity.toUpperCase()}
-                        </p>
-                        <p className="text-xs text-zinc-600 mt-0.5 line-clamp-2">{alert.message}</p>
-                      </div>
-                      <span className="text-[10px] text-zinc-400 shrink-0 mt-0.5">
-                        {new Date(alert.timestamp).toLocaleTimeString()}
-                      </span>
-                    </div>
-                  ))
-                )}
-              </div>
+              >
+                {isSimulating ? <Zap className="w-4 h-4" /> : <ZapOff className="w-4 h-4" />}
+                {isSimulating && <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-green-400 rounded-full animate-ping" />}
+                {isSimulating && <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-green-400 rounded-full" />}
+              </button>
+              {showSimTooltip && (
+                <div className="absolute top-11 right-0 bg-slate-900 text-white text-[10px] font-medium rounded-lg px-2.5 py-1.5 whitespace-nowrap shadow-xl z-50">
+                  {isSimulating ? "Simulation ON — click to stop" : "Simulation OFF — click to start"}
+                  <div className="absolute -top-1 right-3 w-2 h-2 bg-slate-900 rotate-45" />
+                </div>
+              )}
             </div>
           )}
+
+          {/* Bell / Notifications */}
+          <div className="relative" ref={notifRef}>
+            <button
+              onClick={() => setShowNotifications(!showNotifications)}
+              className={cn(
+                "group flex items-center justify-center w-9 h-9 rounded-xl border transition-all duration-200 relative",
+                showNotifications
+                  ? "bg-blue-600 border-blue-500 text-white shadow-md shadow-blue-500/30"
+                  : "bg-white/50 border-slate-200 text-slate-500 hover:border-blue-300 hover:text-blue-600 hover:bg-white/80"
+              )}
+            >
+              <Bell className="w-4 h-4" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center shadow-sm">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+            </button>
+
+            {showNotifications && (
+              <div className="absolute top-12 right-0 w-80 bg-white/70 backdrop-blur-2xl rounded-2xl shadow-2xl shadow-slate-300/40 border border-white/70 z-50 overflow-hidden">
+                {/* Header */}
+                <div className="px-4 py-3 border-b border-slate-100/80 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Activity className="w-3.5 h-3.5 text-blue-500" />
+                    <p className="font-semibold text-slate-800 text-sm">Alerts</p>
+                  </div>
+                  {unreadCount > 0 && (
+                    <span className="text-[10px] font-bold text-white bg-red-500 px-1.5 py-0.5 rounded-full">{unreadCount} new</span>
+                  )}
+                </div>
+                <div className="max-h-72 overflow-y-auto divide-y divide-slate-50">
+                  {alerts.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-10 text-zinc-400 gap-2">
+                      <Bell className="w-8 h-8 opacity-20" />
+                      <p className="text-sm font-medium">All clear</p>
+                      <p className="text-xs opacity-60">No active alerts.</p>
+                    </div>
+                  ) : (
+                    alerts.slice(0, 8).map((alert) => (
+                      <div key={alert.id} className={cn(
+                        "px-4 py-3 flex items-start gap-3",
+                        alert.severity === "critical" && "bg-red-50/60",
+                        alert.severity === "warning"  && "bg-orange-50/60",
+                        alert.severity === "info"     && "bg-blue-50/40",
+                      )}>
+                        {/* Severity dot */}
+                        <span className={cn(
+                          "mt-1 w-2 h-2 rounded-full shrink-0",
+                          alert.severity === "critical" && "bg-red-500",
+                          alert.severity === "warning"  && "bg-orange-400",
+                          alert.severity === "info"     && "bg-blue-400",
+                        )} />
+                        <div className="flex-1 min-w-0">
+                          <p className={cn(
+                            "text-[10px] font-bold uppercase tracking-wider",
+                            alert.severity === "critical" && "text-red-600",
+                            alert.severity === "warning"  && "text-orange-600",
+                            alert.severity === "info"     && "text-blue-600",
+                          )}>
+                            {alert.severity}
+                          </p>
+                          <p className="text-xs text-slate-600 mt-0.5 line-clamp-2">{alert.message}</p>
+                          <p className="text-[10px] text-slate-400 mt-1">
+                            {new Date(alert.timestamp).toLocaleTimeString()}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Divider */}
+          <div className="w-px h-6 bg-slate-200" />
+
+          {/* Log Out */}
+          <button
+            onClick={async () => {
+              localStorage.removeItem("floodeye_session");
+              localStorage.removeItem("floodeye_user_name");
+              await logout();
+            }}
+            className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl bg-white/50 border border-slate-200 text-slate-600 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all duration-200"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Log out</span>
+          </button>
         </div>
       </div>
     </header>

@@ -36,7 +36,8 @@ function Row({ icon: Icon, label, value, status }: {
 export function DeviceStatusCard({ deviceStatus }: DeviceStatusCardProps) {
   if (!deviceStatus) {
     return (
-      <div className="bg-white rounded-[2rem] p-6 shadow-sm flex flex-col h-full border border-slate-100">
+      <div className="relative bg-white/40 backdrop-blur-xl border border-white/60 shadow-lg shadow-slate-200/40 rounded-[1.75rem] p-6 flex flex-col h-full overflow-hidden">
+        <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-blue-400/60 via-sky-300/60 to-transparent" />
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-slate-900 font-bold text-base">Device Status</h3>
           <StatusBadge status="offline" />
@@ -51,7 +52,8 @@ export function DeviceStatusCard({ deviceStatus }: DeviceStatusCardProps) {
   const lastUploadStr = secondsAgo < 60 ? `${secondsAgo}s ago` : `${Math.floor(secondsAgo / 60)}m ago`;
 
   return (
-    <div className="bg-white rounded-[2rem] p-6 shadow-sm flex flex-col h-full border border-slate-100">
+    <div className="relative bg-white/40 backdrop-blur-xl border border-white/60 shadow-lg shadow-slate-200/40 rounded-[1.75rem] p-6 flex flex-col h-full transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl overflow-hidden">
+      <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-blue-400/60 via-sky-300/60 to-transparent" />
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-slate-900 font-bold text-base">Device Status</h3>
         <StatusBadge status={deviceStatus.esp32Online ? "online" : "offline"} />
