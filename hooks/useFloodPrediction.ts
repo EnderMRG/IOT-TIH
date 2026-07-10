@@ -101,11 +101,12 @@ export function useFloodPrediction(history: TelemetryData[]): UseFloodPrediction
   useEffect(() => {
     if (!isReady || history.length === 0) return;
     
-    // Simple deep equality check to avoid re-running if data hasn't actually changed
-    const historyString = JSON.stringify(history.map(h => h.timestamp + h.distance));
-    if (historyString === lastHistoryRef.current) return;
+    // Fast equality check: use length and last item to determine if history changed
+    const lastItem = history[history.length - 1];
+    const historyHash = `${history.length}-${lastItem.timestamp}-${lastItem.distance}`;
+    if (historyHash === lastHistoryRef.current) return;
     
-    lastHistoryRef.current = historyString;
+    lastHistoryRef.current = historyHash;
     runPrediction(history);
   }, [history, isReady, runPrediction]);
 

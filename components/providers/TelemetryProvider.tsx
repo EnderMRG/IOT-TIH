@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState, useMemo } from "react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -508,32 +508,35 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSimulating, settings.refreshInterval, pushAlert]);
 
+  const contextValue = useMemo(() => ({
+    data,
+    history,
+    alerts,
+    deviceStatus,
+    settings,
+    isLoading,
+    isOffline,
+    isStale,
+    lastSeenAt,
+    unreadCount,
+    isSimulating,
+    userRole,
+    userName,
+    setIsSimulating,
+    setUserRole,
+    setUserName,
+    setSettings,
+    addAlert,
+    clearAlerts,
+    dismissAlert,
+    markAllRead,
+  }), [
+    data, history, alerts, deviceStatus, settings, isLoading, isOffline, isStale, lastSeenAt, unreadCount, isSimulating, userRole, userName,
+    setIsSimulating, setUserRole, setUserName, setSettings, addAlert, clearAlerts, dismissAlert, markAllRead
+  ]);
+
   return (
-    <TelemetryContext.Provider
-      value={{
-        data,
-        history,
-        alerts,
-        deviceStatus,
-        settings,
-        isLoading,
-        isOffline,
-        isStale,
-        lastSeenAt,
-        unreadCount,
-        isSimulating,
-        userRole,
-        userName,
-        setIsSimulating,
-        setUserRole,
-        setUserName,
-        setSettings,
-        addAlert,
-        clearAlerts,
-        dismissAlert,
-        markAllRead,
-      }}
-    >
+    <TelemetryContext.Provider value={contextValue}>
       {children}
     </TelemetryContext.Provider>
   );

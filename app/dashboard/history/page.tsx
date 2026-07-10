@@ -6,7 +6,7 @@ import {
   Thermometer, Droplets, Wind, Mountain, Ruler,
   TrendingUp, TrendingDown, FileText, FileSpreadsheet, Download
 } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useMemo } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -133,12 +133,37 @@ export default function HistoryPage() {
   const [isExportingCSV, setIsExportingCSV] = useState(false);
   const [isExportingPDF, setIsExportingPDF] = useState(false);
 
-  const avg = (key: keyof HistoryEntry) =>
-    (history.reduce((a, b) => a + (b[key] as number), 0) / (history.length || 1));
-  const max = (key: keyof HistoryEntry) =>
-    Math.max(...history.map((h) => h[key] as number), 0);
-  const min = (key: keyof HistoryEntry) =>
-    Math.min(...history.map((h) => h[key] as number), 9999);
+  const { avgTemp, maxTemp, minTemp, avgHum, avgPress, avgAlt, avgDist, maxDist } = useMemo(() => {
+    if (history.length === 0) {
+      return { avgTemp: 0, maxTemp: 0, minTemp: 0, avgHum: 0, avgPress: 0, avgAlt: 0, avgDist: 0, maxDist: 0 };
+    }
+    let sumTemp = 0, sumHum = 0, sumPress = 0, sumAlt = 0, sumDist = 0;
+    let mxTemp = -Infinity, mnTemp = Infinity, mxDist = -Infinity;
+    
+    for (let i = 0; i < history.length; i++) {
+      const h = history[i];
+      sumTemp += h.temperature;
+      sumHum += h.humidity;
+      sumPress += h.pressure;
+      sumAlt += h.altitude;
+      sumDist += h.distance;
+      if (h.temperature > mxTemp) mxTemp = h.temperature;
+      if (h.temperature < mnTemp) mnTemp = h.temperature;
+      if (h.distance > mxDist) mxDist = h.distance;
+    }
+    
+    const len = history.length;
+    return {
+      avgTemp: sumTemp / len,
+      maxTemp: mxTemp,
+      minTemp: mnTemp,
+      avgHum: sumHum / len,
+      avgPress: sumPress / len,
+      avgAlt: sumAlt / len,
+      avgDist: sumDist / len,
+      maxDist: mxDist
+    };
+  }, [history]);
 
   const handleCSV = useCallback(async () => {
     try {
@@ -163,14 +188,14 @@ export default function HistoryPage() {
   const baseDarkBg  = "bg-gradient-to-br from-blue-600 to-blue-700 backdrop-blur-xl text-white border border-blue-500/50 shadow-lg shadow-blue-500/30";
 
   const stats = [
-    { label: "Avg Temperature",  value: avg("temperature"), unit: "°C",  icon: Thermometer, bg: baseLightBg, text: "text-slate-900", subText: "text-slate-500", highlight: "bg-blue-50 text-blue-600" },
-    { label: "Max Temperature",  value: max("temperature"), unit: "°C",  icon: TrendingUp,  bg: baseLightBg, text: "text-slate-900", subText: "text-slate-500", highlight: "bg-orange-100 text-orange-600" },
-    { label: "Min Temperature",  value: min("temperature"), unit: "°C",  icon: TrendingDown,bg: baseDarkBg,  text: "text-white",   subText: "text-white/70",  highlight: "bg-white/20 text-white" },
-    { label: "Avg Humidity",     value: avg("humidity"),    unit: "%",   icon: Droplets,    bg: baseLightBg, text: "text-slate-900", subText: "text-slate-500", highlight: "bg-blue-100 text-blue-600" },
-    { label: "Avg Pressure",     value: avg("pressure"),    unit: "hPa", icon: Wind,        bg: baseLightBg, text: "text-slate-900", subText: "text-slate-500", highlight: "bg-green-100 text-green-600" },
-    { label: "Avg Altitude",     value: avg("altitude"),    unit: "m",   icon: Mountain,    bg: baseLightBg, text: "text-slate-900", subText: "text-slate-500", highlight: "bg-purple-100 text-purple-600" },
-    { label: "Avg Water Level",  value: avg("distance"),    unit: "cm",  icon: Ruler,       bg: baseDarkBg,  text: "text-white",   subText: "text-white/70",  highlight: "bg-white/20 text-white" },
-    { label: "Max Water Level",  value: min("distance"),    unit: "cm",  icon: Ruler,       bg: baseLightBg, text: "text-slate-900", subText: "text-slate-500", highlight: "bg-amber-100 text-amber-600" },
+    { label: "Avg Temperature",  value: avgTemp, unit: "°C",  icon: Thermometer, bg: baseLightBg, text: "text-slate-900", subText: "text-slate-500", highlight: "bg-blue-50 text-blue-600" },
+    { label: "Max Temperature",  value: maxTemp, unit: "°C",  icon: TrendingUp,  bg: baseLightBg, text: "text-slate-900", subText: "text-slate-500", highlight: "bg-orange-100 text-orange-600" },
+    { label: "Min Temperature",  value: minTemp, unit: "°C",  icon: TrendingDown,bg: baseDarkBg,  text: "text-white",   subText: "text-white/70",  highlight: "bg-white/20 text-white" },
+    { label: "Avg Humidity",     value: avgHum,    unit: "%",   icon: Droplets,    bg: baseLightBg, text: "text-slate-900", subText: "text-slate-500", highlight: "bg-blue-100 text-blue-600" },
+    { label: "Avg Pressure",     value: avgPress,    unit: "hPa", icon: Wind,        bg: baseLightBg, text: "text-slate-900", subText: "text-slate-500", highlight: "bg-green-100 text-green-600" },
+    { label: "Avg Altitude",     value: avgAlt,    unit: "m",   icon: Mountain,    bg: baseLightBg, text: "text-slate-900", subText: "text-slate-500", highlight: "bg-purple-100 text-purple-600" },
+    { label: "Avg Water Level",  value: avgDist,    unit: "cm",  icon: Ruler,       bg: baseDarkBg,  text: "text-white",   subText: "text-white/70",  highlight: "bg-white/20 text-white" },
+    { label: "Max Water Level",  value: maxDist,    unit: "cm",  icon: Ruler,       bg: baseLightBg, text: "text-slate-900", subText: "text-slate-500", highlight: "bg-amber-100 text-amber-600" },
   ];
 
   return (

@@ -1,5 +1,6 @@
 "use client";
 
+import React, { memo } from "react";
 import {
   AreaChart,
   Area,
@@ -17,7 +18,7 @@ interface CustomLineChartProps {
   label?: string;
 }
 
-export function CustomLineChart({
+function CustomLineChartComponent({
   data,
   dataKey,
   color = "#355441",
@@ -75,3 +76,18 @@ export function CustomLineChart({
     </div>
   );
 }
+
+// Custom comparator: only re-render if the last data point's time/value changes, or length changes
+function propsAreEqual(prev: CustomLineChartProps, next: CustomLineChartProps) {
+  if (prev.data.length !== next.data.length) return false;
+  if (prev.dataKey !== next.dataKey || prev.color !== next.color || prev.label !== next.label) return false;
+  
+  const prevLast = prev.data[prev.data.length - 1];
+  const nextLast = next.data[next.data.length - 1];
+  
+  if (!prevLast || !nextLast) return prevLast === nextLast;
+  
+  return prevLast.time === nextLast.time && prevLast[prev.dataKey] === nextLast[next.dataKey];
+}
+
+export const CustomLineChart = memo(CustomLineChartComponent, propsAreEqual);

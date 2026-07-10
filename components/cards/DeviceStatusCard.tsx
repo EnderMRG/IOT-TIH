@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { Wifi, Cloud, Clock, Signal } from "lucide-react";
 import { DeviceStatus } from "@/components/providers/TelemetryProvider";
 import { StatusBadge } from "@/components/common/StatusBadge";
@@ -33,7 +34,7 @@ function Row({ icon: Icon, label, value, status }: {
   );
 }
 
-export function DeviceStatusCard({ deviceStatus }: DeviceStatusCardProps) {
+function DeviceStatusCardComponent({ deviceStatus }: DeviceStatusCardProps) {
   if (!deviceStatus) {
     return (
       <div className="relative bg-white/40 backdrop-blur-xl border border-white/60 shadow-lg shadow-slate-200/40 rounded-[1.75rem] p-6 flex flex-col overflow-hidden">
@@ -85,3 +86,5 @@ export function DeviceStatusCard({ deviceStatus }: DeviceStatusCardProps) {
     </div>
   );
 }
+
+export const DeviceStatusCard = React.memo(DeviceStatusCardComponent);

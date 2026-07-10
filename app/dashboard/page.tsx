@@ -9,16 +9,47 @@ import { CustomLineChart } from "@/components/charts/CustomLineChart";
 import { AlertPanel } from "@/components/alerts/AlertPanel";
 import { FloodPredictionCard } from "@/components/cards/FloodPredictionCard";
 import { FloodAlertBanner } from "@/components/alerts/FloodAlertBanner";
-import EcoMap from "@/components/Map";
+import dynamic from 'next/dynamic';
 import { useFloodPrediction } from "@/hooks/useFloodPrediction";
+import { useMemo } from "react";
+
+const EcoMap = dynamic(() => import("@/components/Map"), { 
+  ssr: false, 
+  loading: () => (
+    <div className="h-[400px] w-full rounded-[2rem] bg-slate-200/50 animate-pulse border border-slate-100 shadow-sm" />
+  )
+});
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
 function LoadingOverlay() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-      <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
-      <p className="text-slate-500 text-sm font-medium">Connecting to ThingSpeak…</p>
+    <div className="flex flex-col gap-6 animate-pulse px-1">
+      {/* Skeleton Row 1: 5 Sensor Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+        {[...Array(5)].map((_, i) => (
+          <div key={i} className="bg-white/40 backdrop-blur-xl border border-white/60 shadow-sm rounded-[1.75rem] h-[140px]" />
+        ))}
+      </div>
+
+      {/* Skeleton Row 2: Main Chart + Side cards */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 bg-white/40 backdrop-blur-xl border border-white/60 shadow-sm rounded-[1.75rem] min-h-[360px]" />
+        <div className="flex flex-col gap-6">
+          <div className="bg-white/40 backdrop-blur-xl border border-white/60 shadow-sm rounded-[1.75rem] h-[120px]" />
+          <div className="bg-white/40 backdrop-blur-xl border border-white/60 shadow-sm rounded-[1.75rem] h-[200px]" />
+          <div className="bg-white/40 backdrop-blur-xl border border-white/60 shadow-sm rounded-[1.75rem] h-[100px]" />
+        </div>
+      </div>
+
+      {/* Skeleton Row 3: Alert Panel */}
+      <div className="mt-2 bg-white/40 backdrop-blur-xl border border-white/60 shadow-sm rounded-[1.75rem] h-[160px]" />
+      
+      {/* Skeleton Row 4: Map */}
+      <div className="mt-6">
+        <div className="h-5 w-32 bg-slate-200/50 rounded mb-4" />
+        <div className="bg-white/40 backdrop-blur-xl border border-white/60 shadow-sm rounded-[1.75rem] h-[400px]" />
+      </div>
     </div>
   );
 }
@@ -76,14 +107,16 @@ export default function DashboardHome() {
 
   const prev = history[history.length - 2];
 
-  const chartData = history.map((e) => ({
-    time:        new Date(e.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    temperature: e.temperature,
-    humidity:    e.humidity,
-    pressure:    e.pressure,
-    altitude:    e.altitude,
-    distance:    e.distance,
-  }));
+  const chartData = useMemo(() => {
+    return history.map((e) => ({
+      time:        new Date(e.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      temperature: e.temperature,
+      humidity:    e.humidity,
+      pressure:    e.pressure,
+      altitude:    e.altitude,
+      distance:    e.distance,
+    }));
+  }, [history]);
 
   const getTrend = (curr: number, prevVal: number | undefined) =>
     prevVal === undefined ? "stable" : curr > prevVal ? "up" : curr < prevVal ? "down" : "stable";

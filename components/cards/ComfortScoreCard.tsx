@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { cn } from "@/lib/utils";
 
 interface ComfortScoreCardProps {
@@ -21,7 +22,7 @@ function getLabel(score: number): { label: string; color: string; bg: string; te
   return              { label: "Poor",      color: "#ef4444", bg: "bg-red-50",     textColor: "text-red-700" };
 }
 
-export function ComfortScoreCard({ temperature, humidity }: ComfortScoreCardProps) {
+function ComfortScoreCardComponent({ temperature, humidity }: ComfortScoreCardProps) {
   const score = computeScore(temperature, humidity);
   const { label, color, bg, textColor } = getLabel(score);
 
@@ -67,3 +68,5 @@ export function ComfortScoreCard({ temperature, humidity }: ComfortScoreCardProp
     </div>
   );
 }
+
+export const ComfortScoreCard = memo(ComfortScoreCardComponent);

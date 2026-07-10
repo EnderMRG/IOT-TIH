@@ -1,3 +1,4 @@
+import React, { memo, useMemo } from "react";
 import { LucideIcon } from "lucide-react";
 import { LineChart, Line, ResponsiveContainer } from "recharts";
 import { cn } from "@/lib/utils";
@@ -17,7 +18,7 @@ interface SensorCardProps {
   invertTrend?: boolean; // for distance: closer = worse
 }
 
-export function SensorCard({
+function SensorCardComponent({
   title,
   value,
   unit = "",
@@ -29,7 +30,9 @@ export function SensorCard({
   variant = "light",
   invertTrend = false,
 }: SensorCardProps) {
-  const chartData = historyData.map((val, i) => ({ value: val, index: i }));
+  const chartData = useMemo(() => {
+    return historyData.map((val, i) => ({ value: val, index: i }));
+  }, [historyData]);
 
   const themeConfig = {
     light: "bg-white/40 backdrop-blur-xl border border-white/60 shadow-lg shadow-slate-200/40",
@@ -106,3 +109,24 @@ export function SensorCard({
     </div>
   );
 }
+
+// Custom comparator to prevent re-renders unless data fundamentally changed
+function propsAreEqual(prev: SensorCardProps, next: SensorCardProps) {
+  if (prev.value !== next.value) return false;
+  if (prev.status !== next.status) return false;
+  if (prev.trend !== next.trend) return false;
+  if (prev.delta !== next.delta) return false;
+  
+  const prevHist = prev.historyData || [];
+  const nextHist = next.historyData || [];
+  
+  if (prevHist.length !== nextHist.length) return false;
+  
+  const prevLast = prevHist[prevHist.length - 1];
+  const nextLast = nextHist[nextHist.length - 1];
+  
+  return prevLast === nextLast;
+}
+
+export const SensorCard = memo(SensorCardComponent, propsAreEqual);
+

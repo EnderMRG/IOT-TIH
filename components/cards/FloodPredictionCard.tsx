@@ -3,8 +3,9 @@ import { AlertTriangle, TrendingUp, Info, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { memo } from 'react';
 
-export function FloodPredictionCard({ prediction, isLoading }: { prediction: FloodPredictionResult | null, isLoading: boolean }) {
+function FloodPredictionCardComponent({ prediction, isLoading }: { prediction: FloodPredictionResult | null, isLoading: boolean }) {
   if (isLoading || !prediction) {
     return (
       <div className="bg-white rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] min-h-[160px] flex flex-col justify-between border border-slate-100 animate-pulse">
@@ -84,3 +85,5 @@ export function FloodPredictionCard({ prediction, isLoading }: { prediction: Flo
     </div>
   );
 }
+
+export const FloodPredictionCard = memo(FloodPredictionCardComponent);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Thermometer, Droplets, Wind, Mountain, Ruler } from "lucide-react";
 import { useTelemetry } from "@/components/providers/TelemetryProvider";
 import { CustomLineChart } from "@/components/charts/CustomLineChart";
@@ -18,14 +18,16 @@ export default function AnalyticsPage() {
   const { history } = useTelemetry();
   const [timeFilter, setTimeFilter] = useState("1h");
 
-  const chartData = history.map((e) => ({
-    time: new Date(e.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    temperature: e.temperature,
-    humidity: e.humidity,
-    pressure: e.pressure,
-    altitude: e.altitude,
-    distance: e.distance,
-  }));
+  const chartData = useMemo(() => {
+    return history.map((e) => ({
+      time: new Date(e.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      temperature: e.temperature,
+      humidity: e.humidity,
+      pressure: e.pressure,
+      altitude: e.altitude,
+      distance: e.distance,
+    }));
+  }, [history]);
 
   return (
     <div className="flex flex-col gap-8">

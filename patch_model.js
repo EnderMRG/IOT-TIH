@@ -88,7 +88,25 @@ for (const layer of config.layers) {
   }
 }
 
-// ── Fix 6: Weight name paths in weightsManifest ──────────────────────────────
+// ── Fix 6: Replace slow Orthogonal initializer ───────────────────────────
+// Orthogonal initializer causes a massive slowdown in TFJS during loading.
+// Since we are loading pre-trained weights anyway, we can change it to Zeros.
+const checkInitializers = (obj) => {
+  if (typeof obj !== 'object' || obj === null) return;
+  for (const key of Object.keys(obj)) {
+    if (typeof obj[key] === 'object' && obj[key] !== null) {
+      if (obj[key].class_name === 'Orthogonal') {
+        obj[key].class_name = 'Zeros';
+        obj[key].config = {};
+      } else {
+        checkInitializers(obj[key]);
+      }
+    }
+  }
+};
+checkInitializers(config);
+
+// ── Fix 7: Weight name paths in weightsManifest ──────────────────────────────
 // Keras 3 stores LSTM weights under an lstm_cell/ sub-scope:
 //   "bidirectional_1/forward_lstm_1/lstm_cell/kernel"
 // TFJS (Keras 2) expects them directly on the LSTM layer:
