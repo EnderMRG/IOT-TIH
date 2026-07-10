@@ -48,23 +48,25 @@ export default function PredictionsPage() {
         <div className="mt-8 border-t border-slate-200 pt-10">
           <h3 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
             <Settings2 className="w-5 h-5 text-slate-400" />
-            Model Diagnostics & Admin Controls
+            Model Diagnostics &amp; Admin Controls
           </h3>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-slate-50 rounded-[2rem] p-6 border border-slate-100">
+            {/* Model Architecture */}
+            <div className="relative bg-white/40 backdrop-blur-xl border border-white/60 shadow-lg shadow-slate-200/40 rounded-[2rem] p-6 overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl">
+              <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-blue-400/60 via-sky-300/60 to-transparent" />
               <div className="flex items-center gap-3 mb-4 text-slate-700">
                 <Database className="w-5 h-5" />
                 <h4 className="font-bold">Model Architecture</h4>
               </div>
               <ul className="space-y-2 text-sm text-slate-600">
-                <li className="flex justify-between border-b border-slate-200 pb-2">
+                <li className="flex justify-between border-b border-slate-100 pb-2">
                   <span>Type:</span> <span className="font-mono font-medium text-slate-900">CNN-BiLSTM-Att</span>
                 </li>
-                <li className="flex justify-between border-b border-slate-200 pb-2">
+                <li className="flex justify-between border-b border-slate-100 pb-2">
                   <span>Input Shape:</span> <span className="font-mono font-medium text-slate-900">[48, 11]</span>
                 </li>
-                <li className="flex justify-between border-b border-slate-200 pb-2">
+                <li className="flex justify-between border-b border-slate-100 pb-2">
                   <span>Output:</span> <span className="font-mono font-medium text-slate-900">4hr Forecast</span>
                 </li>
                 <li className="flex justify-between pt-1">
@@ -73,16 +75,18 @@ export default function PredictionsPage() {
               </ul>
             </div>
 
-            <div className="bg-slate-50 rounded-[2rem] p-6 border border-slate-100">
+            {/* Inference Engine */}
+            <div className="relative bg-white/40 backdrop-blur-xl border border-white/60 shadow-lg shadow-slate-200/40 rounded-[2rem] p-6 overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl">
+              <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-blue-400/60 via-sky-300/60 to-transparent" />
               <div className="flex items-center gap-3 mb-4 text-slate-700">
                 <Server className="w-5 h-5" />
                 <h4 className="font-bold">Inference Engine</h4>
               </div>
               <ul className="space-y-2 text-sm text-slate-600">
-                <li className="flex justify-between border-b border-slate-200 pb-2">
+                <li className="flex justify-between border-b border-slate-100 pb-2">
                   <span>Provider:</span> <span className="font-mono font-medium text-slate-900">TensorFlow.js (WebGL)</span>
                 </li>
-                <li className="flex justify-between border-b border-slate-200 pb-2">
+                <li className="flex justify-between border-b border-slate-100 pb-2">
                   <span>Status:</span> 
                   <span className={isLoading ? "text-amber-500 font-bold" : "text-emerald-600 font-bold"}>
                     {isLoading ? "COMPUTING..." : "READY"}
@@ -97,13 +101,22 @@ export default function PredictionsPage() {
               </ul>
             </div>
             
-            <div className="bg-slate-50 rounded-[2rem] p-6 border border-slate-100 flex flex-col justify-center text-center">
-               <p className="text-sm text-slate-500 mb-4">
-                 Modify prediction thresholds and run tests in the Settings panel.
-               </p>
-               <button className="px-4 py-2 bg-slate-900 text-white font-medium rounded-xl text-sm hover:bg-slate-800 transition-colors">
-                 Open Settings
-               </button>
+            {/* Settings CTA — dark card with functional link */}
+            <div className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-[2rem] p-6 flex flex-col justify-center items-center text-center gap-4 overflow-hidden border border-white/10 shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl">
+              <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-blue-400/60 via-sky-300/60 to-transparent" />
+              <div className="absolute -bottom-8 -right-8 w-32 h-32 rounded-full bg-blue-500/10 blur-2xl pointer-events-none" />
+              <div className="p-3 bg-white/10 rounded-2xl border border-white/10 relative z-10">
+                <Settings2 className="w-6 h-6 text-white" />
+              </div>
+              <p className="text-sm text-white/60 relative z-10">
+                Modify prediction thresholds and run tests in the Settings panel.
+              </p>
+              <a
+                href="/dashboard/settings"
+                className="relative z-10 px-5 py-2.5 bg-white text-slate-900 font-semibold rounded-full text-sm hover:bg-slate-100 transition-colors shadow-sm"
+              >
+                Open Settings
+              </a>
             </div>
           </div>
         </div>

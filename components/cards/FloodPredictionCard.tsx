@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 export function FloodPredictionCard({ prediction, isLoading }: { prediction: FloodPredictionResult | null, isLoading: boolean }) {
   if (isLoading || !prediction) {
     return (
-      <div className="bg-white rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] h-full min-h-[160px] flex flex-col justify-between border border-slate-100 animate-pulse">
+      <div className="bg-white rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] min-h-[160px] flex flex-col justify-between border border-slate-100 animate-pulse">
         <div className="flex justify-between items-start">
           <div className="w-10 h-10 bg-slate-200 rounded-full" />
           <div className="w-20 h-6 bg-slate-200 rounded-full" />
@@ -25,7 +25,7 @@ export function FloodPredictionCard({ prediction, isLoading }: { prediction: Flo
 
   return (
     <div className={cn(
-      "rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] h-full min-h-[160px] flex flex-col justify-between border relative overflow-hidden transition-all duration-300",
+      "rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] min-h-[160px] flex flex-col justify-between border relative overflow-hidden transition-all duration-300",
       prediction.riskLevel === 'critical' ? "bg-red-50/50 border-red-200 hover:shadow-red-500/20" :
       prediction.riskLevel === 'high' ? "bg-orange-50/50 border-orange-200 hover:shadow-orange-500/20" :
       "bg-white border-slate-100 hover:shadow-blue-500/10"

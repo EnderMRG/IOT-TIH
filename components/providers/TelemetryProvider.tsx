@@ -20,24 +20,32 @@ export interface DeviceStatus {
   rssi: number;
 }
 
+export type AlertType =
+  | "HIGH_TEMPERATURE"
+  | "HIGH_HUMIDITY"
+  | "RAPID_PRESSURE_CHANGE"
+  | "HIGH_WATER_LEVEL"
+  | "RAPID_WATER_RISE"
+  | "OBJECT_TOO_CLOSE"
+  | "SENSOR_OFFLINE";
+
+export type AlertSeverity = "critical" | "warning" | "info";
+
 export interface Alert {
   id: string;
-  type:
-    | "HIGH_TEMPERATURE"
-    | "HIGH_HUMIDITY"
-    | "RAPID_PRESSURE_CHANGE"
-    | "HIGH_WATER_LEVEL"
-    | "RAPID_WATER_RISE"
-    | "OBJECT_TOO_CLOSE"
-    | "SENSOR_OFFLINE";
-  severity: "critical" | "warning" | "info";
+  type: AlertType;
+  severity: AlertSeverity;
   message: string;
   timestamp: string;
+  /** Whether the user has seen/read this alert (opened the bell) */
+  read: boolean;
+  /** When this alert was last updated (for dedup refresh) */
+  updatedAt: string;
 }
 
 export interface DashboardSettings {
-  refreshInterval: number;  // seconds
-  tempThreshold: number;    // °C
+  refreshInterval: number;   // seconds
+  tempThreshold: number;     // °C
   humidityThreshold: number; // %
   distanceThreshold: number; // cm (alert when below this)
   pressureThreshold: number; // hPa (alert when below this)
@@ -53,7 +61,7 @@ interface TelemetryContextType {
   isOffline: boolean;
   isStale: boolean;
   lastSeenAt: string | null;
-  // Simulation / role (Project B additions)
+  unreadCount: number;
   isSimulating: boolean;
   userRole: "admin" | "user";
   userName: string | null;
@@ -61,8 +69,10 @@ interface TelemetryContextType {
   setUserRole: (role: "admin" | "user") => void;
   setUserName: (name: string) => void;
   setSettings: (s: DashboardSettings) => void;
-  addAlert: (alert: Omit<Alert, "id" | "timestamp">) => void;
+  addAlert: (alert: Omit<Alert, "id" | "timestamp" | "read" | "updatedAt">) => void;
   clearAlerts: () => void;
+  dismissAlert: (id: string) => void;
+  markAllRead: () => void;
 }
 
 // ── localStorage keys ─────────────────────────────────────────────────────────
@@ -111,56 +121,94 @@ const defaultSimDeviceStatus: DeviceStatus = {
   rssi: -52,
 };
 
-// ── Alert engine ──────────────────────────────────────────────────────────────
+// ── Alert Engine ─────────────────────────────────────────────────────────────
+// Returns zero or more distinct alert payloads per evaluation cycle.
+// Critically — each alert has a stable `type`, so the provider can
+// deduplicate: if an alert of the same type is already active, we only
+// refresh its timestamp instead of adding a duplicate.
 
-function checkAlerts(
+function evaluateAlerts(
   data: TelemetryData,
-  prevData: TelemetryData,
+  prev: TelemetryData,
   settings: DashboardSettings
-): Omit<Alert, "id" | "timestamp"> | null {
-  if (data.temperature > settings.tempThreshold) {
-    return {
-      type: "HIGH_TEMPERATURE",
-      severity: data.temperature > settings.tempThreshold + 5 ? "critical" : "warning",
-      message: `Temperature is ${data.temperature.toFixed(1)}°C, exceeding threshold of ${settings.tempThreshold}°C.`,
-    };
-  }
-  if (data.humidity > settings.humidityThreshold) {
-    return {
-      type: "HIGH_HUMIDITY",
-      severity: data.humidity > 95 ? "critical" : "warning",
-      message: `Humidity at ${data.humidity.toFixed(0)}%, above the ${settings.humidityThreshold}% threshold.`,
-    };
-  }
-  if (data.pressure < settings.pressureThreshold) {
-    return {
-      type: "RAPID_PRESSURE_CHANGE",
-      severity: data.pressure < 995 ? "critical" : "warning",
-      message: data.pressure < 995
-        ? `Severe storm alert: Extreme pressure drop! (${data.pressure.toFixed(1)} hPa)`
-        : `Low pressure system: Storm approaching. (${data.pressure.toFixed(1)} hPa)`,
-    };
-  }
-  // Rapid water rise
-  const waterRise = prevData.distance - data.distance;
-  if (waterRise > 4) {
-    return {
+): Omit<Alert, "id" | "timestamp" | "read" | "updatedAt">[] {
+  const results: Omit<Alert, "id" | "timestamp" | "read" | "updatedAt">[] = [];
+
+  // --- Water Level (highest priority) ---
+  const waterRise = prev.distance - data.distance; // positive = water rose
+  if (waterRise >= 5) {
+    results.push({
       type: "RAPID_WATER_RISE",
       severity: "critical",
-      message: `Emergency: Water level rising rapidly! (Rose by ${waterRise.toFixed(1)} cm).`,
-    };
-  }
-  if (data.distance < settings.distanceThreshold) {
-    return {
+      message: `Water rising rapidly — ${waterRise.toFixed(1)} cm increase detected. Immediate action may be required.`,
+    });
+  } else if (data.distance < settings.distanceThreshold) {
+    const isCritical = data.distance < settings.distanceThreshold * 0.6;
+    results.push({
       type: "HIGH_WATER_LEVEL",
-      severity: data.distance < 30 ? "critical" : "warning",
-      message: data.distance < 30
-        ? `CRITICAL FLOOD RISK: Water level is breaching! (${data.distance.toFixed(1)} cm from sensor)`
-        : `Flood Warning: Water level rising. (${data.distance.toFixed(1)} cm from sensor)`,
-    };
+      severity: isCritical ? "critical" : "warning",
+      message: isCritical
+        ? `Critical flood level: Water sensor reading ${data.distance.toFixed(0)} cm — dangerously high.`
+        : `Elevated water level: ${data.distance.toFixed(0)} cm (threshold: ${settings.distanceThreshold} cm).`,
+    });
   }
-  return null;
+
+  // --- Pressure (storm indicator) ---
+  if (data.pressure < settings.pressureThreshold) {
+    const isExtreme = data.pressure < 995;
+    // Only fire if significant drop from previous (>2 hPa) to avoid constant low-pressure alerts
+    const pressureDrop = prev.pressure - data.pressure;
+    if (pressureDrop > 2 || data.pressure < 998) {
+      results.push({
+        type: "RAPID_PRESSURE_CHANGE",
+        severity: isExtreme ? "critical" : "warning",
+        message: isExtreme
+          ? `Extreme pressure drop to ${data.pressure.toFixed(1)} hPa — severe storm conditions possible.`
+          : `Pressure dropping (${data.pressure.toFixed(1)} hPa, −${pressureDrop.toFixed(1)} hPa). Storm activity likely.`,
+      });
+    }
+  }
+
+  // --- Temperature ---
+  if (data.temperature > settings.tempThreshold) {
+    const isCritical = data.temperature > settings.tempThreshold + 5;
+    // Only alert if notably above threshold (>1°C margin to avoid constant borderline alerts)
+    if (data.temperature > settings.tempThreshold + 1) {
+      results.push({
+        type: "HIGH_TEMPERATURE",
+        severity: isCritical ? "critical" : "warning",
+        message: `Temperature at ${data.temperature.toFixed(1)}°C exceeds threshold (${settings.tempThreshold}°C).`,
+      });
+    }
+  }
+
+  // --- Humidity ---
+  if (data.humidity > settings.humidityThreshold) {
+    const isCritical = data.humidity > 95;
+    if (data.humidity > settings.humidityThreshold + 2) {
+      results.push({
+        type: "HIGH_HUMIDITY",
+        severity: isCritical ? "critical" : "warning",
+        message: `Humidity at ${data.humidity.toFixed(0)}% — above threshold (${settings.humidityThreshold}%). Risk of mold and equipment damage.`,
+      });
+    }
+  }
+
+  return results;
 }
+
+// ── Per-type cooldown config (ms) ─────────────────────────────────────────────
+// Prevents the same alert type from spamming when condition persists.
+// A new alert of the same type is only added/refreshed after this window.
+const ALERT_COOLDOWN: Record<AlertType, number> = {
+  HIGH_TEMPERATURE:      5 * 60 * 1000,  // 5 min
+  HIGH_HUMIDITY:         5 * 60 * 1000,  // 5 min
+  RAPID_PRESSURE_CHANGE: 3 * 60 * 1000,  // 3 min
+  HIGH_WATER_LEVEL:      2 * 60 * 1000,  // 2 min
+  RAPID_WATER_RISE:      1 * 60 * 1000,  // 1 min (most urgent)
+  OBJECT_TOO_CLOSE:      2 * 60 * 1000,  // 2 min
+  SENSOR_OFFLINE:       10 * 60 * 1000,  // 10 min (fires once)
+};
 
 // ── Simulation helpers ────────────────────────────────────────────────────────
 
@@ -180,7 +228,7 @@ function buildInitialSimHistory(): TelemetryData[] {
 const TelemetryContext = createContext<TelemetryContextType | undefined>(undefined);
 
 export function TelemetryProvider({ children }: { children: React.ReactNode }) {
-  // ── Core state ────────────────────────────────────────────────────────────
+  // ── Core state ─────────────────────────────────────────────────────────────
   const [data, setData] = useState<TelemetryData | null>(null);
   const [history, setHistory] = useState<TelemetryData[]>([]);
   const [deviceStatus, setDeviceStatus] = useState<DeviceStatus | null>(null);
@@ -190,7 +238,7 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isOffline, setIsOffline] = useState(false);
 
-  // ── Simulation / role state (Project B) ──────────────────────────────────
+  // ── Simulation / role state ────────────────────────────────────────────────
   const [isSimulating, setIsSimulatingState] = useState(false);
   const [userRole, setUserRoleState] = useState<"admin" | "user">("admin");
   const [userName, setUserNameState] = useState<string | null>(null);
@@ -200,22 +248,23 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
   const prevDataRef = useRef<TelemetryData | null>(null);
   const settingsRef = useRef<DashboardSettings>(defaultSettings);
   const offlineAlertFiredRef = useRef(false);
+
+  // Track last-fired timestamp per alert type for cooldown enforcement
+  const lastAlertTimeRef = useRef<Partial<Record<AlertType, number>>>({});
+
   useEffect(() => { settingsRef.current = settings; }, [settings]);
 
-  // ── Hydrate role from localStorage ───────────────────────────────────────
+  // ── Computed: unread count ─────────────────────────────────────────────────
+  const unreadCount = alerts.filter((a) => !a.read).length;
+
+  // ── Hydrate role from localStorage ────────────────────────────────────────
   useEffect(() => {
     try {
       const savedRole = localStorage.getItem("floodeye_session");
-      if (savedRole === "admin" || savedRole === "user") {
-        setUserRoleState(savedRole);
-      }
+      if (savedRole === "admin" || savedRole === "user") setUserRoleState(savedRole);
       const savedName = localStorage.getItem("floodeye_user_name");
-      if (savedName) {
-        setUserNameState(savedName);
-      }
-    } catch {
-      // localStorage unavailable (iOS Safari private mode)
-    }
+      if (savedName) setUserNameState(savedName);
+    } catch { /* private mode */ }
   }, []);
 
   const setUserRole = (role: "admin" | "user") => {
@@ -228,22 +277,69 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
     setUserNameState(name);
   };
 
-  const setIsSimulating = (val: boolean) => {
-    setIsSimulatingState(val);
-  };
+  const setIsSimulating = (val: boolean) => setIsSimulatingState(val);
 
-  // ── Alert helpers ────────────────────────────────────────────────────────
-  const pushAlert = useCallback((alert: Omit<Alert, "id" | "timestamp">) => {
-    setAlerts((prev) => [
-      { ...alert, id: Math.random().toString(36).substring(7), timestamp: new Date().toISOString() },
-      ...prev,
-    ].slice(0, 20));
+  // ── Alert helpers ──────────────────────────────────────────────────────────
+
+  /**
+   * Smart push: deduplicates by type + respects cooldown.
+   * If same type already active and within cooldown window → skip.
+   * If same type exists but cooldown expired → update message/timestamp.
+   */
+  const pushAlert = useCallback((incoming: Omit<Alert, "id" | "timestamp" | "read" | "updatedAt">) => {
+    const now = Date.now();
+    const cooldown = ALERT_COOLDOWN[incoming.type] ?? 2 * 60 * 1000;
+    const lastFired = lastAlertTimeRef.current[incoming.type] ?? 0;
+
+    if (now - lastFired < cooldown) return; // still in cooldown — skip silently
+
+    lastAlertTimeRef.current[incoming.type] = now;
+    const nowIso = new Date().toISOString();
+
+    setAlerts((prev) => {
+      const existing = prev.find((a) => a.type === incoming.type);
+      if (existing) {
+        // Refresh message and timestamp; keep read state (user may not have seen it yet)
+        return prev.map((a) =>
+          a.type === incoming.type
+            ? { ...a, message: incoming.message, severity: incoming.severity, updatedAt: nowIso, read: false }
+            : a
+        );
+      }
+      const newAlert: Alert = {
+        ...incoming,
+        id: Math.random().toString(36).slice(2, 9),
+        timestamp: nowIso,
+        updatedAt: nowIso,
+        read: false,
+      };
+      return [newAlert, ...prev].slice(0, 20);
+    });
   }, []);
 
-  const addAlert = useCallback((alert: Omit<Alert, "id" | "timestamp">) => pushAlert(alert), [pushAlert]);
-  const clearAlerts = useCallback(() => setAlerts([]), []);
+  /** External addAlert (for use in hooks/other components) — also respects dedup */
+  const addAlert = useCallback(
+    (alert: Omit<Alert, "id" | "timestamp" | "read" | "updatedAt">) => pushAlert(alert),
+    [pushAlert]
+  );
 
-  // ── Hydrate from localStorage (client-only) ───────────────────────────────
+  /** Remove a single alert */
+  const dismissAlert = useCallback((id: string) => {
+    setAlerts((prev) => prev.filter((a) => a.id !== id));
+  }, []);
+
+  /** Clear entire log */
+  const clearAlerts = useCallback(() => {
+    setAlerts([]);
+    lastAlertTimeRef.current = {}; // reset cooldowns so they fire fresh next time
+  }, []);
+
+  /** Mark all unread alerts as read (called when notification panel opens) */
+  const markAllRead = useCallback(() => {
+    setAlerts((prev) => prev.map((a) => ({ ...a, read: true })));
+  }, []);
+
+  // ── Hydrate from localStorage (client-only) ────────────────────────────────
   useEffect(() => {
     const cached = lsGet<TelemetryData>(LS_DATA);
     if (cached) {
@@ -260,17 +356,15 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
     if (!cached) setIsLoading(true);
   }, []);
 
-  // ── SIMULATION MODE LOOP ─────────────────────────────────────────────────
+  // ── SIMULATION MODE LOOP ───────────────────────────────────────────────────
   useEffect(() => {
     if (!isSimulating) return;
 
-    // Seed initial history if empty
     if (history.length === 0) {
       const initialHistory = buildInitialSimHistory();
       setHistory(initialHistory);
     }
 
-    // Set default sim data if no data yet
     if (!data) {
       setData(defaultSimData);
       setDeviceStatus(defaultSimDeviceStatus);
@@ -302,6 +396,13 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
           rssi: (d?.rssi ?? -52) + Math.floor(Math.random() * 3 - 1),
         }));
 
+        // Run alert evaluation in simulation too — but cooldowns keep it sane
+        if (prevDataRef.current) {
+          const triggered = evaluateAlerts(newData, prevDataRef.current, settingsRef.current);
+          triggered.forEach((a) => pushAlert(a));
+        }
+        prevDataRef.current = newData;
+
         return newData;
       });
     }, settingsRef.current.refreshInterval * 1000);
@@ -313,14 +414,10 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
   // ── REAL MODE: Initial history load from ThingSpeak ───────────────────────
   useEffect(() => {
     if (isSimulating) return;
-
     let cancelled = false;
 
     fetch("/api/history?range=1h")
-      .then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
+      .then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
       .then((feeds: TelemetryData[]) => {
         if (cancelled) return;
         if (feeds.length > 0) {
@@ -339,9 +436,7 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
       .catch((err) => {
         if (cancelled) return;
         console.warn("[TelemetryProvider] initial history fetch failed — using cache:", err);
-        if (!data) {
-          setIsOffline(true);
-        }
+        if (!data) setIsOffline(true);
       })
       .finally(() => { if (!cancelled) setIsLoading(false); });
 
@@ -380,23 +475,20 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
         lsSet(LS_SEEN_AT, newData.timestamp);
 
         if (prevDataRef.current) {
-          const alert = checkAlerts(newData, prevDataRef.current, settingsRef.current);
-          if (alert) pushAlert(alert);
+          const triggered = evaluateAlerts(newData, prevDataRef.current, settingsRef.current);
+          triggered.forEach((a) => pushAlert(a));
         }
         prevDataRef.current = newData;
 
       } catch (err) {
         console.warn("[TelemetryProvider] poll failed — device may be offline:", err);
         setIsOffline(true);
-        setDeviceStatus((d) => d
-          ? { ...d, esp32Online: false, thingspeakConnected: false }
-          : null
-        );
+        setDeviceStatus((d) => d ? { ...d, esp32Online: false, thingspeakConnected: false } : null);
         if (!offlineAlertFiredRef.current) {
           pushAlert({
             type: "SENSOR_OFFLINE",
-            severity: "critical",
-            message: "Cannot reach ThingSpeak. Showing last known data. Check your ESP32 connection.",
+            severity: "warning",
+            message: "Cannot reach the sensor device. Dashboard is showing last cached data.",
           });
           offlineAlertFiredRef.current = true;
         }
@@ -404,7 +496,6 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
     };
 
     const intervalRef = { current: null as ReturnType<typeof setInterval> | null };
-
     const timeout = setTimeout(() => {
       poll();
       intervalRef.current = setInterval(poll, settings.refreshInterval * 1000);
@@ -429,6 +520,7 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
         isOffline,
         isStale,
         lastSeenAt,
+        unreadCount,
         isSimulating,
         userRole,
         userName,
@@ -438,6 +530,8 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
         setSettings,
         addAlert,
         clearAlerts,
+        dismissAlert,
+        markAllRead,
       }}
     >
       {children}
