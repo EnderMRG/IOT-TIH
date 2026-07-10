@@ -7,7 +7,10 @@ import { DeviceStatusCard } from "@/components/cards/DeviceStatusCard";
 import { ComfortScoreCard } from "@/components/cards/ComfortScoreCard";
 import { CustomLineChart } from "@/components/charts/CustomLineChart";
 import { AlertPanel } from "@/components/alerts/AlertPanel";
+import { FloodPredictionCard } from "@/components/cards/FloodPredictionCard";
+import { FloodAlertBanner } from "@/components/alerts/FloodAlertBanner";
 import EcoMap from "@/components/Map";
+import { useFloodPrediction } from "@/hooks/useFloodPrediction";
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
@@ -66,6 +69,7 @@ function OfflineBanner({ lastSeenAt }: { lastSeenAt: string | null }) {
 
 export default function DashboardHome() {
   const { data, history, deviceStatus, isLoading, isOffline, isStale, lastSeenAt } = useTelemetry();
+  const { prediction, isLoading: isPredictionLoading } = useFloodPrediction(history);
 
   if (isLoading) return <LoadingOverlay />;
   if (!data)     return <NoDataState />;
@@ -92,6 +96,9 @@ export default function DashboardHome() {
 
       {/* Offline banner — shown when device is unreachable but we have cached data */}
       {isStale && <OfflineBanner lastSeenAt={lastSeenAt} />}
+      
+      {/* Flood Alert Banner - auto shows on high/critical risk */}
+      <FloodAlertBanner />
 
       {/* Row 1: 5 Sensor Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
@@ -172,9 +179,10 @@ export default function DashboardHome() {
           </div>
         </div>
 
-        {/* Right column: Comfort Score + Device Status */}
+        {/* Right column: Comfort Score, Flood Prediction, Device Status */}
         <div className="flex flex-col gap-6">
           <ComfortScoreCard temperature={data.temperature} humidity={data.humidity} />
+          <FloodPredictionCard prediction={prediction} isLoading={isPredictionLoading} />
           {deviceStatus && <DeviceStatusCard deviceStatus={deviceStatus} />}
         </div>
       </div>

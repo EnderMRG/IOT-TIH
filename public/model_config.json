@@ -1,0 +1,1 @@
+{"LOOKBACK": 48, "DANGER_THRESHOLD": 450, "features": ["hour_sin", "hour_cos", "month_sin", "month_cos", "temperature_c", "humidity_percent", "pressure_hpa", "pressure_trend_3h", "humidity_trend_3h", "water_level_cm", "rate_of_change_cm_per_hr"]}

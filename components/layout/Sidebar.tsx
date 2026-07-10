@@ -8,7 +8,8 @@ import {
   History,
   Bell,
   Settings,
-  Server
+  Server,
+  BrainCircuit
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTelemetry } from "@/components/providers/TelemetryProvider";
@@ -16,6 +17,7 @@ import { useTelemetry } from "@/components/providers/TelemetryProvider";
 const navItems = [
   { icon: LayoutDashboard, href: "/dashboard", label: "Dashboard" },
   { icon: BarChart3, href: "/dashboard/analytics", label: "Analytics" },
+  { icon: BrainCircuit, href: "/dashboard/predictions", label: "Predictions" },
   { icon: History, href: "/dashboard/history", label: "History" },
   { icon: Bell, href: "/dashboard/alerts", label: "Alerts" },
 ];
