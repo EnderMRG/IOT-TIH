@@ -107,7 +107,13 @@ export function useFloodPrediction(history: TelemetryData[]): UseFloodPrediction
     if (historyHash === lastHistoryRef.current) return;
     
     lastHistoryRef.current = historyHash;
-    runPrediction(history);
+    
+    // Debounce the heavy TFJS prediction so it doesn't freeze the main thread
+    const timeoutId = setTimeout(() => {
+      runPrediction(history);
+    }, 1000);
+    
+    return () => clearTimeout(timeoutId);
   }, [history, isReady, runPrediction]);
 
   return {

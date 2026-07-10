@@ -102,11 +102,6 @@ export default function DashboardHome() {
   const { data, history, deviceStatus, isLoading, isOffline, isStale, lastSeenAt } = useTelemetry();
   const { prediction, isLoading: isPredictionLoading } = useFloodPrediction(history);
 
-  if (isLoading) return <LoadingOverlay />;
-  if (!data)     return <NoDataState />;
-
-  const prev = history[history.length - 2];
-
   const chartData = useMemo(() => {
     return history.map((e) => ({
       time:        new Date(e.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
@@ -117,6 +112,17 @@ export default function DashboardHome() {
       distance:    e.distance,
     }));
   }, [history]);
+
+  const historyTemp = useMemo(() => history.map((h) => h.temperature), [history]);
+  const historyHum = useMemo(() => history.map((h) => h.humidity), [history]);
+  const historyPress = useMemo(() => history.map((h) => h.pressure), [history]);
+  const historyAlt = useMemo(() => history.map((h) => h.altitude), [history]);
+  const historyDist = useMemo(() => history.map((h) => h.distance), [history]);
+
+  if (isLoading) return <LoadingOverlay />;
+  if (!data)     return <NoDataState />;
+
+  const prev = history[history.length - 2];
 
   const getTrend = (curr: number, prevVal: number | undefined) =>
     prevVal === undefined ? "stable" : curr > prevVal ? "up" : curr < prevVal ? "down" : "stable";
@@ -143,7 +149,7 @@ export default function DashboardHome() {
           trend={getTrend(data.temperature, prev?.temperature)}
           delta={getDelta(data.temperature, prev?.temperature)}
           status={data.temperature > 35 ? "warning" : "normal"}
-          historyData={history.map((h) => h.temperature)}
+          historyData={historyTemp}
         />
         <SensorCard
           title={isOffline ? "Humidity (Cached)" : "Humidity"}
@@ -153,7 +159,7 @@ export default function DashboardHome() {
           trend={getTrend(data.humidity, prev?.humidity)}
           delta={getDelta(data.humidity, prev?.humidity)}
           status={data.humidity > 80 ? "warning" : "normal"}
-          historyData={history.map((h) => h.humidity)}
+          historyData={historyHum}
         />
         <SensorCard
           title="Atmospheric Pressure"
@@ -163,7 +169,7 @@ export default function DashboardHome() {
           trend={getTrend(data.pressure, prev?.pressure)}
           delta={getDelta(data.pressure, prev?.pressure)}
           status="normal"
-          historyData={history.map((h) => h.pressure)}
+          historyData={historyPress}
           variant="light"
         />
         <SensorCard
@@ -174,7 +180,7 @@ export default function DashboardHome() {
           trend={getTrend(data.altitude, prev?.altitude)}
           delta={getDelta(data.altitude, prev?.altitude)}
           status="normal"
-          historyData={history.map((h) => h.altitude)}
+          historyData={historyAlt}
         />
         <SensorCard
           title={isOffline ? "Water Level (Cached)" : "Water Level"}
@@ -184,7 +190,7 @@ export default function DashboardHome() {
           trend={getTrend(data.distance, prev?.distance)}
           delta={getDelta(data.distance, prev?.distance)}
           status={data.distance < 20 ? "critical" : data.distance < 40 ? "warning" : "normal"}
-          historyData={history.map((h) => h.distance)}
+          historyData={historyDist}
           variant="primary"
           invertTrend={true}
         />
@@ -228,7 +234,11 @@ export default function DashboardHome() {
       {/* Row 4: Map */}
       <div className="mt-6">
         <h3 className="text-slate-900 font-bold text-base mb-4">Device Location</h3>
-        <EcoMap />
+        <EcoMap 
+          distance={data.distance} 
+          temperature={data.temperature} 
+          humidity={data.humidity} 
+        />
       </div>
 
     </div>

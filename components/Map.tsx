@@ -1,19 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
 import Map, { NavigationControl, Marker, Popup } from "react-map-gl/maplibre";
 import { Droplets } from "lucide-react";
-import { useTelemetry } from "@/components/providers/TelemetryProvider";
 
-export default function EcoMap() {
-  const { data } = useTelemetry();
+interface EcoMapProps {
+  distance: number;
+  temperature: number;
+  humidity: number;
+}
+
+function EcoMapComponent({ distance, temperature, humidity }: EcoMapProps) {
   const [showPopup, setShowPopup] = useState(false);
 
   // The coordinates where the ESP32 device is deployed (IIT Guwahati)
   const deviceLongitude = 91.6951;
   const deviceLatitude = 26.1921;
-
-  if (!data) return null;
 
   return (
     <div className="h-[400px] w-full rounded-[2rem] overflow-hidden border border-slate-100 shadow-sm relative">
@@ -56,15 +58,15 @@ export default function EcoMap() {
               <div className="space-y-1.5 text-sm">
                 <p className="flex justify-between">
                   <span className="text-slate-500">Water Level</span>
-                  <span className="font-semibold text-blue-600">{data.distance.toFixed(0)} cm</span>
+                  <span className="font-semibold text-blue-600">{distance.toFixed(0)} cm</span>
                 </p>
                 <p className="flex justify-between">
                   <span className="text-slate-500">Temp</span>
-                  <span className="font-semibold text-slate-900">{data.temperature.toFixed(1)}°C</span>
+                  <span className="font-semibold text-slate-900">{temperature.toFixed(1)}°C</span>
                 </p>
                 <p className="flex justify-between">
                   <span className="text-slate-500">Humidity</span>
-                  <span className="font-semibold text-slate-900">{data.humidity.toFixed(0)}%</span>
+                  <span className="font-semibold text-slate-900">{humidity.toFixed(0)}%</span>
                 </p>
               </div>
             </div>
@@ -74,3 +76,5 @@ export default function EcoMap() {
     </div>
   );
 }
+
+export default memo(EcoMapComponent);
