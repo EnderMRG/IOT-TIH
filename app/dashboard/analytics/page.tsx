@@ -41,7 +41,7 @@ export default function AnalyticsPage() {
       {/* Charts Grid — 2 col up top, full width pressure, remaining 2 col */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {charts.map((chart) => {
-          const isDark = chart.variant === "bg-blue-600";
+          const isDark = chart.variant.includes("bg-gradient");
           const Icon = chart.icon;
           return (
             <div
