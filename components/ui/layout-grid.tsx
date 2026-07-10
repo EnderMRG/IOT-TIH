@@ -72,7 +72,7 @@ function BlurImage({ card, onClick }: { card: Card; onClick: () => void }) {
     <motion.div
       onClick={onClick}
       className={cn(
-        "relative overflow-hidden rounded-2xl cursor-pointer h-60 md:h-72 bg-slate-900",
+        "relative overflow-hidden rounded-2xl cursor-pointer bg-slate-900 group h-full",
         "border border-white/10 hover:border-white/25 transition-colors duration-300"
       )}
       layoutId={`card-${card.id}`}
@@ -82,9 +82,8 @@ function BlurImage({ card, onClick }: { card: Card; onClick: () => void }) {
       <NextImage
         src={card.thumbnail}
         alt={`Gallery photo ${card.id}`}
-        fill
         sizes="(max-width: 768px) 100vw, 50vw"
-        className="object-cover transition-transform duration-500 group-hover:scale-105"
+        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
       />
       {/* Gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />

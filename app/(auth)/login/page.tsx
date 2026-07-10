@@ -11,7 +11,7 @@ import { login } from "@/lib/actions/auth";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { setUserRole } = useTelemetry();
+  const { setUserRole, setUserName } = useTelemetry();
   
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,24 +21,47 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
 
-    // Setup form data
-    const formData = new FormData();
-    formData.append("email", email);
-    formData.append("password", password);
+    // Simple validation logic
+    let role = "user";
+    let name = "";
+    let valid = false;
 
-    // Call server action
-    const res = await login(formData);
-    
-    if (res?.error) {
-      setError(res.error);
+    if (email === "admin@floodeye.com" && password === "admin") {
+      role = "admin";
+      name = "Admin";
+      valid = true;
+    } else if (email === "user@floodeye.com" && password === "user") {
+      role = "user";
+      name = "User";
+      valid = true;
     } else {
-      // If we used hardcoded admin, set role in local context before redirect happens
-      if (email === "admin@floodeye.com") {
-        setUserRole("admin");
-      } else {
-        setUserRole("user");
+      // Check localStorage users
+      const usersJson = localStorage.getItem("floodeye_users");
+      if (usersJson) {
+        const users = JSON.parse(usersJson);
+        const user = users.find((u: any) => u.email === email && u.password === password);
+        if (user) {
+          role = user.role || "user";
+          name = user.name || "User";
+          valid = true;
+        }
       }
     }
+
+    if (!valid) {
+      setError("Invalid email or password. Please try again.");
+      return;
+    }
+
+    // Set role and name in context
+    setUserRole(role as "admin" | "user");
+    setUserName(name);
+
+    // Call server action to set cookie
+    await login(role);
+
+    // Redirect to dashboard
+    router.push("/dashboard");
   };
   return (
     <div className="h-screen max-h-screen overflow-hidden flex items-center justify-center p-4 sm:p-6 lg:p-8 relative">

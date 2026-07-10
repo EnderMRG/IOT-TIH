@@ -216,28 +216,7 @@ function HeroSection() {
 
 
 
-        {/* CTAs */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.9 }}
-          className="flex flex-col sm:flex-row gap-4 justify-center"
-        >
-          <Link
-            href="/login"
-            className="px-8 py-4 bg-blue-500 text-white font-bold rounded-full hover:bg-blue-400 transition-all shadow-lg shadow-blue-500/30 hover:shadow-blue-400/40 text-sm"
-          >
-            Open Dashboard →
-          </Link>
-          <a
-            href="https://github.com/EnderMRG/IOT"
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center justify-center gap-2 px-8 py-4 border border-white/20 bg-white/10 backdrop-blur-sm text-white font-semibold rounded-full hover:bg-white/20 transition-all text-sm"
-          >
-            <ExternalLink className="w-4 h-4" /> GitHub
-          </a>
-        </motion.div>
+
       </motion.div>
 
       {/* Scroll cue */}

@@ -56,8 +56,10 @@ interface TelemetryContextType {
   // Simulation / role (Project B additions)
   isSimulating: boolean;
   userRole: "admin" | "user";
+  userName: string | null;
   setIsSimulating: (val: boolean) => void;
   setUserRole: (role: "admin" | "user") => void;
+  setUserName: (name: string) => void;
   setSettings: (s: DashboardSettings) => void;
   addAlert: (alert: Omit<Alert, "id" | "timestamp">) => void;
   clearAlerts: () => void;
@@ -191,6 +193,7 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
   // ── Simulation / role state (Project B) ──────────────────────────────────
   const [isSimulating, setIsSimulatingState] = useState(false);
   const [userRole, setUserRoleState] = useState<"admin" | "user">("admin");
+  const [userName, setUserNameState] = useState<string | null>(null);
 
   const isStale = isOffline && data !== null;
 
@@ -205,11 +208,20 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
     if (savedRole === "admin" || savedRole === "user") {
       setUserRoleState(savedRole);
     }
+    const savedName = localStorage.getItem("floodeye_user_name");
+    if (savedName) {
+      setUserNameState(savedName);
+    }
   }, []);
 
   const setUserRole = (role: "admin" | "user") => {
     localStorage.setItem("floodeye_session", role);
     setUserRoleState(role);
+  };
+
+  const setUserName = (name: string) => {
+    localStorage.setItem("floodeye_user_name", name);
+    setUserNameState(name);
   };
 
   const setIsSimulating = (val: boolean) => {
@@ -415,8 +427,10 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
         lastSeenAt,
         isSimulating,
         userRole,
+        userName,
         setIsSimulating,
         setUserRole,
+        setUserName,
         setSettings,
         addAlert,
         clearAlerts,

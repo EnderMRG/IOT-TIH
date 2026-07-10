@@ -9,7 +9,7 @@ import Image from "next/image";
 
 interface TeamMember {
   name: string;
-  role: string;
+  role?: string;
   image: string;
   bio: string;
   skills: string[];
@@ -124,12 +124,14 @@ export function ExpandableTeamCards({ members }: { members: TeamMember[] }) {
                     >
                       {active.name}
                     </motion.h3>
-                    <motion.p
-                      layoutId={`role-${active.name}-${id}`}
-                      className="text-blue-300 font-medium text-sm mt-0.5 drop-shadow-sm"
-                    >
-                      {active.role}
-                    </motion.p>
+                    {active.role && (
+                      <motion.p
+                        layoutId={`role-${active.name}-${id}`}
+                        className="text-blue-300 font-medium text-sm mt-0.5 drop-shadow-sm"
+                      >
+                        {active.role}
+                      </motion.p>
+                    )}
                   </div>
                   {/* Desktop close */}
                   <button
@@ -197,13 +199,15 @@ export function ExpandableTeamCards({ members }: { members: TeamMember[] }) {
             >
               {member.name}
             </motion.h3>
-            <motion.p
-              layoutId={`role-${member.name}-${id}`}
-              className="text-sm font-medium text-blue-300 mb-4 drop-shadow-sm"
-            >
-              {member.role}
-            </motion.p>
-            <span className="text-xs font-semibold text-white/50 group-hover:text-blue-300 transition-colors">
+            {member.role && (
+              <motion.p
+                layoutId={`role-${member.name}-${id}`}
+                className="text-sm font-medium text-blue-300 mb-4 drop-shadow-sm"
+              >
+                {member.role}
+              </motion.p>
+            )}
+            <span className={`text-xs font-semibold text-white/50 group-hover:text-blue-300 transition-colors ${!member.role ? 'mt-4' : ''}`}>
               View Profile ↗
             </span>
           </motion.div>

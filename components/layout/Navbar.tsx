@@ -9,7 +9,7 @@ import { EncryptedText } from "@/components/ui/encrypted-text";
 import { logout } from "@/lib/actions/auth";
 
 export function Navbar() {
-  const { isSimulating, setIsSimulating, alerts, deviceStatus, userRole, setUserRole } = useTelemetry();
+  const { isSimulating, setIsSimulating, alerts, deviceStatus, userRole, userName, setUserRole } = useTelemetry();
   const [time, setTime] = useState("");
   const [date, setDate] = useState("");
   const [showSimTooltip, setShowSimTooltip] = useState(false);
@@ -45,7 +45,7 @@ export function Navbar() {
       <div className="flex flex-col">
         <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900">
           <EncryptedText
-            text={`Hello, ${userRole || 'Operator'}!`}
+            text={`Hello, ${userName || userRole || 'Operator'}!`}
             encryptedClassName="text-slate-400"
             revealedClassName="text-slate-900"
             revealDelayMs={120}

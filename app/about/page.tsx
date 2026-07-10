@@ -19,11 +19,10 @@ export default function AboutPage() {
   const team = [
     {
       name: "Ashish Kumar Mahato",
-      role: "Mentor",
       image: "/ashihs.jpg",
       // ✏️ EDIT: Update this bio and skills for Ashish
       bio: "Ashish Kumar Mahato serves as the project mentor, guiding the team through the development of FloodEye. His expertise in IoT systems and embedded programming has been instrumental in shaping the architecture of the platform.",
-      skills: ["IoT Systems", "Embedded Programming", "Project Mentorship"],
+      skills: [],
     },
     {
       name: "Aryyaman Bora",
@@ -83,14 +82,14 @@ export default function AboutPage() {
       <main className="relative z-10 max-w-5xl mx-auto px-6 pt-32 pb-24">
         {/* About TIH Section */}
         <section className="mb-24">
-          <h2 className="font-sans text-4xl font-bold text-white mb-8">About TIH</h2>
+          <h2 className="font-sans text-4xl font-bold text-white mb-8">About</h2>
 
           <GlassCard className="p-8 md:p-10">
             {/* Header: Title on left, Logo on right */}
             <div className="flex flex-col-reverse md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-white/20 mb-8">
               <div>
-                <h3 className="text-3xl font-bold text-white mb-1">Technology Innovation Hub</h3>
-                <p className="text-blue-400 font-medium text-lg">IIT Guwahati</p>
+                <h3 className="text-3xl font-bold text-white mb-1">IoT Based Water Level Monitoring System</h3>
+                <p className="text-blue-400 font-medium text-lg">TIH | IIT Guwahati</p>
               </div>
               <div className="shrink-0 flex justify-start md:justify-end">
                 <Image src="/logotih.png" alt="TIH" width={160} height={160} className="object-contain drop-shadow-md" />

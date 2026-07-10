@@ -7,10 +7,11 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, AlertCircle, CheckCircle2 } from "lucide-react";
 import { useTelemetry } from "@/components/providers/TelemetryProvider";
 import bgImage from "@/assests/landpage/PTI06_18_2022_000030B.jpg";
+import { login } from "@/lib/actions/auth";
 
 export default function SignupPage() {
   const router = useRouter();
-  const { setUserRole } = useTelemetry();
+  const { setUserRole, setUserName } = useTelemetry();
   
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -46,8 +47,10 @@ export default function SignupPage() {
       setSuccess(true);
       
       // Auto login and redirect after a short delay
-      setTimeout(() => {
+      setTimeout(async () => {
         setUserRole("user");
+        setUserName(name);
+        await login("user");
         router.push("/dashboard");
       }, 1500);
       
