@@ -3,10 +3,19 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
+
+const NAV_LINKS = [
+  { label: "Home", href: "/" },
+  { label: "About", href: "/about" },
+  { label: "Technologies", href: "/technologies" },
+  { label: "Gallery", href: "/gallary" },
+];
 
 export function LandingNav() {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
 
   return (
     <>
@@ -25,18 +34,20 @@ export function LandingNav() {
 
           {/* Desktop Links */}
           <div className="hidden md:flex items-center gap-8">
-            <Link href="/" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
-              Home
-            </Link>
-            <Link href="/about" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
-              About
-            </Link>
-            <Link href="/technologies" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
-              Technologies
-            </Link><Link href="/gallary" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
-              Gallery
-            </Link>
-
+            {NAV_LINKS.map((link) => {
+              const isActive = pathname === link.href;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`text-sm font-medium transition-colors ${
+                    isActive ? "text-blue-400 drop-shadow-[0_0_4px_rgba(59,130,246,0.3)]" : "text-white/70 hover:text-white"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
           </div>
 
           {/* Desktop Auth */}
@@ -66,18 +77,21 @@ export function LandingNav() {
       {open && (
         <div className="fixed top-[4.5rem] left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-5xl rounded-3xl border border-white/15 bg-black/60 backdrop-blur-xl shadow-2xl md:hidden">
           <div className="flex flex-col px-6 py-5 gap-1">
-            <Link href="/" onClick={() => setOpen(false)} className="text-base font-medium text-white/80 hover:text-white transition-colors py-3 border-b border-white/10">
-              Home
-            </Link>
-            <Link href="/about" onClick={() => setOpen(false)} className="text-base font-medium text-white/80 hover:text-white transition-colors py-3 border-b border-white/10">
-              About
-            </Link>
-            <Link href="/technologies" onClick={() => setOpen(false)} className="text-base font-medium text-white/80 hover:text-white transition-colors py-3 border-b border-white/10">
-              Technologies
-            </Link>
-            <Link href="/gallary" onClick={() => setOpen(false)} className="text-base font-medium text-white/80 hover:text-white transition-colors py-3 border-b border-white/10">
-              Gallery
-            </Link>
+            {NAV_LINKS.map((link) => {
+              const isActive = pathname === link.href;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setOpen(false)}
+                  className={`text-base font-medium transition-colors py-3 border-b border-white/10 ${
+                    isActive ? "text-blue-400 drop-shadow-[0_0_4px_rgba(59,130,246,0.3)]" : "text-white/80 hover:text-white"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
             <Link href="/login" onClick={() => setOpen(false)} className="text-center px-5 py-3 text-sm font-bold text-white bg-blue-500 rounded-full hover:bg-blue-400 transition-all shadow-lg shadow-blue-500/30 mt-2">
               Dashboard →
             </Link>
