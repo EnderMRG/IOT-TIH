@@ -3,7 +3,7 @@
 import { useTelemetry, Alert } from "@/components/providers/TelemetryProvider";
 import {
   AlertTriangle, Info, ShieldCheck, Thermometer, Droplets, Wind,
-  Ruler, WifiOff, Trash2, X, Clock
+  Ruler, WifiOff, Trash2, X, Clock, CloudRain
 } from "lucide-react";
 import { EmptyState } from "@/components/common/EmptyState";
 import { cn } from "@/lib/utils";
@@ -18,6 +18,7 @@ const alertTypeConfig = {
   RAPID_WATER_RISE:      { label: "Rapid Water Rise",      icon: AlertTriangle },
   OBJECT_TOO_CLOSE:      { label: "Object Too Close",      icon: Ruler },
   SENSOR_OFFLINE:        { label: "Sensor Offline",        icon: WifiOff },
+  WEATHER_WARNING:       { label: "Weather Warning",       icon: CloudRain },
 } as const;
 
 function timeAgo(iso: string): string {
