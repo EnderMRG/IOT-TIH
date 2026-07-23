@@ -1,0 +1,175 @@
+\documentclass[10pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{parskip}
+\usepackage{hyperref}
+
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\titleformat{\section}{\large\bfseries}{}{0em}{}[\titlerule]
+
+\begin{document}
+
+%-----------------------------------------------------------
+%  Header
+%-----------------------------------------------------------
+\begin{center}
+    {\LARGE\textbf{Project Progress Summary}} \\[6pt]
+\end{center}
+
+\vspace{0.5cm}
+
+%-----------------------------------------------------------
+%  Group Members
+%-----------------------------------------------------------
+\section*{Group Members}
+
+\begin{enumerate}[leftmargin=2em, itemsep=2pt]
+    \item Moharnab Gogoi (Intern ID: 1) \hfill \textit{IoT, Backend \& Cloud Integration}
+    \item Aryyaman Bora (Intern ID: 38) \hfill \textit{Frontend \& UI}
+    \item Mayuree Khanikar (Intern ID: 2) \hfill \textit{Documentation \& Research}
+    \item Indrani Gogoi (Intern ID: 96) \hfill \textit{Documentation \& Research}
+\end{enumerate}
+
+\vspace{0.4cm}
+
+%-----------------------------------------------------------
+%  Supervisor Name
+%-----------------------------------------------------------
+\section*{Supervisor Name}
+
+Ashish Kumar Mahato
+
+\vspace{0.4cm}
+
+%-----------------------------------------------------------
+%  Project Title
+%-----------------------------------------------------------
+\section*{Project Title}
+
+\textbf{FloodEye: Real-Time Flood Alert \& Water Level Monitoring System}
+
+\vspace{0.4cm}
+
+%-----------------------------------------------------------
+%  Abstract
+%-----------------------------------------------------------
+\section*{Abstract}
+
+FloodEye is a highly responsive, AI-powered Progressive Web Application (PWA) designed
+for real-time flood monitoring and early warning. The system collects environmental
+telemetry---water level (distance), temperature, humidity, atmospheric pressure, and
+altitude---from an ESP32 microcontroller equipped with a DHT11, BMP180, and HC-SR04
+sensor array. Readings are uploaded every 15 seconds to the ThingSpeak IoT cloud
+platform, from where a Next.js~16 full-stack backend fetches, caches, and serves the
+data to a React dashboard.
+
+A key differentiator of FloodEye is its in-browser machine learning engine: a hybrid
+\textbf{1D-CNN + Bidirectional LSTM + Attention} deep learning model (trained on Assam
+flood-sensor datasets) that runs entirely client-side via TensorFlow.js, producing
+4-hour-ahead water level predictions with risk classification (Normal / High / Critical).
+The dashboard features a glassmorphism UI, live MapLibre GL sensor map, threshold-based
+Smart Alerts Engine, environmental comfort score, historical analytics with selectable
+time windows, and one-click data export (CSV/PDF). The app is installable as a PWA on
+iOS, Android, and desktop, making it accessible to field workers and government officials
+without platform constraints.
+
+\vspace{0.4cm}
+
+%-----------------------------------------------------------
+%  Details of Software / Hardware to be Implemented
+%-----------------------------------------------------------
+\section*{Details of the Software/Hardware to be Implemented}
+
+\begin{enumerate}[leftmargin=1.8em, itemsep=5pt]
+
+    \item \textbf{Off-Screen Push \& Email Notifications} \\
+    Implement Web Push Notifications via the browser Push API and Service Workers so
+    that critical flood alerts (e.g., ``Water Level Critical'', ``Sensor Offline'') are
+    delivered even when the dashboard tab is closed. Email alerts will be dispatched
+    through the \textbf{Resend} or \textbf{SendGrid} transactional email API from a
+    Next.js server action.
+
+    \item \textbf{Multi-Node Fleet Management} \\
+    Extend the database schema and dashboard UI to manage \textbf{multiple ESP32 devices}
+    across different geographic locations. Each device will appear as an interactive pin
+    on the MapLibre map; clicking a pin will load device-specific telemetry and ML
+    predictions.
+
+    \item \textbf{External Weather API Correlation} \\
+    Integrate the \textbf{OpenWeatherMap API} to correlate localized ESP32 sensor data
+    (temperature, humidity, pressure) with regional precipitation forecasts, improving
+    the contextual accuracy and interpretability of flood risk assessments.
+
+    \item \textbf{Generative AI ``Environmental Summaries''} \\
+    Pass the last 24 hours of telemetry and TensorFlow.js model output to the
+    \textbf{Google Gemini API} to generate natural-language summaries (e.g.,
+    \textit{``Water levels have risen 12\% in the last 3 hours. The AI predicts high
+    flood risk by 4:00 PM.''}), making the dashboard accessible to non-technical
+    government officials and citizens.
+
+    \item \textbf{CSV Data Export} \\
+    Add a CSV Export button in the Historical Analytics section so researchers and data
+    scientists can download raw time-series sensor data for offline analysis in Python
+    or Excel.
+
+    \item \textbf{MQTT Real-Time Streaming} \\
+    Replace or supplement the 15-second HTTP polling interval with \textbf{MQTT over
+    WebSockets} (broker: HiveMQ Cloud or AWS IoT Core) so the dashboard updates the
+    instant the ESP32 publishes a reading, eliminating polling latency.
+
+    \item \textbf{Interactive Sensor Calibration UI} \\
+    Add a ``Calibration'' panel in the Settings page where users input the
+    \textbf{baseline distance} from the HC-SR04 to the riverbed, enabling accurate water
+    depth computation: \textit{Water Depth = Baseline Distance $-$ Current Distance}.
+
+\end{enumerate}
+
+\vspace{0.4cm}
+
+%-----------------------------------------------------------
+%  Components Required
+%-----------------------------------------------------------
+\section*{Components Required (if any)}
+
+\subsection*{Hardware components}
+\begin{itemize}[leftmargin=1.8em, itemsep=2pt]
+    \item \textbf{ESP32 DevKit boards} --- one per monitoring location for
+          multi-node fleet management.
+    \item \textbf{HC-SR04 Ultrasonic Sensors} --- one per additional node.
+    \item \textbf{DHT11 / DHT22 Sensors} --- temperature and humidity per node.
+    \item \textbf{BMP180 / BMP280 Sensors} --- pressure and altitude per node.
+    \item \textbf{Waterproof enclosures} --- for outdoor/riverbank deployment of sensor
+          nodes.
+    \item \textbf{Power supply}: Solar panel + LiPo battery + TP4056 charging module for
+          field-deployed, off-grid nodes.
+    \item \textbf{Jumper wires, breadboard, resistors} --- prototyping and connections.
+\end{itemize}
+
+\subsection*{Software / API Dependencies}
+\begin{itemize}[leftmargin=1.8em, itemsep=2pt]
+    \item \textbf{web-push} (npm) --- VAPID key generation and push notification
+          subscription management.
+    \item \textbf{Resend or SendGrid SDK} --- transactional email API for alert emails.
+    \item \textbf{OpenWeatherMap API key} --- free-tier weather data for correlation
+          queries.
+    \item \textbf{@google/genai SDK + Gemini API key} --- Generative AI environmental
+          summaries.
+    \item \textbf{mqtt} (npm) --- MQTT over WebSocket client for Next.js.
+    \item \textbf{HiveMQ Cloud / AWS IoT Core} --- cloud MQTT broker endpoint.
+    \item \textbf{papaparse} (npm) --- client-side CSV generation and download.
+    \item \textbf{Additional ThingSpeak channels} --- one per ESP32 node for multi-device
+          data separation.
+\end{itemize}
+
+\subsection*{Cloud / Infrastructure}
+\begin{itemize}[leftmargin=1.8em, itemsep=2pt]
+    \item \textbf{Vercel} --- existing hosting; Pro plan may be needed for long-running
+          MQTT WebSocket connections.
+    \item \textbf{Neon PostgreSQL} --- existing database; schema extension for multi-
+          device records, push subscriptions, and calibration settings.
+\end{itemize}
+
+\end{document}

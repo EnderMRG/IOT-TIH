@@ -9,7 +9,7 @@ FloodEye follows a three-tier architecture consisting of an IoT hardware layer, 
 
 \begin{figure}[H]
 \centering
-\resizebox{\linewidth}{!}{%
+\resizebox{0.7\linewidth}{!}{%
 \begin{tikzpicture}[node distance=0.9cm, every node/.style={font=\small}]
   % ── IoT Layer ──
   \node[iotbox, text width=2.5cm] (dht) {DHT11\\Sensor};
@@ -22,7 +22,7 @@ FloodEye follows a three-tier architecture consisting of an IoT hardware layer, 
 
   % ── Backend Layer ──
   \node[process, text width=7.5cm, below=0.9cm of ts] (next) {Next.js 16 Server (Vercel Serverless Functions)};
-  \node[process, text width=3.5cm, below=0.5cm of next, xshift=-2.1cm] (apiroute) {Route Handlers\\(\texttt{/api/*})};
+  \node[process, text width=3.5cm, below=0.5cm of next, xshift=-2.1cm] (apiroute) {Route Handlers\\(\texttt{/\allowbreak{}api/\allowbreak{}*})};
   \node[process, text width=3.5cm, below=0.5cm of next, xshift=2.1cm] (tscache) {ThingSpeak Client\\+ Cache Layer};
 
   % ── Frontend Layer ──
@@ -57,7 +57,7 @@ The hardware layer consists of an ESP32 DevKit microcontroller connected to thre
   \item \textbf{HC-SR04 (GPIO):} Ultrasonic distance sensor. The distance reading, in centimetres, represents the proximity to the water surface (inversely proportional to water level).
 \end{itemize}
 
-The firmware (\texttt{IOTcode/IOTcode.ino}) initialises the BMP180 via the \texttt{Adafruit\_BMP085} library and polls readings in a 2-second loop, printing values to the serial monitor. The full deployment extends this sketch to post field values to ThingSpeak via an HTTP client library.
+The firmware (\texttt{IOTcode/\allowbreak{}IOTcode.\allowbreak{}ino}) initialises the BMP180 via the \texttt{Adafruit\_\allowbreak{}BMP085} library and polls readings in a 2-second loop, printing values to the serial monitor. The full deployment extends this sketch to post field values to ThingSpeak via an HTTP client library.
 
 \section{ThingSpeak Cloud Layer}
 
@@ -85,11 +85,11 @@ ThingSpeak imposes a free-tier rate limit of one update per 15 seconds, which al
 
 \section{Backend Layer}
 
-The backend is implemented as Next.js Route Handlers (the App Router equivalent of API routes). All server logic resides in the \texttt{app/api/} directory. The key components are:
+The backend is implemented as Next.js Route Handlers (the App Router equivalent of API routes). All server logic resides in the \texttt{app/\allowbreak{}api/\allowbreak{}} directory. The key components are:
 
 \begin{itemize}[leftmargin=1.5em]
-  \item \textbf{\texttt{lib/thingspeak.ts}:} A server-side ThingSpeak client with an in-memory cache and request coalescing. The latest-reading cache has a 14-second TTL (just under the 15-second upload interval); the history cache has a 55-second TTL. Request coalescing prevents cache stampedes when multiple server renders arrive simultaneously.
-  \item \textbf{Route Handlers:} \texttt{/api/sensors}, \texttt{/api/history}, \texttt{/api/analytics}, \texttt{/api/environment-score}, \texttt{/api/flood-predict} (placeholder for server-side inference). Each returns a structured JSON response.
+  \item \textbf{\texttt{lib/\allowbreak{}thingspeak.\allowbreak{}ts}:} A server-side ThingSpeak client with an in-memory cache and request coalescing. The latest-reading cache has a 14-second TTL (just under the 15-second upload interval); the history cache has a 55-second TTL. Request coalescing prevents cache stampedes when multiple server renders arrive simultaneously.
+  \item \textbf{Route Handlers:} \texttt{/\allowbreak{}api/\allowbreak{}sensors}, \texttt{/\allowbreak{}api/\allowbreak{}history}, \texttt{/\allowbreak{}api/\allowbreak{}analytics}, \texttt{/\allowbreak{}api/\allowbreak{}environment-score}, \texttt{/\allowbreak{}api/\allowbreak{}flood-predict} (placeholder for server-side inference). Each returns a structured JSON response.
   \item \textbf{Incremental Static Revalidation (ISR):} The \texttt{revalidate} export constant on each route sets the Next.js CDN cache TTL (15 s for sensors, 60 s for history/analytics).
 \end{itemize}
 
@@ -98,13 +98,13 @@ The backend is implemented as Next.js Route Handlers (the App Router equivalent 
 The frontend is a React 19 application built with Next.js App Router. The central state management mechanism is the \textbf{TelemetryProvider}, a React Context provider that:
 
 \begin{itemize}[leftmargin=1.5em]
-  \item Polls \texttt{/api/sensors} at a configurable interval (default 15 s).
+  \item Polls \texttt{/\allowbreak{}api/\allowbreak{}sensors} at a configurable interval (default 15 s).
   \item Persists the latest reading and history in \texttt{localStorage} for offline resilience.
   \item Evaluates alerts on every new data point using the \texttt{evaluateAlerts()} function.
   \item Exposes telemetry data, history array, alert list, device status, and settings to all child components via the \texttt{useTelemetry()} hook.
 \end{itemize}
 
-The ML inference layer runs separately in the \textbf{\texttt{useFloodPrediction}} hook, which loads the TensorFlow.js model from \texttt{/public/tfjs\_model/}, engineers the 11 input features from the history array, and calls \texttt{predictFloodRisk()} to obtain a 4-hour water level forecast.
+The ML inference layer runs separately in the \textbf{\texttt{useFloodPrediction}} hook, which loads the TensorFlow.js model from \texttt{/\allowbreak{}public/\allowbreak{}tfjs\_\allowbreak{}model/\allowbreak{}}, engineers the 11 input features from the history array, and calls \texttt{predictFloodRisk()} to obtain a 4-hour water level forecast.
 
 \section{Data Flow}
 
@@ -113,8 +113,8 @@ The complete data flow from sensor reading to dashboard visualisation is:
 \begin{enumerate}[leftmargin=1.5em]
   \item ESP32 reads sensor values and HTTP-POSTs them to ThingSpeak (every 15 s).
   \item ThingSpeak stores the reading in its channel database.
-  \item The Next.js server's \texttt{TelemetryProvider} polls \texttt{/api/sensors} (every 15 s).
-  \item \texttt{/api/sensors} calls \texttt{getLatestReading()} in \texttt{lib/thingspeak.ts}, which fetches \\ \texttt{https://api.thingspeak.com/channels/\{id\}/feeds/last.json} and parses the five field values into a typed \texttt{TelemetryData} object.
+  \item The Next.js server's \texttt{TelemetryProvider} polls \texttt{/\allowbreak{}api/\allowbreak{}sensors} (every 15 s).
+  \item \texttt{/\allowbreak{}api/\allowbreak{}sensors} calls \texttt{getLatestReading()} in \texttt{lib/\allowbreak{}thingspeak.\allowbreak{}ts}, which fetches \\ \texttt{https:/\allowbreak{}/\allowbreak{}api.\allowbreak{}thingspeak.\allowbreak{}com/\allowbreak{}channels/\allowbreak{}\{id\}/feeds/last.json} and parses the five field values into a typed \texttt{TelemetryData} object.
   \item The result is cached for 14 s and returned as JSON to the frontend.
   \item The TelemetryProvider stores the new reading in state and history, evaluates alerts, and persists to \texttt{localStorage}.
   \item All dashboard components subscribed to \texttt{useTelemetry()} re-render with fresh data.
@@ -129,6 +129,6 @@ FloodEye is deployed on Vercel using its Git-integrated continuous deployment pi
 \begin{itemize}[leftmargin=1.5em]
   \item \textbf{Serverless Edge Functions:} Next.js Route Handlers are deployed as Vercel serverless functions, scaling automatically to handle traffic spikes.
   \item \textbf{CDN Caching:} ISR cache headers ensure that the ThingSpeak API is not hammered during high-traffic periods; cached responses are served from Vercel's global CDN edge network.
-  \item \textbf{Environment Variables:} ThingSpeak credentials (\texttt{THINGSPEAK\_CHANNEL\_ID}, \texttt{THINGSPEAK\_READ\_API\_KEY}) and the MapTiler key (\texttt{NEXT\_PUBLIC\_MAPTILER\_KEY}) are injected as Vercel environment variables, never exposed in the repository.
+  \item \textbf{Environment Variables:} ThingSpeak credentials (\texttt{THINGSPEAK\_\allowbreak{}CHANNEL\_\allowbreak{}ID}, \texttt{THINGSPEAK\_\allowbreak{}READ\_\allowbreak{}API\_\allowbreak{}KEY}) and the MapTiler key (\texttt{NEXT\_\allowbreak{}PUBLIC\_\allowbreak{}MAPTILER\_\allowbreak{}KEY}) are injected as Vercel environment variables, never exposed in the repository.
   \item \textbf{PWA Service Worker:} The \texttt{next-pwa} package generates a Workbox service worker that caches static assets for offline access.
 \end{itemize}

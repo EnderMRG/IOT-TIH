@@ -31,7 +31,7 @@ components/
     TelemetryProvider.tsx  -- Central data/state provider
 \end{lstlisting}
 
-\section{ThingSpeak Client (\texttt{lib/thingspeak.ts})}
+\section{ThingSpeak Client (\texttt{lib/\allowbreak{}thingspeak.\allowbreak{}ts})}
 
 The ThingSpeak client is the core of the backend data layer. It encapsulates all communication with the ThingSpeak REST API and implements a sophisticated caching strategy to minimise external API calls.
 
@@ -54,7 +54,7 @@ function feedToTelemetry(feed: ThingSpeakFeed): TelemetryData {
 
 \subsection{Caching and Request Coalescing}
 
-The cache is implemented using a global singleton pattern (\texttt{globalThis.\_\_thingspeakCache}) to persist across serverless function invocations within the same Node.js instance:
+The cache is implemented using a global singleton pattern (\texttt{globalThis.\allowbreak{}\_\allowbreak{}\_\allowbreak{}thingspeakCache}) to persist across serverless function invocations within the same Node.js instance:
 
 \begin{itemize}[leftmargin=1.5em]
   \item \textbf{Latest cache TTL:} 14,000 ms (14 s), just under the 15-second ESP32 upload interval.
@@ -65,15 +65,15 @@ The cache is implemented using a global singleton pattern (\texttt{globalThis.\_
 
 \subsection{Device Online Detection}
 
-The \texttt{deriveDeviceStatus()} function checks whether the ESP32 is online by comparing the ThingSpeak \texttt{created\_at} timestamp against the current time. If the last upload was more than 60 seconds ago, \texttt{esp32Online} is set to \texttt{false}.
+The \texttt{deriveDeviceStatus()} function checks whether the ESP32 is online by comparing the ThingSpeak \texttt{created\_\allowbreak{}at} timestamp against the current time. If the last upload was more than 60 seconds ago, \texttt{esp32Online} is set to \texttt{false}.
 
 \section{API Route Handlers}
 
-\subsection{\texttt{GET /api/sensors}}
+\subsection{\texttt{GET /\allowbreak{}api/\allowbreak{}sensors}}
 
-Returns the single latest sensor reading as a \texttt{\{data, deviceStatus\}} JSON object. Uses a 15-second ISR revalidation window (\texttt{export const revalidate = 15}).
+Returns the single latest sensor reading as a \texttt{\{data,\allowbreak{} deviceStatus\}} JSON object. Uses a 15-second ISR revalidation window (\texttt{export const revalidate = 15}).
 
-\subsection{\texttt{GET /api/history?range=\{range\}}}
+\subsection{\texttt{GET /\allowbreak{}api/\allowbreak{}history?range=\{range\}}}
 
 Returns historical sensor readings mapped from ThingSpeak feeds. The \texttt{rangeToQuery()} function maps time range strings to ThingSpeak query parameters:
 
@@ -87,7 +87,7 @@ case "30d": return { start: ..., end: ... };
 
 For ranges $>$ 24h, explicit date ranges are used to avoid the 8000-entry cap limiting the effective window to ~33 hours.
 
-\subsection{\texttt{GET /api/analytics?range=\{range\}}}
+\subsection{\texttt{GET /\allowbreak{}api/\allowbreak{}analytics?range=\{range\}}}
 
 Fetches history feeds and computes per-sensor statistics. The \texttt{computeStats()} function calculates:
 \begin{itemize}[leftmargin=1.5em]
@@ -95,17 +95,17 @@ Fetches history feeds and computes per-sensor statistics. The \texttt{computeSta
   \item \textbf{trend}: Compares the average of the last 10\% of readings against the first 10\% to classify as ``up'', ``down'', or ``stable'' (threshold: $\pm 0.5$ units).
 \end{itemize}
 
-Returns: \texttt{\{range, count, analytics: \{temperature, humidity, pressure, altitude, distance\}\}}.
+Returns: \texttt{\{range,\allowbreak{} count,\allowbreak{} analytics: \{temperature,\allowbreak{} humidity,\allowbreak{} pressure,\allowbreak{} altitude,\allowbreak{} distance\}\}}.
 
-\subsection{\texttt{GET /api/environment-score}}
+\subsection{\texttt{GET /\allowbreak{}api/\allowbreak{}environment-score}}
 
-Fetches the latest reading and computes the Environmental Comfort Score from temperature and humidity using a weighted formula. Returns \texttt{\{score, status\}}.
+Fetches the latest reading and computes the Environmental Comfort Score from temperature and humidity using a weighted formula. Returns \texttt{\{score,\allowbreak{} status\}}.
 
-\subsection{\texttt{POST /api/flood-predict}}
+\subsection{\texttt{POST /\allowbreak{}api/\allowbreak{}flood-predict}}
 
-A structural placeholder for future server-side TensorFlow.js Node inference. In the current implementation it validates the request body (must contain a \texttt{history} array of at least 48 entries) and returns HTTP 501 (Not Implemented) with a message directing callers to use the client-side \texttt{lib/flood-model.ts} inference path.
+A structural placeholder for future server-side TensorFlow.js Node inference. In the current implementation it validates the request body (must contain a \texttt{history} array of at least 48 entries) and returns HTTP 501 (Not Implemented) with a message directing callers to use the client-side \texttt{lib/\allowbreak{}flood-model.\allowbreak{}ts} inference path.
 
-\section{TelemetryProvider (\texttt{components/providers/TelemetryProvider.tsx})}
+\section{TelemetryProvider (\texttt{components/\allowbreak{}providers/\allowbreak{}TelemetryProvider.\allowbreak{}tsx})}
 
 The TelemetryProvider is the most complex component in the codebase at 566 lines. It serves as the central state management layer for the entire dashboard.
 
@@ -179,13 +179,13 @@ Four localStorage keys provide offline resilience:
   \item \texttt{ecosense:lastSeenAt} — ISO timestamp of last live contact.
 \end{itemize}
 
-On mount, if \texttt{/api/sensors} returns null (offline), the provider hydrates from localStorage so the dashboard has data to show immediately.
+On mount, if \texttt{/\allowbreak{}api/\allowbreak{}sensors} returns null (offline), the provider hydrates from localStorage so the dashboard has data to show immediately.
 
 \section{Request–Response Lifecycle}
 
 \begin{enumerate}[leftmargin=1.5em]
-  \item Browser mounts the dashboard; \texttt{TelemetryProvider} calls \texttt{/api/sensors}.
-  \item Next.js server handler calls \texttt{getLatestReading()} in \texttt{lib/thingspeak.ts}.
+  \item Browser mounts the dashboard; \texttt{TelemetryProvider} calls \texttt{/\allowbreak{}api/\allowbreak{}sensors}.
+  \item Next.js server handler calls \texttt{getLatestReading()} in \texttt{lib/\allowbreak{}thingspeak.\allowbreak{}ts}.
   \item Cache is checked: if fresh (age $<$ 14s), cached result is returned immediately.
   \item If stale or empty: ThingSpeak REST endpoint is fetched; result is parsed, stored in cache, and returned.
   \item Response travels back to the TelemetryProvider as a typed \texttt{TelemetryData} object.

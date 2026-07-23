@@ -19,7 +19,7 @@ FloodEye successfully achieved all of its primary objectives as defined at the o
 \section{Technical Contributions}
 
 \begin{itemize}[leftmargin=1.5em]
-  \item \textbf{Keras 3 to TFJS compatibility solution:} The \texttt{patch\_model.js} script and manual weight-assignment loading strategy solve a non-trivial engineering problem for any team attempting to deploy a Keras 3 model in TensorFlow.js.
+  \item \textbf{Keras 3 to TFJS compatibility solution:} The \texttt{patch\_\allowbreak{}model.\allowbreak{}js} script and manual weight-assignment loading strategy solve a non-trivial engineering problem for any team attempting to deploy a Keras 3 model in TensorFlow.js.
   \item \textbf{TypeScript AttentionLayer implementation:} A faithful reimplementation of the Python AttentionLayer in TypeScript using the TensorFlow.js tensor API, enabling custom Keras layer deployment in the browser.
   \item \textbf{Request coalescing + stale-while-revalidate caching:} A robust server-side caching strategy that prevents ThingSpeak API abuse under concurrent load while maintaining data freshness.
   \item \textbf{Sample data padding strategy:} Enabling immediate ML inference on new deployments without requiring 48 hours of live data accumulation.

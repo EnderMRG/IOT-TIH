@@ -5,7 +5,7 @@
 
 \section{Navigation Architecture}
 
-FloodEye uses Next.js App Router's file-system-based routing. The application has two primary zones: the public Landing Zone and the authenticated Dashboard Zone. The dashboard zone uses a shared layout (\texttt{app/dashboard/layout.tsx}) that renders the sidebar navigation on every dashboard page.
+FloodEye uses Next.js App Router's file-system-based routing. The application has two primary zones: the public Landing Zone and the authenticated Dashboard Zone. The dashboard zone uses a shared layout (\texttt{app/\allowbreak{}dashboard/\allowbreak{}layout.\allowbreak{}tsx}) that renders the sidebar navigation on every dashboard page.
 
 \section{Navigation Flow Diagram}
 
@@ -16,23 +16,23 @@ Figure~\ref{fig:nav_flow} illustrates the complete navigation flow of the applic
 \resizebox{\linewidth}{!}{%
 \begin{tikzpicture}[node distance=0.7cm, every node/.style={font=\footnotesize}]
   % Landing
-  \node[startend, text width=2.8cm] (root) {Root \texttt{/}\\Landing Page};
+  \node[startend, text width=2.8cm] (root) {Root \texttt{/\allowbreak{}}\\Landing Page};
 
   % Landing sub-pages
-  \node[process, text width=2.5cm, right=2.5cm of root, yshift=1.8cm] (about) {About Page\\(\texttt{/about})};
-  \node[process, text width=2.5cm, right=2.5cm of root, yshift=0.0cm] (tech) {Technologies\\(\texttt{/technologies})};
-  \node[process, text width=2.5cm, right=2.5cm of root, yshift=-1.8cm] (gallery) {Gallery\\(\texttt{/gallary})};
+  \node[process, text width=2.5cm, right=2.5cm of root, yshift=1.8cm] (about) {About Page\\(\texttt{/\allowbreak{}about})};
+  \node[process, text width=2.5cm, right=2.5cm of root, yshift=0.0cm] (tech) {Technologies\\(\texttt{/\allowbreak{}technologies})};
+  \node[process, text width=2.5cm, right=2.5cm of root, yshift=-1.8cm] (gallery) {Gallery\\(\texttt{/\allowbreak{}gallary})};
 
   % Dashboard entry
-  \node[startend, text width=3cm, right=5.5cm of root] (dash) {Dashboard\\(\texttt{/dashboard})};
+  \node[startend, text width=3cm, right=5.5cm of root] (dash) {Dashboard\\(\texttt{/\allowbreak{}dashboard})};
 
   % Dashboard pages
-  \node[process, text width=2.5cm, right=2.5cm of dash, yshift=3.5cm] (analytics) {Analytics\\(\texttt{/analytics})};
-  \node[process, text width=2.5cm, right=2.5cm of dash, yshift=2.1cm] (history) {History\\(\texttt{/history})};
-  \node[process, text width=2.5cm, right=2.5cm of dash, yshift=0.7cm] (predict) {Predictions\\(\texttt{/predictions})};
-  \node[process, text width=2.5cm, right=2.5cm of dash, yshift=-0.7cm] (alerts) {Alerts\\(\texttt{/alerts})};
-  \node[process, text width=2.5cm, right=2.5cm of dash, yshift=-2.1cm] (devices) {Devices\\(\texttt{/devices})};
-  \node[process, text width=2.5cm, right=2.5cm of dash, yshift=-3.5cm] (settings) {Settings\\(\texttt{/settings})};
+  \node[process, text width=2.5cm, right=2.5cm of dash, yshift=3.5cm] (analytics) {Analytics\\(\texttt{/\allowbreak{}analytics})};
+  \node[process, text width=2.5cm, right=2.5cm of dash, yshift=2.1cm] (history) {History\\(\texttt{/\allowbreak{}history})};
+  \node[process, text width=2.5cm, right=2.5cm of dash, yshift=0.7cm] (predict) {Predictions\\(\texttt{/\allowbreak{}predictions})};
+  \node[process, text width=2.5cm, right=2.5cm of dash, yshift=-0.7cm] (alerts) {Alerts\\(\texttt{/\allowbreak{}alerts})};
+  \node[process, text width=2.5cm, right=2.5cm of dash, yshift=-2.1cm] (devices) {Devices\\(\texttt{/\allowbreak{}devices})};
+  \node[process, text width=2.5cm, right=2.5cm of dash, yshift=-3.5cm] (settings) {Settings\\(\texttt{/\allowbreak{}settings})};
 
   % Arrows from root
   \draw[arrowg] (root) -- (about);
@@ -63,20 +63,20 @@ Figure~\ref{fig:nav_flow} illustrates the complete navigation flow of the applic
 \rowcolor{FloodLight}
 \textbf{Route} & \textbf{Page} & \textbf{Purpose} \\
 \hline
-\texttt{/} & Landing Page & Scrollytelling intro with GSAP animations, feature showcase, team section \\
+\texttt{/\allowbreak{}} & Landing Page & Scrollytelling intro with GSAP animations, feature showcase, team section \\
 \hline
-\texttt{/about} & About & Project background, team details, internship context \\
+\texttt{/\allowbreak{}about} & About & Project background, team details, internship context \\
 \hline
-\texttt{/technologies} & Technologies & Technology stack showcase with animated cards \\
+\texttt{/\allowbreak{}technologies} & Technologies & Technology stack showcase with animated cards \\
 \hline
-\texttt{/gallary} & Gallery & Project photo gallery and hardware demonstration images \\
+\texttt{/\allowbreak{}gallary} & Gallery & Project photo gallery and hardware demonstration images \\
 \hline
 \end{tabularx}
 \end{table}
 
 \section{Dashboard Zone Layout}
 
-The dashboard zone uses a shared \texttt{layout.tsx} that wraps all \texttt{/dashboard/*} pages. This layout renders:
+The dashboard zone uses a shared \texttt{layout.\allowbreak{}tsx} that wraps all \texttt{/\allowbreak{}dashboard/\allowbreak{}*} pages. This layout renders:
 
 \begin{itemize}[leftmargin=1.5em]
   \item \textbf{Sidebar Navigation:} A fixed left sidebar containing:
@@ -101,33 +101,33 @@ The dashboard zone uses a shared \texttt{layout.tsx} that wraps all \texttt{/das
 \rowcolor{FloodLight}
 \textbf{Route} & \textbf{Features} \\
 \hline
-\texttt{/dashboard} & Live sensor cards, water level chart, comfort score, flood prediction card, alert panel, device map \\
+\texttt{/\allowbreak{}dashboard} & Live sensor cards, water level chart, comfort score, flood prediction card, alert panel, device map \\
 \hline
-\texttt{/dashboard/analytics} & Five individual time-series charts, time window selector (1h–30d) \\
+\texttt{/\allowbreak{}dashboard/\allowbreak{}analytics} & Five individual time-series charts, time window selector (1h–30d) \\
 \hline
-\texttt{/dashboard/history} & Statistical summary cards, reading table, CSV export, PDF export \\
+\texttt{/\allowbreak{}dashboard/\allowbreak{}history} & Statistical summary cards, reading table, CSV export, PDF export \\
 \hline
-\texttt{/dashboard/predictions} & ML prediction panel, risk gauge, feature contributions, admin diagnostics \\
+\texttt{/\allowbreak{}dashboard/\allowbreak{}predictions} & ML prediction panel, risk gauge, feature contributions, admin diagnostics \\
 \hline
-\texttt{/dashboard/alerts} & Full alert log, severity badges, dismiss and clear functionality \\
+\texttt{/\allowbreak{}dashboard/\allowbreak{}alerts} & Full alert log, severity badges, dismiss and clear functionality \\
 \hline
-\texttt{/dashboard/devices} & Device registration and status (single-channel in current implementation) \\
+\texttt{/\allowbreak{}dashboard/\allowbreak{}devices} & Device registration and status (single-channel in current implementation) \\
 \hline
-\texttt{/dashboard/settings} & Threshold configuration, refresh interval, simulation toggle (admin only) \\
+\texttt{/\allowbreak{}dashboard/\allowbreak{}settings} & Threshold configuration, refresh interval, simulation toggle (admin only) \\
 \hline
 \end{tabularx}
 \end{table}
 
 \section{Authentication Routes}
 
-The \texttt{app/(auth)/} route group contains structural placeholder pages for a future authentication system. In the current implementation, user role is stored in \texttt{localStorage} (key: \texttt{floodeye\_session}) and toggled through the Settings page, rather than through a proper login/password flow. This is noted as a known limitation and future enhancement.
+The \texttt{app/\allowbreak{}(auth)/\allowbreak{}} route group contains structural placeholder pages for a future authentication system. In the current implementation, user role is stored in \texttt{localStorage} (key: \texttt{floodeye\_\allowbreak{}session}) and toggled through the Settings page, rather than through a proper login/password flow. This is noted as a known limitation and future enhancement.
 
 \section{PWA Navigation}
 
 When FloodEye is installed as a PWA:
 \begin{itemize}[leftmargin=1.5em]
   \item The app opens in a standalone browser window (without browser chrome) displaying the dashboard home.
-  \item The service worker (\texttt{public/sw.js}) caches static assets and serves the last known dashboard state offline.
+  \item The service worker (\texttt{public/\allowbreak{}sw.\allowbreak{}js}) caches static assets and serves the last known dashboard state offline.
   \item Native back/forward navigation works as in a native app.
   \item The \texttt{PWAInstallButton} in the top header bar triggers the native install prompt when the PWA is not yet installed.
 \end{itemize}

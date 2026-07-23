@@ -1,4 +1,4 @@
-﻿%=============================================================================
+%=============================================================================
 % Chapter 16: Results and Discussion
 %=============================================================================
 \chapter{Results and Discussion}
@@ -7,7 +7,7 @@
 
 The following features were implemented and are fully functional in the deployed FloodEye application:
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{Implementation Status of All Features}
 \begin{tabularx}{\linewidth}{|l|l|X|}
@@ -39,7 +39,7 @@ Vercel deployment & Complete & CI/CD pipeline; edge CDN \\
 \hline
 Authentication (database) & Planned & Structural routes exist; not yet active \\
 Neon PostgreSQL & Planned & Identified in project docs; not implemented \\
-Server-side ML inference & Planned & \texttt{/api/flood-predict} placeholder exists \\
+Server-side ML inference & Planned & \texttt{/\allowbreak{}api/\allowbreak{}flood-predict} placeholder exists \\
 \hline
 \end{tabularx}
 \end{table}
@@ -83,7 +83,7 @@ The attention mechanism provides qualitative interpretability: the heatmap in th
 \section{User Experience Observations}
 
 \begin{itemize}[leftmargin=1.5em]
-  \item The glassmorphism design (\texttt{bg-white/40 backdrop-blur-xl}) provides a visually distinctive and modern interface well-suited for an emergency monitoring context.
+  \item The glassmorphism design (\texttt{bg-white/\allowbreak{}40 backdrop-blur-xl}) provides a visually distinctive and modern interface well-suited for an emergency monitoring context.
   \item Trend arrows and delta values on sensor cards give users an immediate at-a-glance understanding of sensor behaviour without requiring chart reading.
   \item The FloodAlertBanner (shown automatically when risk is High or Critical) ensures users cannot miss a dangerous prediction.
   \item The Lenis + GSAP landing page creates a professional first impression appropriate for a technology demonstration.

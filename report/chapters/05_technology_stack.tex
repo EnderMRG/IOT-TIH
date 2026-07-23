@@ -17,12 +17,12 @@ This chapter documents every technology used in FloodEye, explaining the purpose
 \textbf{Why chosen:} React 19 introduces concurrent features and improved suspense semantics. The Context API (\texttt{TelemetryProvider}) serves as lightweight global state management without requiring Redux or Zustand.
 
 \subsection{TypeScript 5}
-\textbf{Purpose:} Static typing for all source files (\texttt{.ts}, \texttt{.tsx}).\\
+\textbf{Purpose:} Static typing for all source files (\texttt{.\allowbreak{}ts}, \texttt{.\allowbreak{}tsx}).\\
 \textbf{Why chosen:} TypeScript eliminates entire categories of runtime errors in the type-rich data pipeline (ThingSpeak field parsing, TelemetryData objects, alert severity enums). The \texttt{FloodPredictionResult}, \texttt{TelemetryData}, \texttt{DashboardSettings}, and \texttt{Alert} interfaces are all strongly typed.
 
 \subsection{Tailwind CSS v4}
 \textbf{Purpose:} Utility-first CSS framework for all component styling.\\
-\textbf{Why chosen:} Tailwind v4's JIT (just-in-time) compiler generates minimal CSS bundles. The glassmorphism design language (\texttt{bg-white/40 backdrop-blur-xl border-white/60}) is cleanly expressed with utility classes without custom CSS files.
+\textbf{Why chosen:} Tailwind v4's JIT (just-in-time) compiler generates minimal CSS bundles. The glassmorphism design language (\texttt{bg-white/\allowbreak{}40 backdrop-blur-xl border-white/\allowbreak{}60}) is cleanly expressed with utility classes without custom CSS files.
 
 \subsection{shadcn/ui}
 \textbf{Purpose:} Accessible, unstyled component primitives for buttons, dialogs, and form elements.\\
@@ -38,7 +38,7 @@ This chapter documents every technology used in FloodEye, explaining the purpose
 
 \subsection{Framer Motion 12}
 \textbf{Purpose:} Animation library for UI micro-animations, card hover effects, and page transitions.\\
-\textbf{Why chosen:} Framer Motion provides a declarative API (\texttt{motion.div}, \texttt{AnimatePresence}) that integrates directly with React's component tree.
+\textbf{Why chosen:} Framer Motion provides a declarative API (\texttt{motion.\allowbreak{}div}, \texttt{AnimatePresence}) that integrates directly with React's component tree.
 
 \subsection{GSAP 3 + @gsap/react}
 \textbf{Purpose:} ScrollTrigger-based animations on the landing page.\\
@@ -59,24 +59,24 @@ This chapter documents every technology used in FloodEye, explaining the purpose
 
 \subsection{TensorFlow 2 / Keras (Training)}
 \textbf{Purpose:} Python deep learning framework used to define, train, and export the flood prediction model.\\
-\textbf{Role:} The model is defined in \texttt{Model/nb\_code.py} (extracted from \texttt{FloodMonitoring.ipynb}). Training runs in Google Colab with GPU acceleration.
+\textbf{Role:} The model is defined in \texttt{Model/\allowbreak{}nb\_\allowbreak{}code.\allowbreak{}py} (extracted from \texttt{FloodMonitoring.\allowbreak{}ipynb}). Training runs in Google Colab with GPU acceleration.
 
 \subsection{TensorFlow.js 4.22 (Inference)}
 \textbf{Purpose:} JavaScript port of TensorFlow; runs the trained model in the browser using WebGL acceleration.\\
 \textbf{Why chosen:} Client-side inference eliminates the need for a dedicated ML serving infrastructure. The model runs on the user's device with no server cost for inference.\\
-\textbf{Integration:} The custom \texttt{AttentionLayer} is reimplemented in TypeScript and registered with \texttt{tf.serialization.registerClass()} before model loading.
+\textbf{Integration:} The custom \texttt{AttentionLayer} is reimplemented in TypeScript and registered with \texttt{tf.\allowbreak{}serialization.\allowbreak{}registerClass()} before model loading.
 
 \subsection{scikit-learn StandardScaler}
 \textbf{Purpose:} Feature normalisation during training.\\
-\textbf{Role:} Scaler parameters (mean and scale vectors) are exported to \texttt{scalers.json} and loaded by the browser at inference time to apply the same normalisation.
+\textbf{Role:} Scaler parameters (mean and scale vectors) are exported to \texttt{scalers.\allowbreak{}json} and loaded by the browser at inference time to apply the same normalisation.
 
 \subsection{TensorFlow.js Converter}
-\textbf{Purpose:} Converts the trained Keras \texttt{.h5} model to TensorFlow.js LayersModel format (\texttt{model.json} + \texttt{group1-shard1of1.bin}).
+\textbf{Purpose:} Converts the trained Keras \texttt{.\allowbreak{}h5} model to TensorFlow.js LayersModel format (\texttt{model.\allowbreak{}json} + \texttt{group1-shard1of1.\allowbreak{}bin}).
 
 \section{Backend Technologies}
 
 \subsection{Next.js Route Handlers}
-\textbf{Purpose:} Serverless API endpoints at \texttt{app/api/*/route.ts}.
+\textbf{Purpose:} Serverless API endpoints at \texttt{app/\allowbreak{}api/\allowbreak{}*/\allowbreak{}route.\allowbreak{}ts}.
 
 \subsection{ThingSpeak REST API}
 \textbf{Purpose:} IoT cloud data platform; stores and serves field-mapped sensor readings.
@@ -85,7 +85,7 @@ This chapter documents every technology used in FloodEye, explaining the purpose
 
 \subsection{ESP32 DevKit}
 \textbf{Purpose:} Main microcontroller; reads sensors and uploads data to ThingSpeak via Wi-Fi.\\
-\textbf{Framework:} Arduino (C++ sketch: \texttt{IOTcode/IOTcode.ino}).
+\textbf{Framework:} Arduino (C++ sketch: \texttt{IOTcode/\allowbreak{}IOTcode.\allowbreak{}ino}).
 
 \subsection{Adafruit BMP085 Library}
 \textbf{Purpose:} Arduino driver for the BMP180 pressure and temperature sensor.

@@ -8,12 +8,12 @@
 FloodEye employs a distributed data storage strategy consisting of three complementary layers rather than a single monolithic database:
 
 \begin{enumerate}[leftmargin=1.5em]
-  \item \textbf{ThingSpeak Cloud Storage:} The primary time-series store for all sensor readings. ThingSpeak acts as the IoT backend database, storing every field-mapped reading uploaded by the ESP32 with a UTC timestamp and an auto-incrementing \texttt{entry\_id}.
+  \item \textbf{ThingSpeak Cloud Storage:} The primary time-series store for all sensor readings. ThingSpeak acts as the IoT backend database, storing every field-mapped reading uploaded by the ESP32 with a UTC timestamp and an auto-incrementing \texttt{entry\_\allowbreak{}id}.
   \item \textbf{Browser localStorage:} A client-side persistence layer that stores the last known sensor reading, history array, device status, and last-seen timestamp. This enables offline resilience when the ESP32 or ThingSpeak is unreachable.
-  \item \textbf{In-Memory Server Cache:} The Next.js server maintains an in-process cache (using \texttt{globalThis.\_\_thingspeakCache}) that prevents repeated API calls to ThingSpeak within the cache TTL window.
+  \item \textbf{In-Memory Server Cache:} The Next.js server maintains an in-process cache (using \texttt{globalThis.\allowbreak{}\_\allowbreak{}\_\allowbreak{}thingspeakCache}) that prevents repeated API calls to ThingSpeak within the cache TTL window.
 \end{enumerate}
 
-\textit{Note: The project documentation (\texttt{TIHDash.md}) references a Neon PostgreSQL database for storing users, devices, alert history, and settings. In the current implementation, this database layer is not active. All session data, settings, and alerts are managed in-memory/localStorage only. A Neon PostgreSQL integration is identified as a future enhancement.}
+\textit{Note: The project documentation (\texttt{TIHDash.\allowbreak{}md}) references a Neon PostgreSQL database for storing users, devices, alert history, and settings. In the current implementation, this database layer is not active. All session data, settings, and alerts are managed in-memory/localStorage only. A Neon PostgreSQL integration is identified as a future enhancement.}
 
 \section{ThingSpeak Data Model}
 
@@ -34,8 +34,8 @@ ThingSpeak organises data into channels, each containing up to eight fields. Flo
 \texttt{field3} & pressure & FLOAT & BMP180 atmospheric pressure in hPa \\
 \texttt{field4} & altitude & FLOAT & BMP180 derived altitude in metres \\
 \texttt{field5} & distance & FLOAT & HC-SR04 distance to water surface in cm \\
-\texttt{created\_at} & timestamp & DATETIME & UTC timestamp of the upload \\
-\texttt{entry\_id} & id & INTEGER & Auto-increment entry identifier \\
+\texttt{created\_\allowbreak{}at} & timestamp & DATETIME & UTC timestamp of the upload \\
+\texttt{entry\_\allowbreak{}id} & id & INTEGER & Auto-increment entry identifier \\
 \hline
 \end{tabularx}
 \end{table}
@@ -45,11 +45,11 @@ ThingSpeak organises data into channels, each containing up to eight fields. Flo
 Two primary query patterns are used:
 
 \begin{enumerate}[leftmargin=1.5em]
-  \item \textbf{Latest Entry:} \texttt{GET /channels/\{id\}/feeds/last.json?api\_key=\{key\}} --- Returns a single JSON object (the most recent feed entry). Used by \texttt{/api/sensors}.
+  \item \textbf{Latest Entry:} \texttt{GET /\allowbreak{}channels/\allowbreak{}\{id\}/feeds/last.json?api\_key=\{key\}} --- Returns a single JSON object (the most recent feed entry). Used by \texttt{/\allowbreak{}api/\allowbreak{}sensors}.
   \item \textbf{Historical Range:}
     \begin{itemize}
-      \item By count: \texttt{GET /channels/\{id\}/feeds.json?results=N\&api\_key=\{key\}} --- Returns the last N entries (max 8000 per call). Used for ranges $\leq$ 24h.
-      \item By date range: \texttt{GET /channels/\{id\}/feeds.json?start=\{dt\}\&end=\{dt\}\&api\_key=\{key\}} --- Returns all entries in the specified UTC date window. Used for 7d and 30d ranges.
+      \item By count: \texttt{GET /\allowbreak{}channels/\allowbreak{}\{id\}/feeds.json?results=N\&api\_key=\{key\}} --- Returns the last N entries (max 8000 per call). Used for ranges $\leq$ 24h.
+      \item By date range: \texttt{GET /\allowbreak{}channels/\allowbreak{}\{id\}/feeds.json?start=\{dt\}\&end=\{dt\}\&api\_key=\{key\}} --- Returns all entries in the specified UTC date window. Used for 7d and 30d ranges.
     \end{itemize}
 \end{enumerate}
 
@@ -119,15 +119,15 @@ export interface DashboardSettings {
 \texttt{ecosense:lastHistory} & TelemetryData[] (JSON) & Last known history array \\
 \texttt{ecosense:lastStatus} & DeviceStatus (JSON) & Last known device status \\
 \texttt{ecosense:lastSeenAt} & string (ISO) & Timestamp of last live contact \\
-\texttt{floodeye\_session} & "admin" | "user" & Current user role \\
-\texttt{floodeye\_user\_name} & string & Display name \\
+\texttt{floodeye\_\allowbreak{}session} & "admin" | "user" & Current user role \\
+\texttt{floodeye\_\allowbreak{}user\_\allowbreak{}name} & string & Display name \\
 \hline
 \end{tabularx}
 \end{table}
 
 \section{ML Model Data Files}
 
-The machine learning pipeline uses several JSON data files stored in \texttt{/public/} for browser access:
+The machine learning pipeline uses several JSON data files stored in \texttt{/\allowbreak{}public/\allowbreak{}} for browser access:
 
 \begin{table}[H]
 \centering
@@ -137,11 +137,11 @@ The machine learning pipeline uses several JSON data files stored in \texttt{/pu
 \rowcolor{FloodLight}
 \textbf{File} & \textbf{Contents} \\
 \hline
-\texttt{public/model\_config.json} & LOOKBACK (48), DANGER\_THRESHOLD (450 cm), feature list \\
-\texttt{public/model\_scalers.json} & StandardScaler means and scales for X (11 features) and Y (water level) \\
-\texttt{public/tfjs\_model/model.json} & TensorFlow.js LayersModel topology and weights manifest \\
-\texttt{public/tfjs\_model/group1-shard1of1.bin} & Float32 binary weights file (291 KB) \\
-\texttt{public/sample\_data.json} & 200-row sample of test-set data used to pad insufficient history for inference \\
+\texttt{public/\allowbreak{}model\_\allowbreak{}config.\allowbreak{}json} & LOOKBACK (48), DANGER\_THRESHOLD (450 cm), feature list \\
+\texttt{public/\allowbreak{}model\_\allowbreak{}scalers.\allowbreak{}json} & StandardScaler means and scales for X (11 features) and Y (water level) \\
+\texttt{public/\allowbreak{}tfjs\_\allowbreak{}model/\allowbreak{}model.\allowbreak{}json} & TensorFlow.js LayersModel topology and weights manifest \\
+\texttt{public/\allowbreak{}tfjs\_\allowbreak{}model/\allowbreak{}group1-shard1of1.\allowbreak{}bin} & Float32 binary weights file (291 KB) \\
+\texttt{public/\allowbreak{}sample\_\allowbreak{}data.\allowbreak{}json} & 200-row sample of test-set data used to pad insufficient history for inference \\
 \hline
 \end{tabularx}
 \end{table}

@@ -3,9 +3,9 @@
 %=============================================================================
 \chapter{Frontend Implementation}
 
-The FloodEye frontend is a Next.js 16 App Router application. All pages live under either the root \texttt{/} (landing) or the nested \texttt{/dashboard/} route group. This chapter describes each page in detail.
+The FloodEye frontend is a Next.js 16 App Router application. All pages live under either the root \texttt{/\allowbreak{}} (landing) or the nested \texttt{/\allowbreak{}dashboard/\allowbreak{}} route group. This chapter describes each page in detail.
 
-\section{Landing Page (\texttt{app/page.tsx})}
+\section{Landing Page (\texttt{app/\allowbreak{}page.\allowbreak{}tsx})}
 
 \subsection{Purpose}
 The landing page serves as the public-facing introduction to FloodEye. It is designed to be visually striking and informative, communicating the project's purpose to new visitors before they enter the monitoring dashboard.
@@ -14,7 +14,7 @@ The landing page serves as the public-facing introduction to FloodEye. It is des
 \begin{itemize}[leftmargin=1.5em]
   \item \textbf{LandingNav:} Fixed top navigation bar with logo, navigation links, and a ``Go to Dashboard'' call-to-action button. Includes blur-glass styling.
   \item \textbf{BackgroundSlideshow:} An auto-advancing slideshow of flood monitoring imagery rendered as a full-viewport background layer.
-  \item \textbf{ScrollytellingSections:} The primary content component. Uses GSAP ScrollTrigger to animate content sections as the user scrolls: Hero, Problem Statement, Features Showcase, Technology Stack, Team Profiles (with individual member photos from \texttt{/public/}), and a call-to-action.
+  \item \textbf{ScrollytellingSections:} The primary content component. Uses GSAP ScrollTrigger to animate content sections as the user scrolls: Hero, Problem Statement, Features Showcase, Technology Stack, Team Profiles (with individual member photos from \texttt{/\allowbreak{}public/\allowbreak{}}), and a call-to-action.
   \item \textbf{AssamNodeMap:} A landing-page specific map component showing the geographic coverage area of the monitoring network in Assam.
   \item \textbf{PWAInstallPrompt:} A floating prompt that appears when the browser's beforeinstallprompt event fires, inviting the user to install the PWA.
 \end{itemize}
@@ -27,7 +27,7 @@ The landing page serves as the public-facing introduction to FloodEye. It is des
   \item Team member profile cards with photos from the public directory.
 \end{itemize}
 
-\section{Dashboard Home (\texttt{app/dashboard/page.tsx})}
+\section{Dashboard Home (\texttt{app/\allowbreak{}dashboard/\allowbreak{}page.\allowbreak{}tsx})}
 
 \subsection{Purpose}
 The main dashboard provides a comprehensive real-time overview of all sensor readings, device status, live charts, alerts, and the flood risk prediction in a single scrollable view.
@@ -86,19 +86,19 @@ When the ESP32 is unreachable:
   \item A \textbf{NoDataState} component replaces the dashboard if no cached data exists at all.
 \end{itemize}
 
-\section{Analytics Page (\texttt{app/dashboard/analytics/page.tsx})}
+\section{Analytics Page (\texttt{app/\allowbreak{}dashboard/\allowbreak{}analytics/\allowbreak{}page.\allowbreak{}tsx})}
 
 \subsection{Purpose}
 Provides individual time-series charts for all five sensor channels, each rendered in its own card.
 
 \subsection{Components}
 \begin{itemize}[leftmargin=1.5em]
-  \item \textbf{TimeFilter:} A pill-tab selector for 1h, 6h, 24h, 7d, 30d windows. Selecting a window triggers a new \texttt{/api/history?range=\{window\}} request.
+  \item \textbf{TimeFilter:} A pill-tab selector for 1h, 6h, 24h, 7d, 30d windows. Selecting a window triggers a new \texttt{/\allowbreak{}api/\allowbreak{}history?range=\{window\}} request.
   \item \textbf{Five CustomLineChart cards:} Temperature (°C), Humidity (\%), Atmospheric Pressure (hPa), Altitude (m), Water Level (cm). The Water Level card uses a dark gradient background to visually distinguish it as the primary safety metric.
   \item The Pressure chart spans two columns (\texttt{lg:col-span-2}) as a wide chart for better readability.
 \end{itemize}
 
-\section{History Page (\texttt{app/dashboard/history/page.tsx})}
+\section{History Page (\texttt{app/\allowbreak{}dashboard/\allowbreak{}history/\allowbreak{}page.\allowbreak{}tsx})}
 
 \subsection{Purpose}
 Displays statistical summaries of sensor history and provides data export functionality.
@@ -109,12 +109,12 @@ Displays statistical summaries of sensor history and provides data export functi
   \item \textbf{Data table:} A scrollable table of the last 100 readings with columns: Time, Temperature, Humidity, Pressure, Altitude, Water Level.
   \item \textbf{Export buttons:}
     \begin{itemize}
-      \item \textbf{CSV Export:} Generates a Blob from the history array and downloads it as \texttt{floodeye\_logs\_\{date\}.csv}.
+      \item \textbf{CSV Export:} Generates a Blob from the history array and downloads it as \texttt{floodeye\_\allowbreak{}logs\_\allowbreak{}\{date\}.csv}.
       \item \textbf{PDF Export:} Uses jsPDF + jspdf-autotable to generate a formatted PDF with the FloodEye header and a data table.
     \end{itemize}
 \end{itemize}
 
-\section{Predictions Page (\texttt{app/dashboard/predictions/page.tsx})}
+\section{Predictions Page (\texttt{app/\allowbreak{}dashboard/\allowbreak{}predictions/\allowbreak{}page.\allowbreak{}tsx})}
 
 \subsection{Purpose}
 A dedicated full-page view of the ML flood forecasting results with admin diagnostic tools.
@@ -130,7 +130,7 @@ A dedicated full-page view of the ML flood forecasting results with admin diagno
     \end{itemize}
 \end{itemize}
 
-\section{Alerts Page (\texttt{app/dashboard/alerts/page.tsx})}
+\section{Alerts Page (\texttt{app/\allowbreak{}dashboard/\allowbreak{}alerts/\allowbreak{}page.\allowbreak{}tsx})}
 
 \subsection{Purpose}
 The full alert log with severity filtering and per-alert dismissal.
@@ -149,7 +149,7 @@ The full alert log with severity filtering and per-alert dismissal.
   \item HIGH\_WATER\_LEVEL, RAPID\_WATER\_RISE, OBJECT\_TOO\_CLOSE, SENSOR\_OFFLINE
 \end{itemize}
 
-\section{Settings Page (\texttt{app/dashboard/settings/page.tsx})}
+\section{Settings Page (\texttt{app/\allowbreak{}dashboard/\allowbreak{}settings/\allowbreak{}page.\allowbreak{}tsx})}
 
 \subsection{Purpose}
 Allows admin users to configure alert thresholds, refresh interval, and simulation mode.
@@ -164,7 +164,7 @@ The Settings page checks \texttt{userRole === "admin"} from the TelemetryProvide
   \item \textbf{Save:} Persists settings to the TelemetryProvider context (in-memory; not yet persisted to a database in the current implementation).
 \end{itemize}
 
-\section{Devices Page (\texttt{app/dashboard/devices/})}
+\section{Devices Page (\texttt{app/\allowbreak{}dashboard/\allowbreak{}devices/\allowbreak{}})}
 
 The Devices section provides device management views showing registered ESP32 nodes and their connection status. In the current implementation, this page displays the status of the single configured ThingSpeak channel.
 

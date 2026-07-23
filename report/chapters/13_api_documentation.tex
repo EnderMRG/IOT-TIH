@@ -3,20 +3,20 @@
 %=============================================================================
 \chapter{API Documentation}
 
-This chapter documents all implemented API endpoints in FloodEye. Each endpoint is a Next.js Route Handler deployed as a Vercel serverless function under \texttt{app/api/}.
+This chapter documents all implemented API endpoints in FloodEye. Each endpoint is a Next.js Route Handler deployed as a Vercel serverless function under \texttt{app/\allowbreak{}api/\allowbreak{}}.
 
 \section{Base URL}
 
 \begin{itemize}[leftmargin=1.5em]
-  \item \textbf{Development:} \texttt{http://localhost:3000}
-  \item \textbf{Production:} \texttt{https://\{project\}.vercel.app}
+  \item \textbf{Development:} \texttt{http:/\allowbreak{}/\allowbreak{}localhost:3000}
+  \item \textbf{Production:} \texttt{https:/\allowbreak{}/\allowbreak{}\{project\}.vercel.app}
 \end{itemize}
 
 \section{Common Response Headers}
 
 All endpoints return:
 \begin{itemize}[leftmargin=1.5em]
-  \item \texttt{Content-Type: application/json}
+  \item \texttt{Content-Type: application/\allowbreak{}json}
   \item ISR cache headers set by the \texttt{revalidate} export.
 \end{itemize}
 
@@ -124,8 +124,8 @@ GET /api/history?range=6h
 1h & Count-based & \texttt{results=240} \\
 6h & Count-based & \texttt{results=1440} \\
 24h & Count-based & \texttt{results=5760} \\
-7d & Date range & \texttt{start=...\&end=...} \\
-30d & Date range & \texttt{start=...\&end=...} \\
+7d & Date range & \texttt{start=.\allowbreak{}.\allowbreak{}.\allowbreak{}\&end=.\allowbreak{}.\allowbreak{}.\allowbreak{}} \\
+30d & Date range & \texttt{start=.\allowbreak{}.\allowbreak{}.\allowbreak{}\&end=.\allowbreak{}.\allowbreak{}.\allowbreak{}} \\
 \hline
 \end{tabular}
 \end{table}
@@ -139,7 +139,7 @@ Returns per-sensor descriptive statistics (average, min, max, trend) computed ov
 \texttt{export const revalidate = 60;}
 
 \subsection{Query Parameters}
-Same \texttt{range} parameter as \texttt{/api/history}. Default: \texttt{24h}.
+Same \texttt{range} parameter as \texttt{/\allowbreak{}api/\allowbreak{}history}. Default: \texttt{24h}.
 
 \subsection{Request}
 \begin{lstlisting}[language={},caption={GET /api/analytics request}]
@@ -192,7 +192,7 @@ Score ranges: 0--40 (Poor), 41--60 (Moderate), 61--80 (Good), 81--100 (Excellent
 \section{Endpoint: POST /api/flood-predict}
 
 \subsection{Purpose}
-Structural placeholder for future server-side TensorFlow.js Node.js inference. In the current implementation, actual inference runs client-side via \texttt{lib/flood-model.ts}.
+Structural placeholder for future server-side TensorFlow.js Node.js inference. In the current implementation, actual inference runs client-side via \texttt{lib/\allowbreak{}flood-model.\allowbreak{}ts}.
 
 \subsection{Request Body}
 \begin{lstlisting}[language={},caption={POST /api/flood-predict request body}]
@@ -221,7 +221,7 @@ Structural placeholder for future server-side TensorFlow.js Node.js inference. I
 \textbf{Status} & \textbf{Condition} \\
 \hline
 400 & Invalid payload (missing or non-array \texttt{history} field) \\
-400 & Insufficient data (\texttt{history.length < 48}) \\
+400 & Insufficient data (\texttt{history.\allowbreak{}length < 48}) \\
 501 & Server-side inference not yet implemented \\
 500 & Internal server error \\
 \hline
@@ -229,7 +229,7 @@ Structural placeholder for future server-side TensorFlow.js Node.js inference. I
 
 \section{API Authentication}
 
-The current implementation does not implement API-level authentication. Environment variables (\texttt{THINGSPEAK\_CHANNEL\_ID}, \texttt{THINGSPEAK\_READ\_API\_KEY}) are kept server-side only and are never exposed to the client. The ThingSpeak Read API Key provides read-only access to the channel and does not expose write credentials.
+The current implementation does not implement API-level authentication. Environment variables (\texttt{THINGSPEAK\_\allowbreak{}CHANNEL\_\allowbreak{}ID}, \texttt{THINGSPEAK\_\allowbreak{}READ\_\allowbreak{}API\_\allowbreak{}KEY}) are kept server-side only and are never exposed to the client. The ThingSpeak Read API Key provides read-only access to the channel and does not expose write credentials.
 
 \section{Environment Variables}
 
@@ -241,9 +241,9 @@ The current implementation does not implement API-level authentication. Environm
 \rowcolor{FloodLight}
 \textbf{Variable} & \textbf{Scope} & \textbf{Description} \\
 \hline
-\texttt{THINGSPEAK\_CHANNEL\_ID} & Server-only & ThingSpeak channel numeric ID \\
-\texttt{THINGSPEAK\_READ\_API\_KEY} & Server-only & ThingSpeak read-only API key \\
-\texttt{NEXT\_PUBLIC\_MAPTILER\_KEY} & Public (client) & MapTiler API key for map tile service \\
+\texttt{THINGSPEAK\_\allowbreak{}CHANNEL\_\allowbreak{}ID} & Server-only & ThingSpeak channel numeric ID \\
+\texttt{THINGSPEAK\_\allowbreak{}READ\_\allowbreak{}API\_\allowbreak{}KEY} & Server-only & ThingSpeak read-only API key \\
+\texttt{NEXT\_\allowbreak{}PUBLIC\_\allowbreak{}MAPTILER\_\allowbreak{}KEY} & Public (client) & MapTiler API key for map tile service \\
 \hline
 \end{tabularx}
 \end{table}

@@ -31,7 +31,7 @@ ThingSpeak Integration & Cloud IoT data platform; stores field-mapped sensor rea
 \hline
 TelemetryProvider & React Context providing live data, history, alerts, settings, and device status to all dashboard components \\
 \hline
-Sensor Data APIs & Next.js Route Handlers: \texttt{/api/sensors}, \texttt{/api/history}, \texttt{/api/analytics}, \texttt{/api/environment-score} \\
+Sensor Data APIs & Next.js Route Handlers: \texttt{/\allowbreak{}api/\allowbreak{}sensors}, \texttt{/\allowbreak{}api/\allowbreak{}history}, \texttt{/\allowbreak{}api/\allowbreak{}analytics}, \texttt{/\allowbreak{}api/\allowbreak{}environment-score} \\
 \hline
 Smart Alert Engine & Configurable threshold evaluation with cooldown and deduplication; native OS push notification support \\
 \hline
@@ -122,9 +122,9 @@ A typical user interaction with FloodEye follows this sequence:
   \item The user navigates to the FloodEye URL (e.g.\ on Vercel) or opens the installed PWA on their device.
   \item The immersive landing page loads with GSAP animations and a background slideshow of flood monitoring imagery.
   \item The user clicks ``Go to Dashboard'' or the direct dashboard link.
-  \item The dashboard fetches the latest sensor reading from \texttt{/api/sensors}. The TelemetryProvider begins polling at the configured refresh interval (default: 15 seconds).
+  \item The dashboard fetches the latest sensor reading from \texttt{/\allowbreak{}api/\allowbreak{}sensors}. The TelemetryProvider begins polling at the configured refresh interval (default: 15 seconds).
   \item Five sensor cards display live values (Water Level, Temperature, Humidity, Pressure, Altitude) with trend arrows.
-  \item Simultaneously, the \texttt{useFloodPrediction} hook loads the TensorFlow.js model from \texttt{/public/tfjs\_model/} and, once the model is ready and at least one reading is available (padded with sample data if necessary), runs inference to display the 4-hour water level forecast.
+  \item Simultaneously, the \texttt{useFloodPrediction} hook loads the TensorFlow.js model from \texttt{/\allowbreak{}public/\allowbreak{}tfjs\_\allowbreak{}model/\allowbreak{}} and, once the model is ready and at least one reading is available (padded with sample data if necessary), runs inference to display the 4-hour water level forecast.
   \item If any sensor reading breaches a configured threshold, an alert card appears in the Alert Panel. Critical alerts trigger a native browser push notification (if permission was granted).
   \item The user can navigate to the \textbf{Analytics} page to view per-channel time-series charts with the time-window selector.
   \item The \textbf{History} page presents a statistical summary table and allows download of sensor logs as CSV or PDF.
@@ -138,6 +138,6 @@ A typical user interaction with FloodEye follows this sequence:
 FloodEye has two main navigation zones:
 
 \begin{itemize}[leftmargin=1.5em]
-  \item \textbf{Landing Zone:} Root route (\texttt{/}) — the scrollytelling landing page with navigation bar, hero section, feature showcase, team profiles, and technology section.
-  \item \textbf{Dashboard Zone:} All routes under \texttt{/dashboard} — protected by a shared layout with a sidebar navigation containing: Dashboard, Analytics, History, Predictions, Alerts, Devices, and Settings.
+  \item \textbf{Landing Zone:} Root route (\texttt{/\allowbreak{}}) — the scrollytelling landing page with navigation bar, hero section, feature showcase, team profiles, and technology section.
+  \item \textbf{Dashboard Zone:} All routes under \texttt{/\allowbreak{}dashboard} — protected by a shared layout with a sidebar navigation containing: Dashboard, Analytics, History, Predictions, Alerts, Devices, and Settings.
 \end{itemize}

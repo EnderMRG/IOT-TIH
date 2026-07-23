@@ -3,7 +3,7 @@
 %=============================================================================
 \chapter{Machine Learning Analysis}
 
-This chapter provides a detailed interpretation of the visualisations generated during the machine learning pipeline. All figures were produced by \texttt{Model/nb\_code.py} (extracted from \texttt{Model/FloodMonitoring.ipynb}) and saved to \texttt{Model/flood\_plots/}.
+This chapter provides a detailed interpretation of the visualisations generated during the machine learning pipeline. All figures were produced by \texttt{Model/\allowbreak{}nb\_\allowbreak{}code.\allowbreak{}py} (extracted from \texttt{Model/\allowbreak{}FloodMonitoring.\allowbreak{}ipynb}) and saved to \texttt{Model/\allowbreak{}flood\_\allowbreak{}plots/\allowbreak{}}.
 
 \section{Exploratory Data Analysis (EDA Plots)}
 
@@ -18,12 +18,12 @@ Figure~\ref{fig:eda_plots} shows the four-panel EDA dashboard generated at the b
 
 \subsection{Panel A -- Water Level Time Series (Top Left)}
 
-\textbf{Description:} A time-series line plot of \texttt{water\_level\_cm} over the full dataset time range. Red scatter points overlay the time steps where \texttt{flood\_alert\_now = 1}.
+\textbf{Description:} A time-series line plot of \texttt{water\_\allowbreak{}level\_\allowbreak{}cm} over the full dataset time range. Red scatter points overlay the time steps where \texttt{flood\_\allowbreak{}alert\_\allowbreak{}now = 1}.
 
 \textbf{Observations:}
 \begin{itemize}[leftmargin=1.5em]
   \item The water level exhibits strong seasonal periodicity, with pronounced peaks corresponding to monsoon months (June--September).
-  \item Red flood alert points cluster at the peaks, confirming that the \texttt{flood\_alert\_now} flag correctly identifies the high-water-level events.
+  \item Red flood alert points cluster at the peaks, confirming that the \texttt{flood\_\allowbreak{}alert\_\allowbreak{}now} flag correctly identifies the high-water-level events.
   \item There are clear multi-week base periods where water levels remain low (dry season), separated by sharp monsoon spikes.
 \end{itemize}
 
@@ -31,7 +31,7 @@ Figure~\ref{fig:eda_plots} shows the four-panel EDA dashboard generated at the b
 
 \subsection{Panel B -- Monthly Water Level Distribution (Top Right)}
 
-\textbf{Description:} A box plot (Seaborn) of \texttt{water\_level\_cm} stratified by \texttt{month\_of\_year}.
+\textbf{Description:} A box plot (Seaborn) of \texttt{water\_\allowbreak{}level\_\allowbreak{}cm} stratified by \texttt{month\_\allowbreak{}of\_\allowbreak{}year}.
 
 \textbf{Observations:}
 \begin{itemize}[leftmargin=1.5em]
@@ -44,7 +44,7 @@ Figure~\ref{fig:eda_plots} shows the four-panel EDA dashboard generated at the b
 
 \subsection{Panel C -- Correlation with Target (Bottom Left)}
 
-\textbf{Description:} A Seaborn heatmap showing Pearson correlation coefficients between all numeric features and the target variable \texttt{water\_level\_plus\_4h}, sorted by absolute correlation.
+\textbf{Description:} A Seaborn heatmap showing Pearson correlation coefficients between all numeric features and the target variable \texttt{water\_\allowbreak{}level\_\allowbreak{}plus\_\allowbreak{}4h}, sorted by absolute correlation.
 
 \textbf{Observations:}
 \begin{itemize}[leftmargin=1.5em]
@@ -58,7 +58,7 @@ Figure~\ref{fig:eda_plots} shows the four-panel EDA dashboard generated at the b
 
 \subsection{Panel D -- Pressure Trend vs Future Water Level (Bottom Right)}
 
-\textbf{Description:} A scatter plot of \texttt{pressure\_trend\_3h} (x-axis) against \texttt{water\_level\_plus\_4h} (y-axis), colour-coded by \texttt{month\_of\_year}.
+\textbf{Description:} A scatter plot of \texttt{pressure\_\allowbreak{}trend\_\allowbreak{}3h} (x-axis) against \texttt{water\_\allowbreak{}level\_\allowbreak{}plus\_\allowbreak{}4h} (y-axis), colour-coded by \texttt{month\_\allowbreak{}of\_\allowbreak{}year}.
 
 \textbf{Observations:}
 \begin{itemize}[leftmargin=1.5em]
@@ -67,7 +67,7 @@ Figure~\ref{fig:eda_plots} shows the four-panel EDA dashboard generated at the b
   \item Winter month points (cool colours) cluster at low future water levels regardless of pressure trend, because seasonal water levels are low.
 \end{itemize}
 
-\textbf{Significance:} This plot provides evidence that \texttt{pressure\_trend\_3h} is a useful early indicator of flood risk, justifying its inclusion as an explicit engineered feature rather than relying on the raw pressure value alone.
+\textbf{Significance:} This plot provides evidence that \texttt{pressure\_\allowbreak{}trend\_\allowbreak{}3h} is a useful early indicator of flood risk, justifying its inclusion as an explicit engineered feature rather than relying on the raw pressure value alone.
 
 \section{Model Evaluation Plots}
 
@@ -82,7 +82,7 @@ Figure~\ref{fig:eval_plots} shows the four-panel evaluation dashboard generated 
 
 \subsection{Panel 1 -- Actual vs Predicted (Full Test Set)}
 
-\textbf{Description:} A line plot overlaying the actual water level (\texttt{y\_true}) and the model's predicted water level (\texttt{y\_pred}) across the entire test set, both in original (denormalised) centimetre units.
+\textbf{Description:} A line plot overlaying the actual water level (\texttt{y\_\allowbreak{}true}) and the model's predicted water level (\texttt{y\_\allowbreak{}pred}) across the entire test set, both in original (denormalised) centimetre units.
 
 \textbf{Observations:}
 \begin{itemize}[leftmargin=1.5em]

@@ -7,12 +7,12 @@
 
 The FloodEye ML pipeline spans two environments: the training pipeline runs in Python (Google Colab), and the inference pipeline runs in TypeScript (browser). Figure~\ref{fig:ml_pipeline} illustrates the complete end-to-end pipeline.
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 \centering
-\resizebox{\linewidth}{!}{%
-\begin{tikzpicture}[node distance=0.6cm]
+\resizebox{!}{0.85\textheight}{%
+\begin{tikzpicture}[node distance=0.4cm]
   % Training pipeline
-  \node[startend, text width=3cm] (dataset) {Dataset\\\texttt{.csv}};
+  \node[startend, text width=3cm] (dataset) {Dataset\\\texttt{.\allowbreak{}csv}};
   \node[process, text width=3cm, below=of dataset] (eda) {EDA \&\\Visualisation};
   \node[process, text width=3cm, below=of eda] (clean) {Data Cleaning\\(Sort, Index)};
   \node[process, text width=3cm, below=of clean] (feateng) {Feature\\Engineering};
@@ -23,7 +23,7 @@ The FloodEye ML pipeline spans two environments: the training pipeline runs in P
   \node[process, text width=3cm, below=of build] (train) {Train\\(Adam, MSE)};
   \node[process, text width=3cm, below=of train] (validate) {EarlyStopping\\Validation};
   \node[process, text width=3cm, below=of validate] (eval) {Evaluation\\(MAE, Plots)};
-  \node[process, text width=3cm, below=of eval] (serial) {Serialise\\(\texttt{.h5})};
+  \node[process, text width=3cm, below=of eval] (serial) {Serialise\\(\texttt{.\allowbreak{}h5})};
   \node[process, text width=3cm, below=of serial] (convert) {TFJS Convert\\+ Patch Script};
   \node[startend, text width=3cm, below=of convert] (artifacts) {Export\\Artifacts};
 
@@ -71,25 +71,25 @@ The FloodEye ML pipeline spans two environments: the training pipeline runs in P
 \section{Stage-by-Stage Explanation}
 
 \subsection{Stage 1: Dataset}
-The raw CSV dataset (\texttt{assam\_flood\_sensor\_data.csv}) contains timestamped multivariate sensor readings with a look-ahead water level target. The dataset is loaded into a Pandas DataFrame and sorted chronologically.
+The raw CSV dataset (\texttt{assam\_\allowbreak{}flood\_\allowbreak{}sensor\_\allowbreak{}data.\allowbreak{}csv}) contains timestamped multivariate sensor readings with a look-ahead water level target. The dataset is loaded into a Pandas DataFrame and sorted chronologically.
 
 \subsection{Stage 2: EDA and Visualisation}
-Seaborn and Matplotlib are used to generate the four-panel EDA plot (\texttt{flood\_plots/eda\_plots.png}), providing insight into the temporal distribution, seasonal patterns, feature correlations, and key relationships.
+Seaborn and Matplotlib are used to generate the four-panel EDA plot (\texttt{flood\_\allowbreak{}plots/\allowbreak{}eda\_\allowbreak{}plots.\allowbreak{}png}), providing insight into the temporal distribution, seasonal patterns, feature correlations, and key relationships.
 
 \subsection{Stage 3: Data Cleaning}
 The datetime index is constructed, the DataFrame is sorted, and any null values are handled. The data is confirmed to be regularly sampled and chronologically ordered.
 
 \subsection{Stage 4: Feature Engineering}
-The \texttt{prepare\_sequences()} function engineers 11 features from the raw columns: four cyclical time encodings, five raw sensor readings, and two 3-hour trend features.
+The \texttt{prepare\_\allowbreak{}sequences()} function engineers 11 features from the raw columns: four cyclical time encodings, five raw sensor readings, and two 3-hour trend features.
 
 \subsection{Stage 5: Chronological Split}
 The dataset is split 70/15/15 without shuffling, preserving temporal order to prevent data leakage.
 
 \subsection{Stage 6: StandardScaler Normalisation}
-Scalers are fitted on the training split only. Both X (features) and Y (target) are normalised to zero mean and unit variance. Scaler parameters are exported to \texttt{scalers.json}.
+Scalers are fitted on the training split only. Both X (features) and Y (target) are normalised to zero mean and unit variance. Scaler parameters are exported to \texttt{scalers.\allowbreak{}json}.
 
 \subsection{Stage 7: Sliding Window Creation}
-Overlapping windows of length 48 are created over the scaled feature matrix, producing input tensors \texttt{(N, 48, 11)} and target scalars \texttt{(N, 1)}.
+Overlapping windows of length 48 are created over the scaled feature matrix, producing input tensors \texttt{(N,\allowbreak{} 48,\allowbreak{} 11)} and target scalars \texttt{(N,\allowbreak{} 1)}.
 
 \subsection{Stage 8: Build Model}
 The 1D-CNN + Bidirectional LSTM + Attention architecture is constructed using the Keras functional API. The custom \texttt{AttentionLayer} is defined as a Keras Layer subclass.
@@ -101,19 +101,19 @@ Model is compiled with the Adam optimizer and MSE loss. Training runs for up to 
 Training is halted when validation loss fails to improve for 10 consecutive epochs; the best weights are restored. ReduceLROnPlateau halves the learning rate when validation loss plateaus for 5 epochs.
 
 \subsection{Stage 11: Evaluation}
-Four evaluation plots are generated (\texttt{flood\_plots/evaluation\_plots.png}): actual vs predicted on the full test set, zoomed peak event, residuals, and attention weights.
+Four evaluation plots are generated (\texttt{flood\_\allowbreak{}plots/\allowbreak{}evaluation\_\allowbreak{}plots.\allowbreak{}png}): actual vs predicted on the full test set, zoomed peak event, residuals, and attention weights.
 
 \subsection{Stage 12: Serialisation}
-The trained model is saved as \texttt{flood\_model.h5}. Scaler parameters (\texttt{scalers.json}), model configuration (\texttt{config.json}), and sample data (\texttt{sample\_data.json}) are saved.
+The trained model is saved as \texttt{flood\_\allowbreak{}model.\allowbreak{}h5}. Scaler parameters (\texttt{scalers.\allowbreak{}json}), model configuration (\texttt{config.\allowbreak{}json}), and sample data (\texttt{sample\_\allowbreak{}data.\allowbreak{}json}) are saved.
 
 \subsection{Stage 13: TFJS Conversion and Patching}
-The \texttt{tensorflowjs\_converter} converts \texttt{flood\_model.h5} to LayersModel format. The \texttt{patch\_model.js} script patches the resulting \texttt{model.json} for Keras 2 compatibility, fixes weight name paths, and replaces the Orthogonal initialiser.
+The \texttt{tensorflowjs\_\allowbreak{}converter} converts \texttt{flood\_\allowbreak{}model.\allowbreak{}h5} to LayersModel format. The \texttt{patch\_\allowbreak{}model.\allowbreak{}js} script patches the resulting \texttt{model.\allowbreak{}json} for Keras 2 compatibility, fixes weight name paths, and replaces the Orthogonal initialiser.
 
 \subsection{Stage 14: Export Artifacts}
-All artifacts are packaged: \texttt{tfjs\_model/model.json}, \texttt{tfjs\_model/group1-shard1of1.bin}, \texttt{scalers.json}, \texttt{config.json}, \texttt{sample\_data.json}. These are copied to \texttt{public/} for browser access.
+All artifacts are packaged: \texttt{tfjs\_\allowbreak{}model/\allowbreak{}model.\allowbreak{}json}, \texttt{tfjs\_\allowbreak{}model/\allowbreak{}group1-shard1of1.\allowbreak{}bin}, \texttt{scalers.\allowbreak{}json}, \texttt{config.\allowbreak{}json}, \texttt{sample\_\allowbreak{}data.\allowbreak{}json}. These are copied to \texttt{public/\allowbreak{}} for browser access.
 
 \subsection{Stage 15: Browser Model Loading}
-The \texttt{loadModel()} function in \texttt{lib/flood-model.ts} fetches all artifacts in parallel, manually loads weights, and registers the custom AttentionLayer.
+The \texttt{loadModel()} function in \texttt{lib/\allowbreak{}flood-model.\allowbreak{}ts} fetches all artifacts in parallel, manually loads weights, and registers the custom AttentionLayer.
 
 \subsection{Stage 16--19: Browser Inference}
 Live history data from the TelemetryProvider is feature-engineered, normalised, shaped into a 3D tensor, passed through the model, denormalised, and mapped to a risk level.

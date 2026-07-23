@@ -11,7 +11,7 @@ The core ML challenge addressed by FloodEye is \textbf{multi-step time-series re
 
 \subsection{Source and Structure}
 
-The training dataset is a custom-built synthetic sensor dataset modelled on the Brahmaputra river basin, Assam (\texttt{assam\_flood\_sensor\_data.csv}). The dataset was loaded and processed in Google Colab (\texttt{Model/FloodMonitoring.ipynb}).
+The training dataset is a custom-built synthetic sensor dataset modelled on the Brahmaputra river basin, Assam (\texttt{assam\_\allowbreak{}flood\_\allowbreak{}sensor\_\allowbreak{}data.\allowbreak{}csv}). The dataset was loaded and processed in Google Colab (\texttt{Model/\allowbreak{}FloodMonitoring.\allowbreak{}ipynb}).
 
 \begin{table}[H]
 \centering
@@ -40,13 +40,13 @@ rate\_of\_change\_cm\_per\_hr & float & Rate of water level change (cm/hr) \\
 
 \subsection{Dataset Characteristics}
 
-The dataset is sorted chronologically and indexed by a combined datetime column (\texttt{date + time}). The target variable \texttt{water\_level\_plus\_4h} represents the actual water level 4 hours into the future, constructed from the time-series by a look-ahead shift.
+The dataset is sorted chronologically and indexed by a combined datetime column (\texttt{date + time}). The target variable \texttt{water\_\allowbreak{}level\_\allowbreak{}plus\_\allowbreak{}4h} represents the actual water level 4 hours into the future, constructed from the time-series by a look-ahead shift.
 
 \section{Data Cleaning}
 
 \begin{itemize}[leftmargin=1.5em]
-  \item Datetime index constructed by combining the \texttt{date} and \texttt{time} columns using \texttt{pd.to\_datetime()}.
-  \item Chronological sorting applied via \texttt{sort\_values('datetime')}.
+  \item Datetime index constructed by combining the \texttt{date} and \texttt{time} columns using \texttt{pd.\allowbreak{}to\_\allowbreak{}datetime()}.
+  \item Chronological sorting applied via \texttt{sort\_\allowbreak{}values('datetime')}.
   \item Missing values in numeric fields handled by the \texttt{parseField()} function (defaults to 0 or 1013.25 for pressure).
   \item No duplicate timestamps were present in the training data.
 \end{itemize}
@@ -96,15 +96,15 @@ This ensures the model is evaluated on data it has never seen and that no future
 
 \subsection{Feature Normalisation}
 
-\texttt{sklearn.preprocessing.StandardScaler} is fitted on the training set only and applied to all three splits:
+\texttt{sklearn.\allowbreak{}preprocessing.\allowbreak{}StandardScaler} is fitted on the training set only and applied to all three splits:
 
 \begin{equation}
   x_{\text{scaled}} = \frac{x - \mu_{\text{train}}}{\sigma_{\text{train}}}
 \end{equation}
 
-Separate scalers are fitted for features (X) and target (Y). The scaler parameters are serialised to \texttt{Model/scalers.json} and copied to \texttt{public/model\_scalers.json} for browser-side use.
+Separate scalers are fitted for features (X) and target (Y). The scaler parameters are serialised to \texttt{Model/\allowbreak{}scalers.\allowbreak{}json} and copied to \texttt{public/\allowbreak{}model\_\allowbreak{}scalers.\allowbreak{}json} for browser-side use.
 
-Scaler parameters (from \texttt{scalers.json}):
+Scaler parameters (from \texttt{scalers.\allowbreak{}json}):
 \begin{itemize}[leftmargin=1.5em]
   \item Target Y mean: $\mu_y = 319.71$ cm; scale: $\sigma_y = 53.94$ cm.
   \item This indicates the average water level in the training dataset is approximately 320 cm with a standard deviation of 54 cm.
@@ -112,13 +112,13 @@ Scaler parameters (from \texttt{scalers.json}):
 
 \subsection{Sequence Window Creation}
 
-The \texttt{create\_windows()} function creates overlapping sliding windows of length LOOKBACK = 48 over the scaled feature matrix:
+The \texttt{create\_\allowbreak{}windows()} function creates overlapping sliding windows of length LOOKBACK = 48 over the scaled feature matrix:
 
 \begin{equation}
   X_i = \mathbf{x}_{i-48:i}, \quad Y_i = y_i \quad \text{for } i \geq 48
 \end{equation}
 
-This produces input tensors of shape \texttt{(N, 48, 11)} and target tensors of shape \texttt{(N, 1)}.
+This produces input tensors of shape \texttt{(N,\allowbreak{} 48,\allowbreak{} 11)} and target tensors of shape \texttt{(N,\allowbreak{} 1)}.
 
 \section{Model Architecture: 1D-CNN + Bidirectional LSTM + Attention}
 
@@ -137,7 +137,7 @@ The predictive model is a hybrid deep learning architecture combining three comp
 \begin{itemize}[leftmargin=1.5em]
   \item Units: 64 per direction (128 total output features due to concatenation).
   \item \textbf{Purpose:} Processes the sequence in both forward and backward directions simultaneously. The forward pass captures causal dependencies (rising water level trends); the backward pass can weight later evidence to contextualise earlier readings.
-  \item \texttt{return\_sequences=True} so the full sequence output \texttt{(batch, 48, 128)} is passed to the Attention layer.
+  \item \texttt{return\_\allowbreak{}sequences=True} so the full sequence output \texttt{(batch,\allowbreak{} 48,\allowbreak{} 128)} is passed to the Attention layer.
 \end{itemize}
 
 \subsubsection{Custom Attention Layer}
@@ -149,7 +149,7 @@ The predictive model is a hybrid deep learning architecture combining three comp
       \alpha_t &= \text{softmax}(e_t) \quad \text{(over timestep axis)} \\
       \mathbf{c} &= \sum_{t=1}^{48} \alpha_t \cdot \mathbf{x}_t
     \end{align}
-  \item Output: context vector $\mathbf{c}$ of shape \texttt{(batch, 128)}.
+  \item Output: context vector $\mathbf{c}$ of shape \texttt{(batch,\allowbreak{} 128)}.
   \item The Attention layer is implemented in both Python (training) and TypeScript (browser inference) and registered as a custom serialisable layer.
 \end{itemize}
 
@@ -190,8 +190,8 @@ Dense(1) & (1,) & 33 \\
   \item \textbf{Batch size:} 32.
   \item \textbf{Callbacks:}
     \begin{itemize}
-      \item \texttt{EarlyStopping(monitor=`val\_loss', patience=10, restore\_best\_weights=True)}: Terminates training when validation loss does not improve for 10 consecutive epochs and restores the best-seen weights.
-      \item \texttt{ReduceLROnPlateau(monitor=`val\_loss', factor=0.5, patience=5)}: Halves the learning rate when validation loss plateaus for 5 epochs, aiding convergence.
+      \item \texttt{EarlyStopping(monitor=`val\_\allowbreak{}loss',\allowbreak{} patience=10,\allowbreak{} restore\_\allowbreak{}best\_\allowbreak{}weights=True)}: Terminates training when validation loss does not improve for 10 consecutive epochs and restores the best-seen weights.
+      \item \texttt{ReduceLROnPlateau(monitor=`val\_\allowbreak{}loss',\allowbreak{} factor=0.\allowbreak{}5,\allowbreak{} patience=5)}: Halves the learning rate when validation loss plateaus for 5 epochs, aiding convergence.
     \end{itemize}
   \item \textbf{Training environment:} Google Colab (GPU accelerated).
 \end{itemize}
@@ -203,34 +203,34 @@ The trained model achieves a Mean Absolute Error of \textbf{3.42 cm} on the trai
 \section{Model Serialisation and Export}
 
 \begin{enumerate}[leftmargin=1.5em]
-  \item The model is saved as \texttt{flood\_model.h5} using Keras's legacy H5 format.
-  \item The TensorFlow.js converter (\texttt{tensorflowjs\_converter}) converts it to LayersModel format: \texttt{model.json} (topology + weights manifest) and \texttt{group1-shard1of1.bin} (binary weights).
-  \item \textbf{Compatibility patching:} Because the model was trained with Keras 3 but TensorFlow.js expects Keras 2 format, the \texttt{patch\_model.js} script performs seven structural transformations:
+  \item The model is saved as \texttt{flood\_\allowbreak{}model.\allowbreak{}h5} using Keras's legacy H5 format.
+  \item The TensorFlow.js converter (\texttt{tensorflowjs\_\allowbreak{}converter}) converts it to LayersModel format: \texttt{model.\allowbreak{}json} (topology + weights manifest) and \texttt{group1-shard1of1.\allowbreak{}bin} (binary weights).
+  \item \textbf{Compatibility patching:} Because the model was trained with Keras 3 but TensorFlow.js expects Keras 2 format, the \texttt{patch\_\allowbreak{}model.\allowbreak{}js} script performs seven structural transformations:
     \begin{enumerate}
-      \item Fix \texttt{input\_layers} / \texttt{output\_layers} nesting.
-      \item Convert \texttt{inbound\_nodes} from Keras 3 tensor objects to Keras 2 flat arrays.
-      \item Rename \texttt{batch\_shape} to \texttt{batchInputShape} in InputLayer.
-      \item Strip LSTM \texttt{lstm\_cell/} weight path sub-scopes.
+      \item Fix \texttt{input\_\allowbreak{}layers} / \texttt{output\_\allowbreak{}layers} nesting.
+      \item Convert \texttt{inbound\_\allowbreak{}nodes} from Keras 3 tensor objects to Keras 2 flat arrays.
+      \item Rename \texttt{batch\_\allowbreak{}shape} to \texttt{batchInputShape} in InputLayer.
+      \item Strip LSTM \texttt{lstm\_\allowbreak{}cell/\allowbreak{}} weight path sub-scopes.
       \item Convert \texttt{DTypePolicy} dtype objects to plain strings.
       \item Replace \texttt{Orthogonal} initialiser with \texttt{Zeros} (prevents slow initialisation).
       \item Remove unknown \texttt{optional}/\texttt{ragged} fields from InputLayer config.
     \end{enumerate}
-  \item Scaler parameters are exported to \texttt{scalers.json} and model configuration to \texttt{config.json}.
+  \item Scaler parameters are exported to \texttt{scalers.\allowbreak{}json} and model configuration to \texttt{config.\allowbreak{}json}.
 \end{enumerate}
 
-\section{Browser-Side Inference (\texttt{lib/flood-model.ts})}
+\section{Browser-Side Inference (\texttt{lib/\allowbreak{}flood-model.\allowbreak{}ts})}
 
 \subsection{Model Loading}
 
 The \texttt{loadModel()} function:
 \begin{enumerate}[leftmargin=1.5em]
-  \item Fetches \texttt{model.json}, \texttt{group1-shard1of1.bin}, \texttt{model\_config.json}, and \texttt{model\_scalers.json} in parallel.
+  \item Fetches \texttt{model.\allowbreak{}json}, \texttt{group1-shard1of1.\allowbreak{}bin}, \texttt{model\_\allowbreak{}config.\allowbreak{}json}, and \texttt{model\_\allowbreak{}scalers.\allowbreak{}json} in parallel.
   \item Parses all weights from the binary file using the manifest's dtype/shape spec.
   \item Loads the model topology only (no weight loading from TFJS's default name-matching mechanism).
-  \item Manually assigns weights to each layer via \texttt{layer.setWeights(tensors)} in positional order, bypassing TFJS internal variable naming.
+  \item Manually assigns weights to each layer via \texttt{layer.\allowbreak{}setWeights(tensors)} in positional order, bypassing TFJS internal variable naming.
 \end{enumerate}
 
-This manual weight assignment strategy is necessary because of the Keras 3 naming differences (e.g., \texttt{lstm\_cell/} sub-scopes) that survive even after the patch script.
+This manual weight assignment strategy is necessary because of the Keras 3 naming differences (e.g., \texttt{lstm\_\allowbreak{}cell/\allowbreak{}} sub-scopes) that survive even after the patch script.
 
 \subsection{Feature Engineering in TypeScript}
 
@@ -245,10 +245,10 @@ The \texttt{engineerFeatures()} function replicates the Python feature engineeri
 \subsection{Inference Pipeline}
 
 \begin{enumerate}[leftmargin=1.5em]
-  \item Take the last 48 readings from the live history (padded with \texttt{sample\_data.json} if insufficient).
-  \item Call \texttt{engineerFeatures()} to produce a \texttt{(48, 11)} feature matrix.
-  \item Wrap in a \texttt{tf.tensor3d} of shape \texttt{(1, 48, 11)}.
-  \item Call \texttt{model.predict(inputTensor)}.
+  \item Take the last 48 readings from the live history (padded with \texttt{sample\_\allowbreak{}data.\allowbreak{}json} if insufficient).
+  \item Call \texttt{engineerFeatures()} to produce a \texttt{(48,\allowbreak{} 11)} feature matrix.
+  \item Wrap in a \texttt{tf.\allowbreak{}tensor3d} of shape \texttt{(1,\allowbreak{} 48,\allowbreak{} 11)}.
+  \item Call \texttt{model.\allowbreak{}predict(inputTensor)}.
   \item Extract scalar prediction; denormalise: $y = \text{pred\_scaled} \times \sigma_y + \mu_y$.
   \item Map predicted water level to a risk level and flood probability.
   \item Dispose all tensors to prevent WebGL memory leaks.

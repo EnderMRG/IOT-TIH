@@ -7,7 +7,7 @@ This chapter describes only actual limitations of the current FloodEye implement
 
 \section{Single Sensor Node}
 
-The current implementation is designed for a single ThingSpeak channel corresponding to a single ESP32 sensor node. The \texttt{THINGSPEAK\_CHANNEL\_ID} environment variable accepts only one channel ID. Multiple sensor nodes would require code changes to support a multi-channel data model.
+The current implementation is designed for a single ThingSpeak channel corresponding to a single ESP32 sensor node. The \texttt{THINGSPEAK\_\allowbreak{}CHANNEL\_\allowbreak{}ID} environment variable accepts only one channel ID. Multiple sensor nodes would require code changes to support a multi-channel data model.
 
 \section{No Database Persistence}
 
@@ -15,11 +15,11 @@ Alert history, user accounts, and dashboard settings are maintained only in-memo
 
 \section{localStorage-Based Authentication}
 
-User role (\texttt{admin}/\texttt{user}) and username are stored in browser localStorage without any cryptographic validation. This is not a production-grade authentication system. Anyone can open browser DevTools and modify \texttt{floodeye\_session} to gain admin access.
+User role (\texttt{admin}/\texttt{user}) and username are stored in browser localStorage without any cryptographic validation. This is not a production-grade authentication system. Anyone can open browser DevTools and modify \texttt{floodeye\_\allowbreak{}session} to gain admin access.
 
 \section{Simulated Confidence Interval}
 
-The ML prediction confidence displayed in the FloodPredictionCard and FloodPredictionPanel (85--95\%) is a simulated value (\texttt{85 + Math.random() * 10}) rather than a statistically computed uncertainty estimate. Proper prediction intervals or Monte Carlo dropout would be needed for calibrated uncertainty quantification.
+The ML prediction confidence displayed in the FloodPredictionCard and FloodPredictionPanel (85--95\%) is a simulated value (\texttt{85 + Math.\allowbreak{}random() * 10}) rather than a statistically computed uncertainty estimate. Proper prediction intervals or Monte Carlo dropout would be needed for calibrated uncertainty quantification.
 
 \section{Sample Data Padding}
 
@@ -27,7 +27,7 @@ When fewer than 48 live readings are available, the inference is padded with tes
 
 \section{IOT Code Sketch Covers Only BMP180}
 
-The provided Arduino sketch (\texttt{IOTcode/IOTcode.ino}) demonstrates only the BMP180 sensor reading via serial print. It does not include DHT11 or HC-SR04 sensor code, nor Wi-Fi connectivity or ThingSpeak HTTP upload logic. The full firmware required to actually drive the dashboard is not included in the repository.
+The provided Arduino sketch (\texttt{IOTcode/\allowbreak{}IOTcode.\allowbreak{}ino}) demonstrates only the BMP180 sensor reading via serial print. It does not include DHT11 or HC-SR04 sensor code, nor Wi-Fi connectivity or ThingSpeak HTTP upload logic. The full firmware required to actually drive the dashboard is not included in the repository.
 
 \section{ThingSpeak Free Tier Constraints}
 
@@ -35,7 +35,7 @@ The free ThingSpeak tier imposes a 15-second minimum upload interval and retains
 
 \section{Server-Side ML Inference Not Implemented}
 
-The \texttt{/api/flood-predict} endpoint exists as a structural placeholder and returns HTTP 501 (Not Implemented). Server-side TensorFlow.js Node.js inference would be needed for use cases where the client device does not support WebGL (e.g., very old phones, embedded kiosk systems).
+The \texttt{/\allowbreak{}api/\allowbreak{}flood-predict} endpoint exists as a structural placeholder and returns HTTP 501 (Not Implemented). Server-side TensorFlow.js Node.js inference would be needed for use cases where the client device does not support WebGL (e.g., very old phones, embedded kiosk systems).
 
 \section{No Multi-Location Map}
 

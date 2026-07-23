@@ -47,7 +47,7 @@ The \texttt{--webpack} flag enables the webpack bundler (rather than Turbopack) 
 \begin{itemize}[leftmargin=1.5em]
   \item \textbf{Server functions:} Next.js Route Handlers compiled to Vercel serverless functions.
   \item \textbf{Static assets:} JavaScript bundles, CSS, and public files distributed to Vercel's global CDN.
-  \item \textbf{PWA service worker:} \texttt{next-pwa} (Workbox) generates \texttt{sw.js} and \texttt{workbox-*.js} during build. These are excluded in development (\texttt{disable: process.env.NODE\_ENV === 'development'}).
+  \item \textbf{PWA service worker:} \texttt{next-pwa} (Workbox) generates \texttt{sw.\allowbreak{}js} and \texttt{workbox-*.\allowbreak{}js} during build. These are excluded in development (\texttt{disable: process.\allowbreak{}env.\allowbreak{}NODE\_\allowbreak{}ENV === 'development'}).
 \end{itemize}
 
 \section{Environment Configuration}
@@ -62,16 +62,16 @@ Environment variables are configured in the Vercel project dashboard (not in the
 \rowcolor{FloodLight}
 \textbf{Variable} & \textbf{Scope} & \textbf{Notes} \\
 \hline
-\texttt{THINGSPEAK\_CHANNEL\_ID} & Server & Never exposed to the browser \\
-\texttt{THINGSPEAK\_READ\_API\_KEY} & Server & Read-only; no write risk \\
-\texttt{NEXT\_PUBLIC\_MAPTILER\_KEY} & Client & Prefixed \texttt{NEXT\_PUBLIC\_}; included in browser bundle \\
+\texttt{THINGSPEAK\_\allowbreak{}CHANNEL\_\allowbreak{}ID} & Server & Never exposed to the browser \\
+\texttt{THINGSPEAK\_\allowbreak{}READ\_\allowbreak{}API\_\allowbreak{}KEY} & Server & Read-only; no write risk \\
+\texttt{NEXT\_\allowbreak{}PUBLIC\_\allowbreak{}MAPTILER\_\allowbreak{}KEY} & Client & Prefixed \texttt{NEXT\_\allowbreak{}PUBLIC\_\allowbreak{}}; included in browser bundle \\
 \hline
 \end{tabularx}
 \end{table}
 
 \section{PWA Configuration}
 
-PWA is configured in \texttt{next.config.ts} using \texttt{@ducanh2912/next-pwa}:
+PWA is configured in \texttt{next.\allowbreak{}config.\allowbreak{}ts} using \texttt{@ducanh2912/\allowbreak{}next-pwa}:
 
 \begin{lstlisting}[language=TypeScript,caption={PWA configuration in next.config.ts}]
 const withPWA = withPWAInit({
@@ -84,7 +84,7 @@ const withPWA = withPWAInit({
 });
 \end{lstlisting}
 
-The PWA manifest is defined in \texttt{app/manifest.ts} and specifies the app name, icons (\texttt{icon-192x192.png}, \texttt{icon-512x512.png}), theme colour, background colour, and display mode (\texttt{standalone}).
+The PWA manifest is defined in \texttt{app/\allowbreak{}manifest.\allowbreak{}ts} and specifies the app name, icons (\texttt{icon-192x192.\allowbreak{}png}, \texttt{icon-512x512.\allowbreak{}png}), theme colour, background colour, and display mode (\texttt{standalone}).
 
 \section{Deployment Steps}
 
@@ -94,7 +94,7 @@ The PWA manifest is defined in \texttt{app/manifest.ts} and specifies the app na
   \item Environment variables are injected from the Vercel dashboard.
   \item Next.js build runs (\texttt{next build --webpack}).
   \item Build outputs are deployed to Vercel's global edge network.
-  \item The new deployment is promoted to the production URL (e.g.\ \texttt{floodeye.vercel.app}).
+  \item The new deployment is promoted to the production URL (e.g.\ \texttt{floodeye.\allowbreak{}vercel.\allowbreak{}app}).
   \item Preview deployments are automatically created for every pull request.
 \end{enumerate}
 
