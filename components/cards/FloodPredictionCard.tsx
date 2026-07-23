@@ -59,15 +59,15 @@ function FloodPredictionCardComponent({ prediction, isLoading }: { prediction: F
         </div>
       </div>
 
-      <div className="mt-4 relative z-10">
-        <div className="flex items-baseline gap-1">
-          <span className="text-3xl font-black tracking-tight text-slate-900">
+      <div className="flex-1 flex flex-col justify-center relative z-10 py-4">
+        <div className="flex items-baseline gap-1.5">
+          <span className="text-5xl font-black tracking-tight text-slate-900">
             {prediction.predictedWaterLevel}
           </span>
-          <span className="text-sm font-medium text-slate-500">cm</span>
+          <span className="text-lg font-medium text-slate-500">cm</span>
         </div>
-        <p className="text-sm font-medium text-slate-500 mt-0.5 flex items-center gap-1.5">
-          <TrendingUp className="w-3.5 h-3.5" />
+        <p className="text-sm font-medium text-slate-500 mt-1.5 flex items-center gap-1.5">
+          <TrendingUp className="w-4 h-4" />
           Predicted in 4h
         </p>
       </div>

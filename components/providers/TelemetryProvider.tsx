@@ -27,7 +27,8 @@ export type AlertType =
   | "HIGH_WATER_LEVEL"
   | "RAPID_WATER_RISE"
   | "OBJECT_TOO_CLOSE"
-  | "SENSOR_OFFLINE";
+  | "SENSOR_OFFLINE"
+  | "WEATHER_WARNING";
 
 export type AlertSeverity = "critical" | "warning" | "info";
 
@@ -208,6 +209,7 @@ const ALERT_COOLDOWN: Record<AlertType, number> = {
   RAPID_WATER_RISE:      1 * 60 * 1000,  // 1 min (most urgent)
   OBJECT_TOO_CLOSE:      2 * 60 * 1000,  // 2 min
   SENSOR_OFFLINE:       10 * 60 * 1000,  // 10 min (fires once)
+  WEATHER_WARNING:      30 * 60 * 1000,  // 30 min
 };
 
 // ── Simulation helpers ────────────────────────────────────────────────────────

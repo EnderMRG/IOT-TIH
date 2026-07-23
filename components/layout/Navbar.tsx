@@ -215,10 +215,10 @@ export function Navbar() {
             </button>
 
             {showNotifications && (
-              <div className="absolute top-12 right-0 w-[22rem] bg-white/75 backdrop-blur-2xl rounded-2xl shadow-2xl shadow-slate-300/40 border border-white/70 z-50 overflow-hidden">
+              <div className="absolute top-12 right-0 w-[22rem] bg-white rounded-2xl shadow-2xl shadow-slate-300/40 border border-slate-200 z-50 overflow-hidden">
 
                 {/* Header */}
-                <div className="px-4 py-3 border-b border-slate-100/80 flex items-center justify-between bg-white/40">
+                <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                   <div className="flex items-center gap-2">
                     <Activity className="w-3.5 h-3.5 text-blue-500" />
                     <p className="font-semibold text-slate-800 text-sm">Notifications</p>
@@ -275,7 +275,7 @@ export function Navbar() {
 
                 {/* Footer */}
                 {alerts.length > 0 && (
-                  <div className="px-4 py-2.5 border-t border-slate-100/80 bg-white/40">
+                  <div className="px-4 py-2.5 border-t border-slate-100 bg-slate-50/50">
                     <Link
                       href="/dashboard/alerts"
                       onClick={() => setShowNotifications(false)}

@@ -9,6 +9,7 @@ import { CustomLineChart } from "@/components/charts/CustomLineChart";
 import { AlertPanel } from "@/components/alerts/AlertPanel";
 import { FloodPredictionCard } from "@/components/cards/FloodPredictionCard";
 import { FloodAlertBanner } from "@/components/alerts/FloodAlertBanner";
+import { WeatherWidget } from "@/components/cards/WeatherWidget";
 import dynamic from 'next/dynamic';
 import { useFloodPrediction } from "@/hooks/useFloodPrediction";
 import { useMemo } from "react";
@@ -196,10 +197,10 @@ export default function DashboardHome() {
         />
       </div>
 
-      {/* Row 2: Water Level Chart + Comfort Score + Device Status */}
+      {/* Row 2: Water Level Chart + Weather Widget */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Chart — 2 cols */}
-        <div className="lg:col-span-2 relative bg-white/40 backdrop-blur-xl border border-white/60 shadow-lg shadow-slate-200/40 rounded-[1.75rem] p-6 flex flex-col min-h-[360px] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl overflow-hidden">
+        <div className="lg:col-span-2 relative bg-white/40 backdrop-blur-xl border border-white/60 shadow-lg shadow-slate-200/40 rounded-[1.75rem] p-6 flex flex-col min-h-[400px] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl overflow-hidden">
           <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-blue-400/60 via-sky-300/60 to-transparent" />
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-slate-900 font-bold text-base">Water Level Trend</h3>
@@ -213,17 +214,22 @@ export default function DashboardHome() {
               </span>
             )}
           </div>
-          <div className="flex-1">
+          <div className="flex-1 pb-2">
             <CustomLineChart data={chartData} dataKey="distance" color="#3b82f6" label="Water Level (cm)" />
           </div>
         </div>
 
-        {/* Right column: Comfort Score, Flood Prediction, Device Status */}
+        {/* Right column: Weather */}
         <div className="flex flex-col gap-6">
-          <ComfortScoreCard temperature={data.temperature} humidity={data.humidity} />
-          <FloodPredictionCard prediction={prediction} isLoading={isPredictionLoading} />
-          {deviceStatus && <DeviceStatusCard deviceStatus={deviceStatus} />}
+          <WeatherWidget />
         </div>
+      </div>
+
+      {/* Row 3: Additional Cards */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <ComfortScoreCard temperature={data.temperature} humidity={data.humidity} />
+        <FloodPredictionCard prediction={prediction} isLoading={isPredictionLoading} />
+        {deviceStatus && <DeviceStatusCard deviceStatus={deviceStatus} />}
       </div>
 
       {/* Row 3: Alert Panel */}
