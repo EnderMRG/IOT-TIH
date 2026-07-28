@@ -1,26 +1,5 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
-
-//==================================================
-// WiFi Credentials
-//==================================================
-
-const char* ssid = "EnderMRG";
-const char* password = "moharnab05";
-
-//==================================================
-// ThingSpeak API Key
-//==================================================
-
-String apiKey = "8UQC65LT36FK7DT6";
-
-//==================================================
-// Connect WiFi
-//==================================================
-
-void connectWiFi()
-{#include <WiFi.h>
-#include <HTTPClient.h>
 #include <Wire.h>
 #include <DHT.h>
 #include <Adafruit_BMP085.h>
@@ -29,8 +8,8 @@ void connectWiFi()
 // WiFi Credentials
 //==================================================
 
-const char* ssid = "EnderMRG";
-const char* password = "moharnab05";
+const char* ssid = "Aryya";
+const char* password = "aryyaman2006";
 
 //==================================================
 // ThingSpeak
@@ -259,103 +238,4 @@ void loop()
     uploadThingSpeak();
 
     delay(15000);
-}
-    Serial.print("Connecting to WiFi");
-
-    WiFi.begin(ssid, password);
-
-    while (WiFi.status() != WL_CONNECTED)
-    {
-        delay(500);
-        Serial.print(".");
-    }
-
-    Serial.println();
-    Serial.println("WiFi Connected!");
-    Serial.print("IP Address: ");
-    Serial.println(WiFi.localIP());
-}
-
-//==================================================
-// Upload Dummy Data to ThingSpeak
-//==================================================
-
-void uploadThingSpeak()
-{
-    if (WiFi.status() != WL_CONNECTED)
-    {
-        Serial.println("WiFi disconnected. Reconnecting...");
-        connectWiFi();
-    }
-
-    HTTPClient http;
-
-    // Dummy values
-    float wasteWeight = random(5, 50) + random(0, 100) / 100.0; // Random 5.00 - 49.99 kg
-    int station = 1; // Dummy Station ID
-
-    String url =
-        "https://api.thingspeak.com/update?api_key=" + apiKey +
-        "&field1=" + String(wasteWeight, 2) +
-        "&field2=" + String(station);
-
-    Serial.println("-----------------------------------");
-    Serial.println("Uploading to ThingSpeak...");
-    Serial.println(url);
-
-    http.begin(url);
-
-    int httpCode = http.GET();
-
-    if (httpCode > 0)
-    {
-        Serial.print("HTTP Response Code: ");
-        Serial.println(httpCode);
-
-        String response = http.getString();
-
-        if (response != "0")
-        {
-            Serial.print("Upload Successful! Entry ID: ");
-            Serial.println(response);
-        }
-        else
-        {
-            Serial.println("ThingSpeak rejected the update.");
-        }
-    }
-    else
-    {
-        Serial.print("Upload Failed: ");
-        Serial.println(http.errorToString(httpCode));
-    }
-
-    http.end();
-}
-
-//==================================================
-// Setup
-//==================================================
-
-void setup()
-{
-    Serial.begin(115200);
-    delay(1000);
-
-    randomSeed(micros());
-
-    connectWiFi();
-}
-
-//==================================================
-// Loop
-//==================================================
-
-void loop()
-{
-    uploadThingSpeak();
-
-    Serial.println("Waiting 15 seconds...\n");
-
-    delay(15000); // ThingSpeak Free Version Limit
 }

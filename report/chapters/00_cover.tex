@@ -1,73 +1,67 @@
-﻿%=============================================================================
-% Chapter 0: Cover Page
+%=============================================================================
+% Chapter 0: Cover Page — Clean Professional Theme
 %=============================================================================
 \begin{titlepage}
-\newgeometry{top=1.5cm,bottom=1.5cm,left=2cm,right=2cm}
+\newgeometry{top=2.5cm,bottom=2.5cm,left=2.5cm,right=2.5cm}
 \thispagestyle{empty}
-
-% Top rule
-\noindent\textcolor{FloodBlue}{\rule{\linewidth}{3pt}}
-
-\vspace{0.5cm}
 
 % Logos row
 \begin{center}
-  \includegraphics[height=3cm]{../public/logotih.png}
-  \hspace{2cm}
-  \includegraphics[height=3cm]{../public/iitlogo.png}
+  \includegraphics[height=1.8cm]{../public/logotih.png}
+  \hspace{3cm}
+  \includegraphics[height=1.8cm]{../public/iitlogo.png}
 \end{center}
 
-\vspace{0.5cm}
-\noindent\textcolor{FloodBlue}{\rule{\linewidth}{1.5pt}}
-\vspace{0.5cm}
+\vspace{0.8cm}
 
 \begin{center}
-  {\small\textbf{INTERNSHIP PROJECT REPORT}}\\[0.2cm]
-  {\small Submitted in partial fulfilment of the internship requirements at}\\[0.1cm]
-  {\small\textbf{Technology Innovation Hub, IIT Guwahati}}
+  {\large\bfseries\color{FloodBlue!80!black} INTERNSHIP PROJECT REPORT}\\[0.2cm]
+  {\normalsize\color{FloodGray} Technology Innovation Hub, IIT Guwahati}
 \end{center}
 
-\vspace{0.5cm}
+\vspace{1.2cm}
 
 \begin{center}
-  {\Huge\bfseries\color{FloodBlue} FloodEye}\\[0.3cm]
-  {\Large\bfseries Real-time Flood Alert \&\ Water Level}\\[0.1cm]
-  {\Large\bfseries Monitoring System}\\[0.4cm]
-  \textcolor{FloodGray}{\textit{`Every Drop Monitored, Every Life Protected.''}}
+  {\fontsize{48}{55}\selectfont\bfseries\color{FloodBlue} FloodEye}\\[0.4cm]
+  {\Large\bfseries\color{FloodBlue!75!black} Real-time Flood Alert \&\ Water Level Monitoring System}\\[0.5cm]
+  \textcolor{FloodTeal}{\rule{8cm}{1.2pt}}\\[0.4cm]
+  {\normalsize\itshape\color{FloodGray} ``Every Drop Monitored, Every Life Protected.''}
 \end{center}
 
-\vspace{0.7cm}
-\noindent\textcolor{FloodBlue!40}{\rule{\linewidth}{0.6pt}}
-\vspace{0.5cm}
+\vfill
 
 \begin{center}
-\begin{tabular}{ll}
-\textbf{Project Domain:} & IoT, Machine Learning \&\ Web Dashboard \\[4pt]
-\textbf{Internship Organization:} & Technology Innovation Hub (TIH), IIT Guwahati \\[4pt]
-\textbf{Internship Duration:} & \textit{[Enter Start Date]} -- \textit{[Enter End Date]} \\[4pt]
-\textbf{Institution:} & \textit{[Your College/University Name]} \\[4pt]
-\textbf{Department:} & \textit{[Your Department Name]} \\[4pt]
-\textbf{Guide / Mentor:} & \textit{[Mentor Name, Designation]} \\[4pt]
-\textbf{Date:} & July 2026 \\
-\end{tabular}
+  \renewcommand{\arraystretch}{1.6}
+  \begin{tabular}{@{} >{\bfseries\color{FloodBlue}}r @{\hspace{1em}\textcolor{FloodTeal}{\textbullet}\hspace{1em}} l @{}}
+    Project Domain      & IoT, Machine Learning \& Web Dashboard \\
+    Organisation        & Technology Innovation Hub (TIH), IIT Guwahati \\
+    Duration            & 2 July 2026 -- 29 July 2026 \\
+    Mentor              & Mr.\ Ashish Kumar Mahato \\
+    Date                & 29 July 2026 \\
+  \end{tabular}
 \end{center}
 
-\vspace{0.7cm}
-\noindent\textcolor{FloodBlue!40}{\rule{\linewidth}{0.6pt}}
-\vspace{0.4cm}
+\vfill
 
 \begin{center}
-{\large\bfseries Team Members}\\[0.4cm]
-\begin{tabular}{ll}
-Moharnab Gogoi     & IoT Backend \&\ Cloud Integration \\[4pt]
-Aryyaman Bora      & Frontend \&\ UI Engineering \\[4pt]
-Mayuree Khanikar   & Documentation \&\ Research \\[4pt]
-Indrani Gogoi      & Documentation \\
-\end{tabular}
+  {\Large\bfseries\color{FloodBlue!80!black} Team Members}\\[0.5cm]
+  \renewcommand{\arraystretch}{1.2}
+  \setlength{\tabcolsep}{1.5cm}
+  \begin{tabular}{cc}
+    % Row 1 — names
+    \textcolor{FloodBlue}{\textbf{\large Moharnab Gogoi}}
+      & \textcolor{FloodBlue}{\textbf{\large Aryyaman Bora}} \\
+    % Row 1 — roles
+    \textcolor{FloodGray}{\itshape IoT Backend \& Cloud}
+      & \textcolor{FloodGray}{\itshape Frontend \& UI Engineering} \\[0.4cm]
+    % Row 2 — names
+    \textcolor{FloodBlue}{\textbf{\large Mayuree Khanikar}}
+      & \textcolor{FloodBlue}{\textbf{\large Indrani Gogoi}} \\
+    % Row 2 — roles
+    \textcolor{FloodGray}{\itshape Documentation \& Research}
+      & \textcolor{FloodGray}{\itshape Documentation \& Research} \\
+  \end{tabular}
 \end{center}
-
-\vspace{0.5cm}
-\noindent\textcolor{FloodBlue}{\rule{\linewidth}{3pt}}
 
 \restoregeometry
 \end{titlepage}
