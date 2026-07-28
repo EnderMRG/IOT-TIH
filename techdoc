@@ -1,0 +1,25 @@
+Our IoT-Based Real-Time Flood Monitoring System is an intelligent, industrial-grade solution designed for continuous monitoring of river, dam, and drainage water levels in both urban and remote locations. The system delivers real-time water level and environmental data using a high-speed 5G/GSM communication network, enabling authorities to monitor flood conditions from a centralized dashboard.
+To ensure uninterrupted operation during network outages or disasters, the system features a dual communication architecture. When GSM or internet connectivity becomes unavailable due to infrastructure damage or poor network coverage, the device automatically switches to LoRaWAN communication, providing reliable long-range data transmission. During field testing, the LoRaWAN network achieved a communication distance of approximately 2.5 km, with an estimated transmission capability of up to 12 km under suitable environmental conditions, making it ideal for remote and disaster-prone regions.
+The monitoring unit incorporates industrial-grade ultrasonic water level sensors that are specifically designed for harsh outdoor environments. These sensors feature IP67-rated weather-resistant construction, internal temperature compensation for improved measurement accuracy, and support multiple output interfaces, including Analog, Serial, and Pulse Width, ensuring compatibility with a wide range of industrial monitoring systems.
+Key Features
+•	Real-time flood and water level monitoring.
+•	High-speed 5G/GSM communication for instant data transmission.
+•	Automatic LoRaWAN failover when cellular or internet networks are unavailable.
+•	Long-range wireless communication with tested coverage of approximately 2.5 km and potential transmission distances of up to 12 km under favorable conditions.
+•	Industrial-grade ultrasonic sensor with IP67 weather-resistant enclosure.
+•	Internal temperature compensation for accurate distance measurement.
+•	Multiple sensor output options: Analog, Serial, and Pulse Width.
+•	Cloud-based centralized monitoring dashboard with live data visualization.
+•	Real-time alerts and notifications for abnormal water level conditions.
+•	Suitable for rivers, dams, reservoirs, canals, bridges, urban drainage systems, and remote flood-prone locations.
+Applications
+•	River Water Level Monitoring
+•	Flood Early Warning Systems
+•	Dam and Reservoir Monitoring
+•	Smart City Water Infrastructure
+•	Disaster Management and Emergency Response
+•	Remote Environmental Monitoring
+•	Irrigation Canal Monitoring
+•	Critical Infrastructure Protection
+Our solution is designed to provide reliable, continuous, and resilient flood monitoring, ensuring that critical water level information remains available even during communication failures or natural disasters.
+
