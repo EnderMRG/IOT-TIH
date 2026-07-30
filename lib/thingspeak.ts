@@ -1,7 +1,5 @@
 import type { TelemetryData, DeviceStatus } from "@/components/providers/TelemetryProvider";
 
-const CHANNEL_ID = process.env.THINGSPEAK_CHANNEL_ID;
-const API_KEY = process.env.THINGSPEAK_READ_API_KEY;
 const BASE_URL = "https://api.thingspeak.com";
 
 // ── Types from ThingSpeak REST API ────────────────────────────────────────────
@@ -67,10 +65,10 @@ interface CacheEntry<T> {
 type LatestResult = { data: TelemetryData; deviceStatus: DeviceStatus };
 
 type GlobalCache = {
-  latestCache: {
+  latestCache: Map<string, {
     entry: CacheEntry<LatestResult> | null;
     inflight: Promise<LatestResult | null> | null;
-  };
+  }>;
   historyCache: Map<string, {
     entry: CacheEntry<TelemetryData[]> | null;
     inflight: Promise<TelemetryData[]> | null;
@@ -78,13 +76,13 @@ type GlobalCache = {
 };
 
 const globalAny = globalThis as any;
-if (!globalAny.__thingspeakCache) {
-  globalAny.__thingspeakCache = {
-    latestCache: { entry: null, inflight: null },
+if (!globalAny.__thingspeakCacheV2) {
+  globalAny.__thingspeakCacheV2 = {
+    latestCache: new Map(),
     historyCache: new Map()
   };
 }
-const { latestCache, historyCache } = globalAny.__thingspeakCache as GlobalCache;
+const { latestCache, historyCache } = globalAny.__thingspeakCacheV2 as GlobalCache;
 
 const LATEST_TTL_MS  = 14_000; // 14s — just under the 15s ESP32 upload interval
 const HISTORY_TTL_MS = 55_000; // 55s
@@ -98,22 +96,31 @@ const HISTORY_TTL_MS = 55_000; // 55s
  * Requests are coalesced: if a fetch is already in-flight, all callers
  * await the same promise. Results are cached for 14s.
  */
-export async function getLatestReading(): Promise<LatestResult | null> {
-  if (!CHANNEL_ID || !API_KEY) {
-    console.warn("[thingspeak] Missing THINGSPEAK_CHANNEL_ID or THINGSPEAK_READ_API_KEY");
+export async function getLatestReading(customChannelId?: string, customApiKey?: string): Promise<LatestResult | null> {
+  const channelId = customChannelId || process.env.THINGSPEAK_CHANNEL_ID;
+  const apiKey = customApiKey || process.env.THINGSPEAK_READ_API_KEY;
+
+  if (!channelId || !apiKey) {
+    console.warn("[thingspeak] Missing ThingSpeak credentials");
     return null;
   }
 
+  const cacheKey = channelId;
+  if (!latestCache.has(cacheKey)) {
+    latestCache.set(cacheKey, { entry: null, inflight: null });
+  }
+  const slot = latestCache.get(cacheKey)!;
+
   // Serve from cache if still fresh
-  if (latestCache.entry && Date.now() < latestCache.entry.expiresAt) {
-    return latestCache.entry.value;
+  if (slot.entry && Date.now() < slot.entry.expiresAt) {
+    return slot.entry.value;
   }
 
   // If no fetch is in-flight, start one
-  if (!latestCache.inflight) {
-    latestCache.inflight = (async () => {
+  if (!slot.inflight) {
+    slot.inflight = (async () => {
       try {
-        const url = `${BASE_URL}/channels/${CHANNEL_ID}/feeds/last.json?api_key=${API_KEY}`;
+        const url = `${BASE_URL}/channels/${channelId}/feeds/last.json?api_key=${apiKey}`;
         const res = await fetch(url, { cache: "no-store" });
         if (!res.ok) throw new Error(`ThingSpeak returned ${res.status}`);
 
@@ -123,24 +130,24 @@ export async function getLatestReading(): Promise<LatestResult | null> {
           deviceStatus: deriveDeviceStatus(feed),
         };
 
-        latestCache.entry = { value: result, expiresAt: Date.now() + LATEST_TTL_MS };
+        slot.entry = { value: result, expiresAt: Date.now() + LATEST_TTL_MS };
         return result;
       } catch (err) {
-        console.error("[thingspeak] getLatestReading failed:", err);
+        console.error(`[thingspeak] getLatestReading failed for ${channelId}:`, err);
         // Serve stale data on error rather than returning null
-        return latestCache.entry?.value ?? null;
+        return slot.entry?.value ?? null;
       } finally {
-        latestCache.inflight = null;
+        slot.inflight = null;
       }
     })();
   }
 
   // Stale-while-revalidate: if we have a stale entry, return it immediately to avoid blocking.
   // Otherwise, await the in-flight request (happens on very first load).
-  if (latestCache.entry) {
-    return latestCache.entry.value;
+  if (slot.entry) {
+    return slot.entry.value;
   }
-  return latestCache.inflight;
+  return slot.inflight;
 }
 
 export type HistoryQuery =
@@ -156,9 +163,12 @@ export type HistoryQuery =
  *
  * Requests are coalesced per cache key. Results are cached for 55s.
  */
-export async function getHistoryFeeds(query: HistoryQuery): Promise<TelemetryData[]> {
-  if (!CHANNEL_ID || !API_KEY) {
-    console.warn("[thingspeak] Missing THINGSPEAK_CHANNEL_ID or THINGSPEAK_READ_API_KEY");
+export async function getHistoryFeeds(query: HistoryQuery, customChannelId?: string, customApiKey?: string): Promise<TelemetryData[]> {
+  const channelId = customChannelId || process.env.THINGSPEAK_CHANNEL_ID;
+  const apiKey = customApiKey || process.env.THINGSPEAK_READ_API_KEY;
+
+  if (!channelId || !apiKey) {
+    console.warn("[thingspeak] Missing ThingSpeak credentials");
     return [];
   }
 
@@ -170,11 +180,13 @@ export async function getHistoryFeeds(query: HistoryQuery): Promise<TelemetryDat
     params = `start=${encodeURIComponent(query.start)}&end=${encodeURIComponent(query.end)}`;
   }
 
+  const cacheKey = `${channelId}_${params}`;
+
   // Get or create a cache slot for this query key
-  if (!historyCache.has(params)) {
-    historyCache.set(params, { entry: null, inflight: null });
+  if (!historyCache.has(cacheKey)) {
+    historyCache.set(cacheKey, { entry: null, inflight: null });
   }
-  const slot = historyCache.get(params)!;
+  const slot = historyCache.get(cacheKey)!;
 
   // Serve from cache if still fresh
   if (slot.entry && Date.now() < slot.entry.expiresAt) {
@@ -185,7 +197,7 @@ export async function getHistoryFeeds(query: HistoryQuery): Promise<TelemetryDat
   if (!slot.inflight) {
     slot.inflight = (async () => {
       try {
-        const url = `${BASE_URL}/channels/${CHANNEL_ID}/feeds.json?api_key=${API_KEY}&${params}`;
+        const url = `${BASE_URL}/channels/${channelId}/feeds.json?api_key=${apiKey}&${params}`;
         const res = await fetch(url, { cache: "no-store" });
         if (!res.ok) throw new Error(`ThingSpeak returned ${res.status}`);
 
@@ -195,7 +207,7 @@ export async function getHistoryFeeds(query: HistoryQuery): Promise<TelemetryDat
         slot.entry = { value: feeds, expiresAt: Date.now() + HISTORY_TTL_MS };
         return feeds;
       } catch (err) {
-        console.error("[thingspeak] getHistoryFeeds failed:", err);
+        console.error(`[thingspeak] getHistoryFeeds failed for ${channelId}:`, err);
         // Serve stale data on error
         return slot.entry?.value ?? [];
       } finally {

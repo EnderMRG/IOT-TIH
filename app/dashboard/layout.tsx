@@ -8,7 +8,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col md:flex-row w-full min-h-screen min-h-[100dvh] bg-transparent relative overscroll-none">
+    <div className="flex flex-col md:flex-row w-full h-[100dvh] overflow-hidden bg-transparent relative overscroll-none">
       {/* Animated water wave background */}
       <WaveBackground />
 

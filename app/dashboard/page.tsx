@@ -13,6 +13,13 @@ import { WeatherWidget } from "@/components/cards/WeatherWidget";
 import dynamic from 'next/dynamic';
 import { useFloodPrediction } from "@/hooks/useFloodPrediction";
 import { useMemo } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const EcoMap = dynamic(() => import("@/components/Map"), { 
   ssr: false, 
@@ -100,72 +107,113 @@ function OfflineBanner({ lastSeenAt }: { lastSeenAt: string | null }) {
 // ── Page ───────────────────────────────────────────────────────────────────────
 
 export default function DashboardHome() {
-  const { data, history, deviceStatus, isLoading, isOffline, isStale, lastSeenAt } = useTelemetry();
+  const { data, history, deviceStatus, isLoading, isOffline, isStale, lastSeenAt, nodes, activeNodeId, setActiveNodeId } = useTelemetry();
   const { prediction, isLoading: isPredictionLoading } = useFloodPrediction(history);
 
   const chartData = useMemo(() => {
     return history.map((e) => ({
       time:        new Date(e.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      temperature: e.temperature,
-      humidity:    e.humidity,
-      pressure:    e.pressure,
-      altitude:    e.altitude,
-      distance:    e.distance,
+      temperature: e.temperature === -999 ? null : e.temperature,
+      humidity:    e.humidity === -999 ? null : e.humidity,
+      pressure:    e.pressure === -999 ? null : e.pressure,
+      altitude:    e.altitude === -999 ? null : e.altitude,
+      distance:    e.distance === -999 ? null : e.distance,
     }));
   }, [history]);
 
-  const historyTemp = useMemo(() => history.map((h) => h.temperature), [history]);
-  const historyHum = useMemo(() => history.map((h) => h.humidity), [history]);
-  const historyPress = useMemo(() => history.map((h) => h.pressure), [history]);
-  const historyAlt = useMemo(() => history.map((h) => h.altitude), [history]);
-  const historyDist = useMemo(() => history.map((h) => h.distance), [history]);
-
-  if (isLoading) return <LoadingOverlay />;
-  if (!data)     return <NoDataState />;
+  const historyTemp = useMemo(() => history.map((h) => h.temperature).filter(v => v !== -999), [history]);
+  const historyHum = useMemo(() => history.map((h) => h.humidity).filter(v => v !== -999), [history]);
+  const historyPress = useMemo(() => history.map((h) => h.pressure).filter(v => v !== -999), [history]);
+  const historyAlt = useMemo(() => history.map((h) => h.altitude).filter(v => v !== -999), [history]);
+  const historyDist = useMemo(() => history.map((h) => h.distance).filter(v => v !== -999), [history]);
 
   const prev = history[history.length - 2];
 
   const getTrend = (curr: number, prevVal: number | undefined) =>
-    prevVal === undefined ? "stable" : curr > prevVal ? "up" : curr < prevVal ? "down" : "stable";
+    curr === -999 || prevVal === undefined || prevVal === -999 ? "stable" : curr > prevVal ? "up" : curr < prevVal ? "down" : "stable";
 
   const getDelta = (curr: number, prevVal: number | undefined) =>
-    prevVal !== undefined ? curr - prevVal : undefined;
+    curr !== -999 && prevVal !== undefined && prevVal !== -999 ? curr - prevVal : undefined;
+
+  const formatValue = (val: number, precision: number) => val === -999 ? "N/A" : val.toFixed(precision);
 
   return (
     <div className="flex flex-col gap-6">
 
-      {/* Offline banner — shown when device is unreachable but we have cached data */}
-      {isStale && <OfflineBanner lastSeenAt={lastSeenAt} />}
+      {/* Node Selector Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white/40 backdrop-blur-xl border border-white/60 shadow-sm rounded-[1.75rem] p-4 px-6">
+        <div>
+          <h2 className="text-xl font-bold text-slate-900">Dashboard</h2>
+          <p className="text-sm text-slate-500">Real-time telemetry and analysis</p>
+        </div>
+        {nodes.length > 1 && (
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-semibold text-slate-700">Active Device:</span>
+            <DropdownMenu>
+              <DropdownMenuTrigger 
+                render={
+                  <Button variant="outline" className="bg-white/80 border-slate-200 text-slate-900 rounded-xl px-4 py-2 font-medium">
+                    {(() => {
+                      const idx = nodes.findIndex(n => n.id === activeNodeId);
+                      return idx !== -1 ? `Node ${idx + 1}` : "Select Device";
+                    })()}
+                  </Button>
+                }
+              />
+              <DropdownMenuContent align="end" className="bg-white border-slate-200 rounded-xl">
+                {nodes.map((n, index) => (
+                  <DropdownMenuItem 
+                    key={n.id} 
+                    onClick={() => setActiveNodeId(n.id)}
+                    className={n.id === activeNodeId ? "bg-slate-100 font-medium" : ""}
+                  >
+                    Node {index + 1}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )}
+      </div>
+
+      {isLoading ? (
+        <LoadingOverlay />
+      ) : !data ? (
+        <NoDataState />
+      ) : (
+        <>
+          {/* Offline banner — shown when device is unreachable but we have cached data */}
+          {isStale && <OfflineBanner lastSeenAt={lastSeenAt} />}
       
-      {/* Flood Alert Banner - auto shows on high/critical risk */}
-      <FloodAlertBanner />
+          {/* Flood Alert Banner - auto shows on high/critical risk */}
+          <FloodAlertBanner />
 
       {/* Row 1: 5 Sensor Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
         <SensorCard
           title={isOffline ? "Temperature (Cached)" : "Temperature"}
-          value={data.temperature.toFixed(1)}
-          unit="°C"
+          value={formatValue(data.temperature, 1)}
+          unit={data.temperature === -999 ? "" : "°C"}
           icon={Thermometer}
           trend={getTrend(data.temperature, prev?.temperature)}
           delta={getDelta(data.temperature, prev?.temperature)}
-          status={data.temperature > 35 ? "warning" : "normal"}
+          status={data.temperature === -999 ? "normal" : data.temperature > 35 ? "warning" : "normal"}
           historyData={historyTemp}
         />
         <SensorCard
           title={isOffline ? "Humidity (Cached)" : "Humidity"}
-          value={data.humidity.toFixed(0)}
-          unit="%"
+          value={formatValue(data.humidity, 0)}
+          unit={data.humidity === -999 ? "" : "%"}
           icon={Droplets}
           trend={getTrend(data.humidity, prev?.humidity)}
           delta={getDelta(data.humidity, prev?.humidity)}
-          status={data.humidity > 80 ? "warning" : "normal"}
+          status={data.humidity === -999 ? "normal" : data.humidity > 80 ? "warning" : "normal"}
           historyData={historyHum}
         />
         <SensorCard
           title="Atmospheric Pressure"
-          value={data.pressure.toFixed(0)}
-          unit="hPa"
+          value={formatValue(data.pressure, 0)}
+          unit={data.pressure === -999 ? "" : "hPa"}
           icon={Wind}
           trend={getTrend(data.pressure, prev?.pressure)}
           delta={getDelta(data.pressure, prev?.pressure)}
@@ -175,8 +223,8 @@ export default function DashboardHome() {
         />
         <SensorCard
           title="Altitude"
-          value={data.altitude.toFixed(0)}
-          unit="m"
+          value={formatValue(data.altitude, 0)}
+          unit={data.altitude === -999 ? "" : "m"}
           icon={Mountain}
           trend={getTrend(data.altitude, prev?.altitude)}
           delta={getDelta(data.altitude, prev?.altitude)}
@@ -185,12 +233,12 @@ export default function DashboardHome() {
         />
         <SensorCard
           title={isOffline ? "Water Level (Cached)" : "Water Level"}
-          value={data.distance.toFixed(0)}
-          unit="cm"
+          value={formatValue(data.distance, 0)}
+          unit={data.distance === -999 ? "" : "cm"}
           icon={Ruler}
           trend={getTrend(data.distance, prev?.distance)}
           delta={getDelta(data.distance, prev?.distance)}
-          status={data.distance < 20 ? "critical" : data.distance < 40 ? "warning" : "normal"}
+          status={data.distance === -999 ? "normal" : data.distance < 20 ? "critical" : data.distance < 40 ? "warning" : "normal"}
           historyData={historyDist}
           variant="primary"
           invertTrend={true}
@@ -237,16 +285,20 @@ export default function DashboardHome() {
         <AlertPanel />
       </div>
 
-      {/* Row 4: Map */}
-      <div className="mt-6">
-        <h3 className="text-slate-900 font-bold text-base mb-4">Device Location</h3>
-        <EcoMap 
-          distance={data.distance} 
-          temperature={data.temperature} 
-          humidity={data.humidity} 
-        />
-      </div>
-
+          {/* Row 4: Map */}
+          <div className="mt-6">
+            <h3 className="text-slate-900 font-bold text-base mb-4">Device Locations</h3>
+            <EcoMap 
+              nodes={nodes}
+              activeNodeId={activeNodeId}
+              onNodeSelect={setActiveNodeId}
+              distance={data.distance} 
+              temperature={data.temperature} 
+              humidity={data.humidity} 
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }
