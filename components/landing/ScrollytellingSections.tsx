@@ -497,7 +497,7 @@ function ContactSection() {
       icon: Contact,
       label: "Name",
       value: "Ashish Kumar Mahato",
-      href: "Ashish Kumar Mahato",
+      //href: "",
     },
     {
       icon: Mail,
@@ -609,7 +609,7 @@ function ContactSection() {
                 </p>
               </div>
               <a
-                href="mailto:moharnab.gogoi@gmail.com"
+                href="mailto:tihiotlab@gmail.com"
                 className="inline-flex items-center gap-2 px-8 py-4 bg-blue-500 text-white font-bold rounded-full hover:bg-blue-400 transition-all shadow-lg shadow-blue-500/30 hover:shadow-blue-400/50 text-sm"
               >
                 <Mail className="w-4 h-4" />
