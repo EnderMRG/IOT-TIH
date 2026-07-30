@@ -28,6 +28,7 @@ export type AlertType =
   | "RAPID_WATER_RISE"
   | "OBJECT_TOO_CLOSE"
   | "SENSOR_OFFLINE"
+  | "SENSOR_DISABLED"
   | "WEATHER_WARNING";
 
 export type AlertSeverity = "critical" | "warning" | "info";
@@ -63,6 +64,9 @@ interface TelemetryContextType {
   isStale: boolean;
   lastSeenAt: string | null;
   unreadCount: number;
+  nodes: { id: string; name: string }[];
+  activeNodeId: string;
+  setActiveNodeId: (id: string) => void;
   isSimulating: boolean;
   userRole: "admin" | "user";
   userName: string | null;
@@ -82,6 +86,8 @@ const LS_DATA    = "ecosense:lastData";
 const LS_HISTORY = "ecosense:lastHistory";
 const LS_STATUS  = "ecosense:lastStatus";
 const LS_SEEN_AT = "ecosense:lastSeenAt";
+
+const getLsKey = (base: string, nodeId: string) => `${base}_${nodeId}`;
 
 function lsGet<T>(key: string): T | null {
   try {
@@ -135,15 +141,35 @@ function evaluateAlerts(
 ): Omit<Alert, "id" | "timestamp" | "read" | "updatedAt">[] {
   const results: Omit<Alert, "id" | "timestamp" | "read" | "updatedAt">[] = [];
 
-  // --- Water Level (highest priority) ---
-  const waterRise = prev.distance - data.distance; // positive = water rose
-  if (waterRise >= 5) {
+  // --- Sensor Failures (-999 checks) ---
+  const disabledSensors: string[] = [];
+  if (data.temperature === -999) disabledSensors.push("Temperature");
+  if (data.humidity === -999) disabledSensors.push("Humidity");
+  if (data.pressure === -999) disabledSensors.push("Pressure");
+  if (data.altitude === -999) disabledSensors.push("Altitude");
+  if (data.distance === -999) disabledSensors.push("Water Level");
+
+  if (disabledSensors.length > 0) {
     results.push({
-      type: "RAPID_WATER_RISE",
-      severity: "critical",
-      message: `Water rising rapidly — ${waterRise.toFixed(1)} cm increase detected. Immediate action may be required.`,
+      type: "SENSOR_DISABLED",
+      severity: "warning",
+      message: `${disabledSensors.join(", ")} sensor(s) are disabled or returning invalid data (-999).`,
     });
-  } else if (data.distance < settings.distanceThreshold) {
+  }
+
+  // --- Water Level (highest priority) ---
+  if (data.distance !== -999 && prev.distance !== -999) {
+    const waterRise = prev.distance - data.distance; // positive = water rose
+    if (waterRise >= 5) {
+      results.push({
+        type: "RAPID_WATER_RISE",
+        severity: "critical",
+        message: `Water rising rapidly — ${waterRise.toFixed(1)} cm increase detected. Immediate action may be required.`,
+      });
+    }
+  }
+  
+  if (data.distance !== -999 && data.distance < settings.distanceThreshold) {
     const isCritical = data.distance < settings.distanceThreshold * 0.6;
     results.push({
       type: "HIGH_WATER_LEVEL",
@@ -155,10 +181,10 @@ function evaluateAlerts(
   }
 
   // --- Pressure (storm indicator) ---
-  if (data.pressure < settings.pressureThreshold) {
+  if (data.pressure !== -999 && data.pressure < settings.pressureThreshold) {
     const isExtreme = data.pressure < 995;
     // Only fire if significant drop from previous (>2 hPa) to avoid constant low-pressure alerts
-    const pressureDrop = prev.pressure - data.pressure;
+    const pressureDrop = prev.pressure !== -999 ? prev.pressure - data.pressure : 0;
     if (pressureDrop > 2 || data.pressure < 998) {
       results.push({
         type: "RAPID_PRESSURE_CHANGE",
@@ -171,7 +197,7 @@ function evaluateAlerts(
   }
 
   // --- Temperature ---
-  if (data.temperature > settings.tempThreshold) {
+  if (data.temperature !== -999 && data.temperature > settings.tempThreshold) {
     const isCritical = data.temperature > settings.tempThreshold + 5;
     // Only alert if notably above threshold (>1°C margin to avoid constant borderline alerts)
     if (data.temperature > settings.tempThreshold + 1) {
@@ -184,7 +210,7 @@ function evaluateAlerts(
   }
 
   // --- Humidity ---
-  if (data.humidity > settings.humidityThreshold) {
+  if (data.humidity !== -999 && data.humidity > settings.humidityThreshold) {
     const isCritical = data.humidity > 95;
     if (data.humidity > settings.humidityThreshold + 2) {
       results.push({
@@ -209,6 +235,7 @@ const ALERT_COOLDOWN: Record<AlertType, number> = {
   RAPID_WATER_RISE:      1 * 60 * 1000,  // 1 min (most urgent)
   OBJECT_TOO_CLOSE:      2 * 60 * 1000,  // 2 min
   SENSOR_OFFLINE:       10 * 60 * 1000,  // 10 min (fires once)
+  SENSOR_DISABLED:      10 * 60 * 1000,  // 10 min
   WEATHER_WARNING:      30 * 60 * 1000,  // 30 min
 };
 
@@ -241,6 +268,29 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
   const [settings, setSettings] = useState<DashboardSettings>(defaultSettings);
   const [isLoading, setIsLoading] = useState(true);
   const [isOffline, setIsOffline] = useState(false);
+  const [nodes, setNodes] = useState<{id: string; name: string}[]>([]);
+  const [activeNodeId, setActiveNodeIdState] = useState<string>("primary");
+
+  // Fetch nodes on mount
+  useEffect(() => {
+    fetch("/api/nodes")
+      .then(res => res.json())
+      .then(data => {
+        setNodes(data);
+        if (data.length > 0 && !activeNodeId) {
+          setActiveNodeIdState(data[0].id);
+        }
+      })
+      .catch(err => console.warn("Failed to fetch nodes", err));
+  }, []);
+
+  const setActiveNodeId = useCallback((id: string) => {
+    setActiveNodeIdState(id);
+    setIsLoading(true);
+    setData(null);
+    setHistory([]);
+    setDeviceStatus(null);
+  }, []);
 
   // ── Native Notifications ───────────────────────────────────────────────────
   const { sendNotification } = useNativeNotification();
@@ -357,20 +407,30 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
 
   // ── Hydrate from localStorage (client-only) ────────────────────────────────
   useEffect(() => {
-    const cached = lsGet<TelemetryData>(LS_DATA);
+    if (!activeNodeId) return;
+
+    const cached = lsGet<TelemetryData>(getLsKey(LS_DATA, activeNodeId));
     if (cached) {
       setData(cached);
       prevDataRef.current = cached;
       setIsLoading(false);
+    } else {
+      setData(null);
     }
-    const cachedHistory = lsGet<TelemetryData[]>(LS_HISTORY);
+    const cachedHistory = lsGet<TelemetryData[]>(getLsKey(LS_HISTORY, activeNodeId));
     if (cachedHistory) setHistory(cachedHistory);
-    const cachedStatus = lsGet<DeviceStatus>(LS_STATUS);
+    else setHistory([]);
+
+    const cachedStatus = lsGet<DeviceStatus>(getLsKey(LS_STATUS, activeNodeId));
     if (cachedStatus) setDeviceStatus(cachedStatus);
-    const cachedSeenAt = lsGet<string>(LS_SEEN_AT);
+    else setDeviceStatus(null);
+
+    const cachedSeenAt = lsGet<string>(getLsKey(LS_SEEN_AT, activeNodeId));
     if (cachedSeenAt) setLastSeenAt(cachedSeenAt);
+    else setLastSeenAt(null);
+
     if (!cached) setIsLoading(true);
-  }, []);
+  }, [activeNodeId]);
 
   // ── SIMULATION MODE LOOP ───────────────────────────────────────────────────
   useEffect(() => {
@@ -429,10 +489,10 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
 
   // ── REAL MODE: Initial history load from ThingSpeak ───────────────────────
   useEffect(() => {
-    if (isSimulating) return;
+    if (isSimulating || !activeNodeId) return;
     let cancelled = false;
 
-    fetch("/api/history?range=1h")
+    fetch(`/api/history?range=1h&nodeId=${activeNodeId}`)
       .then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
       .then((feeds: TelemetryData[]) => {
         if (cancelled) return;
@@ -444,9 +504,9 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
           setIsOffline(false);
           offlineAlertFiredRef.current = false;
           prevDataRef.current = last;
-          lsSet(LS_DATA, last);
-          lsSet(LS_HISTORY, feeds.slice(-240));
-          lsSet(LS_SEEN_AT, last.timestamp);
+          lsSet(getLsKey(LS_DATA, activeNodeId), last);
+          lsSet(getLsKey(LS_HISTORY, activeNodeId), feeds.slice(-240));
+          lsSet(getLsKey(LS_SEEN_AT, activeNodeId), last.timestamp);
         }
       })
       .catch((err) => {
@@ -458,15 +518,15 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
 
     return () => { cancelled = true; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSimulating]);
+  }, [isSimulating, activeNodeId]);
 
   // ── REAL MODE: Polling loop ───────────────────────────────────────────────
   useEffect(() => {
-    if (isSimulating) return;
+    if (isSimulating || !activeNodeId) return;
 
     const poll = async () => {
       try {
-        const res = await fetch("/api/sensors");
+        const res = await fetch(`/api/sensors?nodeId=${activeNodeId}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
         const { data: newData, deviceStatus: newStatus }: {
@@ -482,13 +542,13 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
         setLastSeenAt(newData.timestamp);
         setHistory((prev) => {
           const updated = [...prev, newData].slice(-240);
-          lsSet(LS_HISTORY, updated);
+          lsSet(getLsKey(LS_HISTORY, activeNodeId), updated);
           return updated;
         });
 
-        lsSet(LS_DATA, newData);
-        lsSet(LS_STATUS, newStatus);
-        lsSet(LS_SEEN_AT, newData.timestamp);
+        lsSet(getLsKey(LS_DATA, activeNodeId), newData);
+        lsSet(getLsKey(LS_STATUS, activeNodeId), newStatus);
+        lsSet(getLsKey(LS_SEEN_AT, activeNodeId), newData.timestamp);
 
         if (prevDataRef.current) {
           const triggered = evaluateAlerts(newData, prevDataRef.current, settingsRef.current);
@@ -522,7 +582,7 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSimulating, settings.refreshInterval, pushAlert]);
+  }, [isSimulating, settings.refreshInterval, pushAlert, activeNodeId]);
 
   const contextValue = useMemo(() => ({
     data,
@@ -535,6 +595,9 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
     isStale,
     lastSeenAt,
     unreadCount,
+    nodes,
+    activeNodeId,
+    setActiveNodeId,
     isSimulating,
     userRole,
     userName,
@@ -547,7 +610,7 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
     dismissAlert,
     markAllRead,
   }), [
-    data, history, alerts, deviceStatus, settings, isLoading, isOffline, isStale, lastSeenAt, unreadCount, isSimulating, userRole, userName,
+    data, history, alerts, deviceStatus, settings, isLoading, isOffline, isStale, lastSeenAt, unreadCount, nodes, activeNodeId, setActiveNodeId, isSimulating, userRole, userName,
     setIsSimulating, setUserRole, setUserName, setSettings, addAlert, clearAlerts, dismissAlert, markAllRead
   ]);
 

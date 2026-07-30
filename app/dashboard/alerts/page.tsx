@@ -19,6 +19,7 @@ const alertTypeConfig = {
   OBJECT_TOO_CLOSE:      { label: "Object Too Close",      icon: Ruler },
   SENSOR_OFFLINE:        { label: "Sensor Offline",        icon: WifiOff },
   WEATHER_WARNING:       { label: "Weather Warning",       icon: CloudRain },
+  SENSOR_DISABLED:       { label: "Sensor Disabled",       icon: AlertTriangle },
 } as const;
 
 function timeAgo(iso: string): string {

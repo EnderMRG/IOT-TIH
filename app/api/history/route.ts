@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getHistoryFeeds } from "@/lib/thingspeak";
+import { getNodeById, getNodes } from "@/lib/nodes";
 
 export const revalidate = 60;
 
@@ -44,8 +45,27 @@ function toThingSpeakDate(date: Date): string {
 
 export async function GET(req: NextRequest) {
   const range = req.nextUrl.searchParams.get("range") ?? "1h";
+  const nodeId = req.nextUrl.searchParams.get("nodeId");
+  let channelId: string | undefined;
+  let apiKey: string | undefined;
+
+  if (nodeId) {
+    const node = getNodeById(nodeId);
+    if (node) {
+      channelId = node.channelId;
+      apiKey = node.apiKey;
+    }
+  } else {
+    // default to first node if exists
+    const defaultNode = getNodes()[0];
+    if (defaultNode) {
+      channelId = defaultNode.channelId;
+      apiKey = defaultNode.apiKey;
+    }
+  }
+
   const query = rangeToQuery(range);
-  const feeds = await getHistoryFeeds(query);
+  const feeds = await getHistoryFeeds(query, channelId, apiKey);
 
   return NextResponse.json(feeds);
 }

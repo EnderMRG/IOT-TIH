@@ -26,11 +26,11 @@ export default function LoginPage() {
     let name = "";
     let valid = false;
 
-    if (email === "admin@floodeye.com" && password === "admin") {
+    if (email === "admin@floodeye.com" && password === "Admin@FloodEye123!") {
       role = "admin";
       name = "Admin";
       valid = true;
-    } else if (email === "user@floodeye.com" && password === "user") {
+    } else if (email === "user@floodeye.com" && password === "User@FloodEye123!") {
       role = "user";
       name = "User";
       valid = true;
