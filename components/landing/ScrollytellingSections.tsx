@@ -107,11 +107,11 @@ function StatCard({
   delay: number;
 }) {
   return (
-    <FadeIn delay={delay} direction="up">
-      <GlassCard className="p-4 sm:p-6 text-center">
+    <FadeIn delay={delay} direction="up" className="h-full">
+      <GlassCard className="p-4 sm:p-6 text-center h-full flex flex-col justify-center">
         <p className="font-sans text-3xl sm:text-4xl font-bold text-white mb-1">{value}</p>
         <p className="text-sm font-semibold text-blue-300">{label}</p>
-        <p className="text-xs text-white/60 mt-0.5">{sub}</p>
+        <p className="text-xs text-white/70 mt-1 leading-relaxed">{sub}</p>
       </GlassCard>
     </FadeIn>
   );
@@ -263,11 +263,25 @@ function CapabilitiesSection() {
           </p>
         </FadeIn>
 
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-12">
-          <StatCard value="5+" label="Sensor Types" sub="per node" delay={0} />
-          <StatCard value="15s" label="Refresh Rate" sub="live readings" delay={0.1} />
-          <StatCard value="24/7" label="Monitoring" sub="always on alert" delay={0.2} />
-          <StatCard value="100%" label="Open Source" sub="MIT licensed" delay={0.3} />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 mb-12">
+          <StatCard
+            value="Multi-Node"
+            label="Sensor Network"
+            sub="Distributed IoT sensor nodes providing continuous, real-time coverage across high-risk flood zones."
+            delay={0}
+          />
+          <StatCard
+            value="Keras ML"
+            label="Predictive Model"
+            sub="Custom Keras model forecasting water levels 4 hours ahead using a 1D-CNN + Bidirectional LSTM + Attention architecture."
+            delay={0.1}
+          />
+          <StatCard
+            value="24/7"
+            label="Live Monitoring"
+            sub="Continuous real-time telemetry with automated threshold alerting, instantly notifying emergency responders and downstream communities."
+            delay={0.2}
+          />
         </div>
 
         <FadeIn className="flex flex-wrap justify-center gap-3" delay={0.4}>
@@ -339,14 +353,14 @@ function FeatureGridSection() {
           />
           <FeatureCard
             icon={Radio}
-            title="ESP32 Integration"
-            desc="Plug-and-play firmware for ESP32 microcontrollers with I2C sensor support."
+            title="Low Latency"
+            desc="Sub-second data transmission from field nodes for immediate early warnings."
             delay={0.1}
           />
           <FeatureCard
             icon={Zap}
-            title="ThingSpeak Sync"
-            desc="Push data to ThingSpeak IoT cloud for remote logging and long-term storage."
+            title="Reliable Communication"
+            desc="Robust multi-protocol telemetry ensuring continuous connectivity during severe monsoon weather."
             delay={0.2}
           />
         </div>

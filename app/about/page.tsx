@@ -18,7 +18,22 @@ function GlassCard({ children, className = "" }: { children: React.ReactNode; cl
 export default function AboutPage() {
   const team = [
     {
+      name: "Dr. Santosha K. Dwivedy",
+      role: "",
+      image: "/santosha.jpg",
+      bio: "Dr. Santosha K. Dwivedy serves as the Head of the Technology Innovation Hub (TIH) at IIT Guwahati. He provides visionary leadership and academic direction for cutting-edge technological innovations and IoT flood monitoring initiatives.",
+      skills: [],
+    },
+    {
+      name: "Dr. Pratiksha Sharma",
+      role: "",
+      image: "/pratiksha.jpg",
+      bio: "Dr. Pratiksha Sharma serves as the Project Co-ordinator at TIH IIT Guwahati, overseeing project milestones, interdisciplinary collaboration, and the effective execution of the FloodEye monitoring system.",
+      skills: [],
+    },
+    {
       name: "Ashish Kumar Mahato",
+      role: "",
       image: "/ashihs.jpg",
       // ✏️ EDIT: Update this bio and skills for Ashish
       bio: "Ashish Kumar Mahato serves as the project mentor, guiding the team through the development of FloodEye. His expertise in IoT systems and embedded programming has been instrumental in shaping the architecture of the platform.",
