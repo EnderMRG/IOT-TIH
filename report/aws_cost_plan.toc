@@ -1,0 +1,14 @@
+\contentsline {section}{\numberline {1}Executive Summary}{2}{section.1}%
+\contentsline {section}{\numberline {2}AWS Service Architecture}{2}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Architecture Overview}{2}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Service-by-Service Breakdown}{3}{subsection.2.2}%
+\contentsline {subsubsection}{\numberline {2.2.1}Pillar 1 -- MQTT Protocol: AWS IoT Core}{3}{subsubsection.2.2.1}%
+\contentsline {subsubsection}{\numberline {2.2.2}Pillar 2 -- PostgreSQL: Amazon RDS + TimescaleDB}{3}{subsubsection.2.2.2}%
+\contentsline {subsubsection}{\numberline {2.2.3}Pillar 3 -- Multi-Node: AWS ECS Fargate + ALB}{3}{subsubsection.2.2.3}%
+\contentsline {subsubsection}{\numberline {2.2.4}Pillar 4 -- SMS Gateway: Amazon SNS + Lambda + Twilio}{3}{subsubsection.2.2.4}%
+\contentsline {subsubsection}{\numberline {2.2.5}Pillar 5 -- Advanced ML: Amazon SageMaker}{4}{subsubsection.2.2.5}%
+\contentsline {section}{\numberline {3}Monthly Cost Breakdown}{4}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Cost Scaling by Deployment Size}{5}{subsection.3.1}%
+\contentsline {section}{\numberline {4}Cost Optimisation Strategies}{5}{section.4}%
+\contentsline {section}{\numberline {5}Implementation Roadmap}{6}{section.5}%
+\contentsline {section}{\numberline {6}Summary}{6}{section.6}%
