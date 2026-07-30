@@ -15,7 +15,7 @@ const char* password = "aryyaman2006";
 // ThingSpeak
 //==================================================
 
-String apiKey = "9790UIITGGXBTRZM";
+String apiKey = "KCRQY0X688FWQI57";
 
 //==================================================
 // DHT11
@@ -42,11 +42,19 @@ Adafruit_BMP085 bmp;
 // Variables
 //==================================================
 
-float temperature;
-float humidity;
-float pressure;
-float altitude;
-float distance;
+float temperature = -999;
+float humidity = -999;
+float pressure = -999;
+float altitude = -999;
+float distance = -999;
+
+//==================================================
+// Sensor Status
+//==================================================
+
+bool dhtOK = false;
+bool bmpOK = false;
+bool ultrasonicOK = false;
 
 //==================================================
 // WiFi
@@ -58,20 +66,31 @@ void connectWiFi()
 
     WiFi.begin(ssid, password);
 
-    while (WiFi.status() != WL_CONNECTED)
+    int retry = 0;
+
+    while (WiFi.status() != WL_CONNECTED && retry < 30)
     {
         delay(500);
         Serial.print(".");
+        retry++;
     }
 
-    Serial.println();
-    Serial.println("Connected!");
-    Serial.print("IP: ");
-    Serial.println(WiFi.localIP());
+    if(WiFi.status() == WL_CONNECTED)
+    {
+        Serial.println();
+        Serial.println("WiFi Connected!");
+        Serial.print("IP Address : ");
+        Serial.println(WiFi.localIP());
+    }
+    else
+    {
+        Serial.println();
+        Serial.println("WiFi Connection Failed!");
+    }
 }
 
 //==================================================
-// Read Ultrasonic
+// Ultrasonic
 //==================================================
 
 float readDistance()
@@ -86,7 +105,7 @@ float readDistance()
     long duration = pulseIn(ECHO_PIN, HIGH, 30000);
 
     if(duration == 0)
-        return -1;
+        return -999;
 
     return duration * 0.0343 / 2.0;
 }
@@ -97,28 +116,67 @@ float readDistance()
 
 void readSensors()
 {
+    //------------------------------------------------
+    // DHT11
+    //------------------------------------------------
+
     temperature = dht.readTemperature();
     humidity = dht.readHumidity();
 
-    pressure = bmp.readPressure() / 100.0;
-    altitude = bmp.readAltitude();
+    if(isnan(temperature) || isnan(humidity))
+    {
+        dhtOK = false;
+        temperature = -999;
+        humidity = -999;
+    }
+    else
+    {
+        dhtOK = true;
+    }
+
+    //------------------------------------------------
+    // BMP180
+    //------------------------------------------------
+
+    if(bmpOK)
+    {
+        pressure = bmp.readPressure() / 100.0;
+        altitude = bmp.readAltitude();
+    }
+    else
+    {
+        pressure = -999;
+        altitude = -999;
+    }
+
+    //------------------------------------------------
+    // Ultrasonic
+    //------------------------------------------------
 
     distance = readDistance();
+
+    if(distance == -999)
+    {
+        ultrasonicOK = false;
+    }
+    else
+    {
+        ultrasonicOK = true;
+    }
 }
 
 //==================================================
-// Print Readings
+// Print Values
 //==================================================
 
 void printReadings()
 {
-    Serial.println("====================================");
+    Serial.println();
+    Serial.println("==========================================");
 
-    if(isnan(temperature) || isnan(humidity))
-    {
-        Serial.println("DHT11 ERROR");
-    }
-    else
+    //---------------- DHT ----------------
+
+    if(dhtOK)
     {
         Serial.print("Temperature : ");
         Serial.print(temperature);
@@ -128,27 +186,44 @@ void printReadings()
         Serial.print(humidity);
         Serial.println(" %");
     }
-
-    Serial.print("Pressure    : ");
-    Serial.print(pressure);
-    Serial.println(" hPa");
-
-    Serial.print("Altitude    : ");
-    Serial.print(altitude);
-    Serial.println(" m");
-
-    if(distance < 0)
+    else
     {
-        Serial.println("Distance    : No Echo");
+        Serial.println("Temperature : FAILED");
+        Serial.println("Humidity    : FAILED");
+    }
+
+    //---------------- BMP ----------------
+
+    if(bmpOK)
+    {
+        Serial.print("Pressure    : ");
+        Serial.print(pressure);
+        Serial.println(" hPa");
+
+        Serial.print("Altitude    : ");
+        Serial.print(altitude);
+        Serial.println(" m");
     }
     else
+    {
+        Serial.println("Pressure    : FAILED");
+        Serial.println("Altitude    : FAILED");
+    }
+
+    //---------------- Ultrasonic ----------------
+
+    if(ultrasonicOK)
     {
         Serial.print("Distance    : ");
         Serial.print(distance);
         Serial.println(" cm");
     }
+    else
+    {
+        Serial.println("Distance    : FAILED");
+    }
 
-    Serial.println("====================================");
+    Serial.println("==========================================");
 }
 
 //==================================================
@@ -160,19 +235,25 @@ void uploadThingSpeak()
     if(WiFi.status() != WL_CONNECTED)
     {
         connectWiFi();
+
+        if(WiFi.status() != WL_CONNECTED)
+        {
+            Serial.println("Skipping Upload (No WiFi)");
+            return;
+        }
     }
 
     HTTPClient http;
 
     String url =
-    "https://api.thingspeak.com/update?api_key=" + apiKey +
+    "http://api.thingspeak.com/update?api_key=" + apiKey +
     "&field1=" + String(temperature,2) +
     "&field2=" + String(humidity,2) +
     "&field3=" + String(pressure,2) +
     "&field4=" + String(altitude,2) +
     "&field5=" + String(distance,2);
 
-    Serial.println("Uploading...");
+    Serial.println("Uploading to ThingSpeak...");
     Serial.println(url);
 
     http.begin(url);
@@ -181,17 +262,17 @@ void uploadThingSpeak()
 
     if(response > 0)
     {
-        Serial.print("HTTP Code: ");
+        Serial.print("HTTP Response : ");
         Serial.println(response);
 
         String entry = http.getString();
 
-        Serial.print("Entry ID: ");
+        Serial.print("Entry ID      : ");
         Serial.println(entry);
     }
     else
     {
-        Serial.print("Upload Failed: ");
+        Serial.print("Upload Failed : ");
         Serial.println(response);
     }
 
@@ -205,8 +286,10 @@ void uploadThingSpeak()
 void setup()
 {
     Serial.begin(115200);
+    delay(2000);
 
-    delay(1000);
+    Serial.println();
+    Serial.println("========== FloodEye ==========");
 
     pinMode(TRIG_PIN, OUTPUT);
     pinMode(ECHO_PIN, INPUT);
@@ -215,12 +298,25 @@ void setup()
 
     Wire.begin(21,22);
 
-    if(!bmp.begin())
+    //------------------------------------------------
+    // BMP180 Check
+    //------------------------------------------------
+
+    bmpOK = bmp.begin();
+
+    if(bmpOK)
+    {
+        Serial.println("BMP180 Detected");
+    }
+    else
     {
         Serial.println("BMP180 NOT FOUND");
-
-        while(true);
+        Serial.println("Continuing without BMP180...");
     }
+
+    //------------------------------------------------
+    // WiFi
+    //------------------------------------------------
 
     connectWiFi();
 }
