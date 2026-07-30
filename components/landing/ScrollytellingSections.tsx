@@ -18,6 +18,7 @@ import {
   Mail,
   Phone,
   MapPin,
+  Contact,
 } from "lucide-react";
 import { PWAInstallButton } from "@/components/PWAInstallButton";
 
@@ -493,22 +494,28 @@ function IconX({ className = "" }: { className?: string }) {
 function ContactSection() {
   const contactDetails = [
     {
+      icon: Contact,
+      label: "Name",
+      value: "Ashish Kumar Mahato",
+      href: "Ashish Kumar Mahato",
+    },
+    {
       icon: Mail,
       label: "Email",
-      value: "moharnab.gogoi@gmail.com",
-      href: "mailto:moharnab.gogoi@gmail.com",
+      value: "tihiotlab@gmail.com",
+      href: "mailto:tihiotlab@gmail.com",
     },
     {
       icon: Phone,
       label: "Phone",
-      value: "+91 98765 43210",
-      href: "tel:+919876543210",
+      value: "+91 7677757695",
+      href: "tel: +917677757695",
     },
     {
       icon: MapPin,
       label: "Address",
       value:
-        "4th Floor, Research & Development Building, IIT Guwahati Campus, North Guwahati, Assam – 781039",
+        "IoT/VR Lab, 4th Floor, Research & Development Building, IIT Guwahati Campus, North Guwahati, Assam – 781039",
       href: "https://maps.google.com/?q=IIT+Guwahati",
     },
   ];
@@ -651,7 +658,7 @@ function ContactSection() {
                 </a>
               ))}
             </div>
-            
+
             <PWAInstallButton />
           </div>
 

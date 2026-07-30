@@ -8,8 +8,8 @@
 // WiFi Credentials
 //==================================================
 
-const char* ssid = "Aryya";
-const char* password = "aryyaman2006";
+const char* ssid = "EMOBILITY";
+const char* password = "TIDF@2025";
 
 //==================================================
 // ThingSpeak
