@@ -26,7 +26,7 @@ To leverage advanced IoT technologies, sensor networks and real-time data analyt
 
 ## 🌐 Overview
 
-**FloodEye** is a highly responsive Progressive Web Application (PWA) built with Next.js and Tailwind CSS. It is designed to visualize real-time water level data and environmental conditions from an ESP32 microcontroller. With its sleek glassmorphism UI, interactive charts, and intelligent alerting system, monitoring flood risks has never been easier. 
+**FloodEye** is a highly responsive Progressive Web Application (PWA) built with Next.js and Tailwind CSS. It is designed to visualize real-time water level data and environmental conditions from an ESP32 microcontroller equipped with a DHT11, BMP180, and HC-SR04 sensor array. With its sleek glassmorphism UI, interactive charts, and intelligent alerting system, monitoring flood risks has never been easier. 
 
 Uniquely, FloodEye integrates an in-browser **Machine Learning model** (TensorFlow.js) to provide real-time flood predictions up to 4 hours in advance based on environmental telemetry.
 
@@ -34,13 +34,13 @@ Uniquely, FloodEye integrates an in-browser **Machine Learning model** (TensorFl
 
 ## ✨ Key Features
 
-- 🧠 **AI-Powered Flood Prediction**: Utilizes an embedded TensorFlow.js model (`tfjs_model`) to analyze telemetry data and predict future flood risks locally in the browser.
+- 🧠 **AI-Powered Flood Prediction**: Utilizes an embedded TensorFlow.js model (`tfjs_model`) trained on Assam flood-sensor datasets to analyze telemetry data and predict future flood risks (Normal / High / Critical) locally in the browser.
 - 📱 **Progressive Web App (PWA)**: Installable on iOS, Android, and Desktop with custom install prompts for instant offline-capable access.
 - 🌊 **Scrollytelling Landing Page**: An immersive introduction built with GSAP and Lenis for smooth scrolling animations.
 - 🗺️ **Live Interactive Map**: Pinpoint sensor node locations using MapLibre GL and MapTiler.
 - 📊 **Real-Time Telemetry**: Instant visualization of Water Level, Temperature, Humidity, Atmospheric Pressure, and Altitude via ESP32 and ThingSpeak integration.
 - 📈 **Dynamic Analytics & Comfort Score**: Interactive, time-series line charts built with Recharts to track historical water level trends and overall environmental comfort.
-- 🚨 **Smart Alerts Engine**: Configurable thresholds that trigger visual warnings (e.g., High Water Level, Rapid Rise, Object Too Close, Sensor Disconnects) and dynamic Flood Risk levels (Normal, High, Critical).
+- 🚨 **Smart Alerts Engine**: Configurable thresholds that trigger visual warnings (e.g., High Water Level, Rapid Rise, Object Too Close, Sensor Disconnects).
 - 🧪 **Offline/Cached Data Support**: Automatically displays last known data when the ESP32 device goes offline.
 
 ---
@@ -49,13 +49,14 @@ Uniquely, FloodEye integrates an in-browser **Machine Learning model** (TensorFl
 
 This project leverages modern web technologies for maximum performance and developer experience:
 
-- **Core**: [Next.js](https://nextjs.org/) (App Router), [React](https://react.dev/), [TypeScript](https://www.typescriptlang.org/)
+- **Core**: [Next.js 15](https://nextjs.org/) (App Router), [React 19](https://react.dev/), [TypeScript](https://www.typescriptlang.org/)
 - **Machine Learning**: [TensorFlow.js](https://www.tensorflow.org/js) (Keras export patched for browser compatibility)
 - **Styling**: [Tailwind CSS v4](https://tailwindcss.com/), Custom Glassmorphism UI
 - **Components**: [shadcn/ui](https://ui.shadcn.com/), [Lucide Icons](https://lucide.dev/)
 - **Data Visualization & Maps**: [Recharts](https://recharts.org/), [MapLibre GL JS](https://maplibre.org/)
 - **Animations & Scrolling**: [Framer Motion](https://www.framer.com/motion/), [GSAP](https://gsap.com/), [Lenis](https://lenis.darkroom.engineering/)
-- **PWA**: [`next-pwa`](https://github.com/DuCanhGH/next-pwa)
+- **PWA**: [`@ducanh2912/next-pwa`](https://github.com/DuCanhGH/next-pwa)
+- **Database**: [Neon PostgreSQL](https://neon.tech/)
 
 ---
 
@@ -88,6 +89,7 @@ Follow these steps to run the dashboard locally.
    THINGSPEAK_CHANNEL_ID=your_channel_id
    THINGSPEAK_READ_API_KEY=your_read_api_key
    NEXT_PUBLIC_MAPTILER_KEY=your_maptiler_key
+   DATABASE_URL=your_neon_postgres_url
    ```
 
 4. **Start the development server**
@@ -98,31 +100,54 @@ Follow these steps to run the dashboard locally.
 5. **View the Dashboard**
    Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+### Demo Credentials
+
+You can use the following credentials to test the dashboard:
+- **Admin**: `admin@floodeye.com` / `Admin@FloodEye123!`
+- **User**: `user@floodeye.com` / `User@FloodEye123!`
+
 ---
 
-## ⚙️ Hardware Setup
+## ⚙️ Hardware & System Requirements
 
-Check the `IOTcode/` folder for the Arduino sketch (`IOTcode.ino`) to flash to your ESP32.
-- The default sketch demonstrates sensor setup (e.g., BMP180).
-- Extend the code to upload distance (water level), temperature, and humidity directly to your ThingSpeak channel.
+**Microcontroller:**
+- 1x ESP32 Development Board (e.g., ESP32-WROOM-32)
+
+**Sensors:**
+- Temperature & Humidity: DHT11 or DHT22
+- Atmospheric Pressure & Altitude: BMP180 or BMP280
+- Distance/Water Level: HC-SR04 Ultrasonic Sensor
+
+**Power Supply & Deployment:**
+- Solar panel + LiPo battery + TP4056 charging module (for off-grid nodes)
+- Waterproof enclosures for outdoor/riverbank deployment
+
+Check the `IOTcode/` folder for the Arduino sketch (`IOTcode.ino`) to flash to your ESP32. It uses libraries such as `WiFi.h`, `HTTPClient.h`, DHT sensor library, Adafruit BMP085/BMP180 library, and ThingSpeak.
+
+---
 
 ## 🧠 ML Model Details
 
-The flood prediction capabilities are powered by a custom deep learning model located in the `Model/` directory (`FloodMonitoring.ipynb`).
+The predictive engine utilizes a hybrid **1D-CNN + Bidirectional LSTM + Attention** architecture optimized for time series forecasting. Located in the `Model/` directory (`FloodMonitoring.ipynb`).
 
-**Algorithm Overview**:
-The predictive engine utilizes a hybrid **1D-CNN + Bidirectional LSTM + Attention** architecture optimized for time series forecasting.
-- **Input Features**: A 48-hour sequence window composed of cyclical time encodings (hour/month sine and cosine), raw sensor readings (temperature, humidity, pressure, water level), and their respective 3-hour moving trends.
+- **Input Features**: A 48-hour sequence window composed of cyclical time encodings, raw sensor readings, and their 3-hour moving trends.
 - **Architecture**: 
-  - A **1D Convolutional (Conv1D) layer** (64 filters) extracts short-term local temporal features and immediate trends from the sensor data.
-  - A **Bidirectional LSTM layer** (64 units) processes the sequential data to capture complex long-term dependencies in both forward and backward directions.
-  - A custom **Attention Mechanism** dynamically weights the most critical time steps (such as sudden pressure drops or rapid water level rises) to focus the model before passing the context vector to fully connected dense layers.
-- **Output**: Predicts the precise water level 4 hours into the future (`water_level_plus_4h`).
+  - **Conv1D layer** (64 filters) extracts short-term local temporal features.
+  - **Bidirectional LSTM layer** (64 units) captures complex long-term dependencies.
+  - **Attention Mechanism** dynamically weights critical time steps.
+- **Output**: Predicts precise water level 4 hours into the future (`water_level_plus_4h`).
+- **Browser Deployment**: Trained using Keras and exported for web usage. The `patch_model.js` script ensures full compatibility with the TensorFlow.js browser loader.
 
-**Browser Deployment**:
-- The model is trained using TensorFlow/Keras and exported for web usage.
-- `patch_model.js` is an included utility script that patches Keras 3 model exports to ensure full compatibility with the TensorFlow.js browser loader.
-- The prediction inference runs completely client-side.
+---
+
+## 🔮 Upcoming Features (Roadmap)
+
+- **Off-Screen Push & Email Notifications**: Web Push Notifications via the browser Push API and Email alerts via Resend/SendGrid.
+- **Multi-Node Fleet Management**: Interactive pins on the MapLibre map for managing multiple ESP32 devices geographically.
+- **External Weather API Correlation**: Integrate OpenWeatherMap API to correlate ESP32 sensor data with regional precipitation forecasts.
+- **Generative AI "Environmental Summaries"**: Google Gemini API integration to generate natural-language flood risk summaries.
+- **MQTT Real-Time Streaming**: Replace HTTP polling with MQTT over WebSockets (HiveMQ/AWS IoT Core) for zero-latency telemetry.
+- **CSV Data Export**: One-click raw time-series sensor data export for offline analysis.
 
 ---
 
@@ -132,7 +157,7 @@ This project is optimized for deployment on [Vercel](https://vercel.com).
 
 1. Push your code to a GitHub repository.
 2. Import the project into Vercel.
-3. Add your `THINGSPEAK_CHANNEL_ID`, `THINGSPEAK_READ_API_KEY`, and `NEXT_PUBLIC_MAPTILER_KEY` as Environment Variables in the Vercel dashboard.
+3. Add your `THINGSPEAK_CHANNEL_ID`, `THINGSPEAK_READ_API_KEY`, `NEXT_PUBLIC_MAPTILER_KEY`, and `DATABASE_URL` as Environment Variables in the Vercel dashboard.
 4. Click **Deploy**.
 
 For a detailed deployment guide, refer to the [Vercel Next.js Deployment Documentation](https://vercel.com/docs/frameworks/nextjs).
@@ -141,10 +166,11 @@ For a detailed deployment guide, refer to the [Vercel Next.js Deployment Documen
 
 ## 👥 Team
 
+- **Supervisor**: Ashish Kumar Mahato
 - **Moharnab Gogoi** - IoT Backend & Cloud Integration
 - **Aryyaman Bora** - Frontend & UI Engineering
 - **Mayuree Khanikar** - Documentation & Research
-- **Indrani Gogoi** - Documentation
+- **Indrani Gogoi** - Documentation & Research
 
 ---
 <div align="center">
