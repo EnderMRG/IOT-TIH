@@ -22,56 +22,27 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
 
-    // Simple validation logic
-    let role = "user";
-    let name = "";
-    let valid = false;
+    // Call server action to verify credentials and set cookie
+    const result = await login(email, password);
 
-    if (email === "admin@floodeye.com" && password === "Admin@FloodEye123!") {
-      role = "admin";
-      name = "Admin";
-      valid = true;
-    } else if (email === "user@floodeye.com" && password === "User@FloodEye123!") {
-      role = "user";
-      name = "User";
-      valid = true;
-    } else {
-      // Check localStorage users — wrapped in try/catch for Safari private mode
-      try {
-        const usersJson = localStorage.getItem("floodeye_users");
-        if (usersJson) {
-          const users = JSON.parse(usersJson);
-          const user = users.find((u: { email: string; password: string; role?: string; name?: string }) => u.email === email && u.password === password);
-          if (user) {
-            role = user.role || "user";
-            name = user.name || "User";
-            valid = true;
-          }
-        }
-      } catch {
-        // localStorage unavailable (private mode on iOS Safari)
-        setError("Storage unavailable. Try disabling private browsing.");
-        return;
-      }
-    }
-
-    if (!valid) {
-      setError("Invalid email or password. Please try again.");
+    if (!result.success) {
+      setError(result.error || "Invalid email or password. Please try again.");
       return;
     }
 
     // Set role and name in context
-    setUserRole(role as "admin" | "user");
-    setUserName(name);
+    if (result.role) {
+      setUserRole(result.role as "admin" | "user");
+    }
+    if (result.name) {
+      setUserName(result.name);
+    }
 
     // Persist to localStorage so mobile reloads retain session
     try {
-      localStorage.setItem("floodeye_session", role);
-      localStorage.setItem("floodeye_user_name", name);
-    } catch { /* ignore — already handled above */ }
-
-    // Call server action to set cookie
-    await login(role);
+      if (result.role) localStorage.setItem("floodeye_session", result.role);
+      if (result.name) localStorage.setItem("floodeye_user_name", result.name);
+    } catch { /* ignore */ }
 
     // Redirect to dashboard
     router.push("/dashboard");
