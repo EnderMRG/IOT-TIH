@@ -107,7 +107,7 @@ export default function AboutPage() {
                 <p className="text-blue-400 font-medium text-lg">TIH | IIT Guwahati</p>
               </div>
               <div className="shrink-0 flex justify-start md:justify-end">
-                <Image src="/logotih.png" alt="TIH" width={160} height={160} className="object-contain drop-shadow-md" />
+                <Image src="/logotih.png" alt="TIH" width={160} height={160} className="object-contain drop-shadow-md" priority />
               </div>
             </div>
 

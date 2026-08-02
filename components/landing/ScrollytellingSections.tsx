@@ -176,8 +176,8 @@ function HeroSection() {
           <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-5 bg-white/10 backdrop-blur-md border border-white/20 px-4 sm:px-7 py-2.5 sm:py-3.5 rounded-full shadow-2xl">
             <span className="text-sm sm:text-base font-semibold text-white/90 tracking-wide">Developed under</span>
             <div className="hidden sm:block w-px h-10 bg-white/20 rounded-full"></div>
-            <Image src="/logotih.png" alt="TIH" width={110} height={44} className="object-contain drop-shadow-md" />
-            <Image src="/iitlogo.png" alt="IIT Guwahati" width={48} height={48} className="object-contain drop-shadow-md" />
+            <Image src="/logotih.png" alt="TIH" width={110} height={44} className="object-contain drop-shadow-md" priority />
+            <Image src="/iitlogo.png" alt="IIT Guwahati" width={48} height={48} className="object-contain drop-shadow-md" priority />
           </div>
         </motion.div>
 

@@ -16,9 +16,9 @@ export default function DashboardLayout({
       <Sidebar />
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col min-w-0 md:pr-6 pb-24 md:pb-0" style={{ paddingBottom: "calc(5rem + env(safe-area-inset-bottom))" }}>
+      <main className="flex-1 flex flex-col min-w-0 min-h-0 md:pr-6 pb-24 md:pb-0" style={{ paddingBottom: "calc(5rem + env(safe-area-inset-bottom))" }}>
         <Navbar />
-        <div className="flex-1 overflow-auto pb-6 px-4 md:px-8">
+        <div className="flex-1 overflow-y-auto pb-6 px-4 md:px-8">
           {children}
         </div>
       </main>
