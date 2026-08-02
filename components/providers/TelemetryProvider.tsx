@@ -1,6 +1,12 @@
 "use client";
 
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState, useMemo } from "react";
+import useSWR from "swr";
+
+const fetcher = (url: string) => fetch(url, { credentials: "include" }).then(res => {
+  if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+  return res.json();
+});
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -271,18 +277,16 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
   const [nodes, setNodes] = useState<{id: string; name: string}[]>([]);
   const [activeNodeId, setActiveNodeIdState] = useState<string>("primary");
 
-  // Fetch nodes on mount
+  // Fetch nodes with SWR
+  const { data: nodesData } = useSWR<{id: string; name: string}[]>("/api/nodes", fetcher);
   useEffect(() => {
-    fetch("/api/nodes")
-      .then(res => res.json())
-      .then(data => {
-        setNodes(data);
-        if (data.length > 0 && !activeNodeId) {
-          setActiveNodeIdState(data[0].id);
-        }
-      })
-      .catch(err => console.warn("Failed to fetch nodes", err));
-  }, []);
+    if (nodesData && Array.isArray(nodesData)) {
+      setNodes(nodesData);
+      if (nodesData.length > 0 && !activeNodeId) {
+        setActiveNodeIdState(nodesData[0].id);
+      }
+    }
+  }, [nodesData, activeNodeId]);
 
   const setActiveNodeId = useCallback((id: string) => {
     setActiveNodeIdState(id);
@@ -487,102 +491,105 @@ export function TelemetryProvider({ children }: { children: React.ReactNode }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSimulating]);
 
-  // ── REAL MODE: Initial history load from ThingSpeak ───────────────────────
+  // ── REAL MODE: SWR Data Fetching ───────────────────────────────────────────
+  
+  // 1. Initial history load
+  const { data: historyData, error: historyError } = useSWR<TelemetryData[]>(
+    !isSimulating && activeNodeId ? `/api/history?range=1h&nodeId=${activeNodeId}` : null,
+    fetcher,
+    { revalidateOnFocus: false, revalidateIfStale: false }
+  );
+
   useEffect(() => {
     if (isSimulating || !activeNodeId) return;
-    let cancelled = false;
-
-    fetch(`/api/history?range=1h&nodeId=${activeNodeId}`)
-      .then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
-      .then((feeds: TelemetryData[]) => {
-        if (cancelled) return;
-        if (feeds.length > 0) {
-          const last = feeds[feeds.length - 1];
-          setData(last);
-          setHistory(feeds);
-          setLastSeenAt(last.timestamp);
-          setIsOffline(false);
+    
+    if (historyData) {
+      if (historyData.length > 0) {
+        const last = historyData[historyData.length - 1];
+        setData(last);
+        setHistory(historyData);
+        setLastSeenAt(last.timestamp);
+        
+        const diffSeconds = (Date.now() - new Date(last.timestamp).getTime()) / 1000;
+        setIsOffline(diffSeconds > 60);
+        
+        if (diffSeconds <= 60) {
           offlineAlertFiredRef.current = false;
-          prevDataRef.current = last;
-          lsSet(getLsKey(LS_DATA, activeNodeId), last);
-          lsSet(getLsKey(LS_HISTORY, activeNodeId), feeds.slice(-240));
-          lsSet(getLsKey(LS_SEEN_AT, activeNodeId), last.timestamp);
         }
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        console.warn("[TelemetryProvider] initial history fetch failed — using cache:", err);
-        if (!data) setIsOffline(true);
-      })
-      .finally(() => { if (!cancelled) setIsLoading(false); });
+        prevDataRef.current = last;
+        lsSet(getLsKey(LS_DATA, activeNodeId), last);
+        lsSet(getLsKey(LS_HISTORY, activeNodeId), historyData.slice(-240));
+        lsSet(getLsKey(LS_SEEN_AT, activeNodeId), last.timestamp);
+      }
+      setIsLoading(false);
+    }
+    if (historyError) {
+      console.warn("[TelemetryProvider] initial history fetch failed:", historyError);
+      setIsOffline(true);
+      setIsLoading(false);
+    }
+  }, [historyData, historyError, activeNodeId, isSimulating]);
 
-    return () => { cancelled = true; };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSimulating, activeNodeId]);
+  // 2. Polling loop
+  const { data: sensorsData, error: sensorsError } = useSWR<{data: TelemetryData, deviceStatus: DeviceStatus}>(
+    !isSimulating && activeNodeId ? `/api/sensors?nodeId=${activeNodeId}` : null,
+    fetcher,
+    { refreshInterval: settings.refreshInterval * 1000 }
+  );
 
-  // ── REAL MODE: Polling loop ───────────────────────────────────────────────
   useEffect(() => {
     if (isSimulating || !activeNodeId) return;
 
-    const poll = async () => {
-      try {
-        const res = await fetch(`/api/sensors?nodeId=${activeNodeId}`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-        const { data: newData, deviceStatus: newStatus }: {
-          data: TelemetryData;
-          deviceStatus: DeviceStatus;
-        } = await res.json();
-
-        setIsOffline(false);
+    if (sensorsData) {
+      const { data: newData, deviceStatus: newStatus } = sensorsData;
+      
+      // Calculate offline dynamically based on the timestamp to correctly handle SWR cache hits
+      const diffSeconds = (Date.now() - new Date(newData.timestamp).getTime()) / 1000;
+      const isDeviceOffline = diffSeconds > 60;
+      
+      setIsOffline(isDeviceOffline);
+      
+      if (!isDeviceOffline) {
         offlineAlertFiredRef.current = false;
-
-        setDeviceStatus(newStatus);
-        setData(newData);
-        setLastSeenAt(newData.timestamp);
-        setHistory((prev) => {
-          const updated = [...prev, newData].slice(-240);
-          lsSet(getLsKey(LS_HISTORY, activeNodeId), updated);
-          return updated;
-        });
-
-        lsSet(getLsKey(LS_DATA, activeNodeId), newData);
-        lsSet(getLsKey(LS_STATUS, activeNodeId), newStatus);
-        lsSet(getLsKey(LS_SEEN_AT, activeNodeId), newData.timestamp);
-
-        if (prevDataRef.current) {
-          const triggered = evaluateAlerts(newData, prevDataRef.current, settingsRef.current);
-          triggered.forEach((a) => pushAlert(a));
-        }
-        prevDataRef.current = newData;
-
-      } catch (err) {
-        console.warn("[TelemetryProvider] poll failed — device may be offline:", err);
-        setIsOffline(true);
-        setDeviceStatus((d) => d ? { ...d, esp32Online: false, thingspeakConnected: false } : null);
-        if (!offlineAlertFiredRef.current) {
-          pushAlert({
-            type: "SENSOR_OFFLINE",
-            severity: "warning",
-            message: "Cannot reach the sensor device. Dashboard is showing last cached data.",
-          });
-          offlineAlertFiredRef.current = true;
-        }
       }
-    };
 
-    const intervalRef = { current: null as ReturnType<typeof setInterval> | null };
-    const timeout = setTimeout(() => {
-      poll();
-      intervalRef.current = setInterval(poll, settings.refreshInterval * 1000);
-    }, 500);
+      setDeviceStatus(newStatus);
+      setData(newData);
+      setLastSeenAt(newData.timestamp);
+      
+      setHistory((prev) => {
+        const last = prev[prev.length - 1];
+        if (last && last.timestamp === newData.timestamp) return prev; // deduplicate
+        const updated = [...prev, newData].slice(-240);
+        lsSet(getLsKey(LS_HISTORY, activeNodeId), updated);
+        return updated;
+      });
 
-    return () => {
-      clearTimeout(timeout);
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSimulating, settings.refreshInterval, pushAlert, activeNodeId]);
+      lsSet(getLsKey(LS_DATA, activeNodeId), newData);
+      lsSet(getLsKey(LS_STATUS, activeNodeId), newStatus);
+      lsSet(getLsKey(LS_SEEN_AT, activeNodeId), newData.timestamp);
+
+      if (prevDataRef.current && prevDataRef.current.timestamp !== newData.timestamp) {
+        const triggered = evaluateAlerts(newData, prevDataRef.current, settingsRef.current);
+        triggered.forEach((a) => pushAlert(a));
+      }
+      prevDataRef.current = newData;
+    }
+
+    if (sensorsError) {
+      console.warn("[TelemetryProvider] SWR poll failed:", sensorsError);
+      setIsOffline(true);
+      setDeviceStatus((d) => d ? { ...d, esp32Online: false, thingspeakConnected: false } : null);
+      if (!offlineAlertFiredRef.current) {
+        pushAlert({
+          type: "SENSOR_OFFLINE",
+          severity: "warning",
+          message: "Cannot reach the sensor device. Dashboard is showing last cached data.",
+        });
+        offlineAlertFiredRef.current = true;
+      }
+    }
+  }, [sensorsData, sensorsError, activeNodeId, isSimulating, pushAlert, settingsRef]);
 
   const contextValue = useMemo(() => ({
     data,

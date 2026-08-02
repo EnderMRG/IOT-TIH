@@ -22,9 +22,18 @@ export function proxy(request: NextRequest) {
     }
   }
 
+  // If trying to access API, return 401 if unauthenticated
+  if (pathname.startsWith("/api")) {
+    const authSession = request.cookies.get("auth_session");
+    console.log("[PROXY] API request to", pathname, "| authSession =", authSession?.value);
+    if (!authSession) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+  }
+
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/login"],
+  matcher: ["/dashboard/:path*", "/login", "/api/:path*"],
 };
